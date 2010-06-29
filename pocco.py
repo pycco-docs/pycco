@@ -73,19 +73,10 @@ def parse(source, code):
 # wherever our markers occur.
 def highlight(source, sections):
     language = get_language(source)
-    pygments = Popen(["pygmentize", "-l", language["name"], "-f", "html"],
-                     stderr=PIPE,
-                     stdin=PIPE,
-                     stdout=PIPE)
 
-    pygments.stdin.write(language["divider_text"].join(section["code_text"] for section in sections))
-    output = ""
-    while pygments.returncode is None:
-        stdout, stderr = pygments.communicate()
-        if stderr:
-            print stderr
-        if stdout:
-            output += stdout
+    output = pygments.highlight(language["divider_text"].join(section["code_text"] for section in sections),
+                                language["lexer"],
+                                formatters.get_formatter_by_name("html"))
 
     output = output.replace(highlight_start, "").replace(highlight_end, "")
     fragments = re.split(language["divider_html"], output)
@@ -115,11 +106,13 @@ def generate_html(source, sections):
 #### Helpers & Setup
 
 # Import our external dependencies.
+import pygments
 import pystache
 import re
 import sys
 from markdown import markdown
 from os import path
+from pygments import lexers, formatters
 from subprocess import Popen, PIPE
 
 # A list of the languages that Pocco supports, mapping the file extension to
@@ -144,6 +137,9 @@ for ext, l in languages.items():
     # The mirror of `divider_text` that we expect Pygments to return. We can split
     # on this to recover the original sections.
     l["divider_html"] = re.compile(r'\n*<span class="c">' + l["symbol"] + 'DIVIDER</span>\n*')
+
+    # Get the Pygments Lexer for this language.
+    l["lexer"] = lexers.get_lexer_by_name(l["name"])
 
 # Get the current language we're documenting, based on the extension.
 def get_language(source):
