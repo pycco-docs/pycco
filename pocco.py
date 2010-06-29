@@ -65,7 +65,7 @@ def parse(source, code):
     save(docs_text, code_text)
     return sections
 
-# Highlights a single chunk of code, using **Pygments** over stdio, and runs the
+# Highlights a single chunk of code using the **Pygments** module, and runs the
 # text of its corresponding comment through **Markdown**.
 #
 # We process the entire file in a single call to Pygments by inserting little
@@ -87,7 +87,7 @@ def highlight(source, sections):
 
 # Once all of the code is finished highlighting, we can generate the HTML file
 # and write out the documentation. Pass the completed sections into the template
-# found in `resources/pocco.jst`
+# found in `resources/pocco.html`
 def generate_html(source, sections):
     title = path.basename(source)
     dest = destination(source)
@@ -122,7 +122,8 @@ languages = {
     ".coffee": { "name": "coffee-script", "symbol": "#" },
     ".js":     { "name": "javascript",    "symbol": "//" },
     ".rb":     { "name": "ruby",          "symbol": "#" },
-    ".py":     { "name": "python",        "symbol": "#" }
+    ".py":     { "name": "python",        "symbol": "#" },
+    ".scm":    { "name": "scheme",        "symbol": ";;" },
 }
 
 # Build out the appropriate matchers and delimiters for each language.
@@ -146,7 +147,7 @@ def get_language(source):
     return languages[ source[source.rindex("."):] ]
 
 # Compute the destination HTML path for an input source file path. If the source
-# is `lib/example.coffee`, the HTML will be at `docs/example.html`
+# is `lib/example.py`, the HTML will be at `docs/example.html`
 def destination(filepath):
     name = filepath.replace(filepath[ filepath.rindex("."): ], "")
     return "docs/" + path.basename(name) + ".html"
