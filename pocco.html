@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>pocco.py</title>
+  <link rel="stylesheet" href="pocco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>pocco.py</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-0'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-0">#</a>
+        </div>
+        <p><strong>Pocco</strong> is a Python port of <a href="http://jashkenas.github.com/docco/">Docco</a>:
+the original quick-and-dirty, hundred-line-long, literate-programming-style
+documentation generator. It produces HTML that displays your comments
+alongside your code. Comments are passed through
+<a href="http://daringfireball.net/projects/markdown/syntax">Markdown</a>, and code is
+passed through <a href="http://pygments.org/">Pygments</a> syntax highlighting.  This
+page is the result of running Pocco against its own source file.</p>
+<p>If you install Pocco, you can run it from the command-line:</p>
+<pre><code>pocco src/*.py
+</code></pre>
+<p>...will generate linked HTML documentation for the named source files, saving
+it into a <code>docs</code> folder.</p>
+<p>To install Pocco, simply</p>
+<pre><code>sudo setup.py install
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-1'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-1">#</a>
+        </div>
+        <h3>Main Documentation Generation Functions</h3>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-2'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-2">#</a>
+        </div>
+        <p>Generate the documentation for a source file by reading it in, splitting it
+up into comment/code sections, highlighting them for the appropriate language,
+and merging them into an HTML template.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="k">def</span> <span class="nf">generate_documentation</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">sections</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">highlight</span><span class="p">(</span><span class="n">source</span><span class="p">,</span>
+              <span class="n">sections</span><span class="p">)</span>
+    <span class="n">generate_html</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">sections</span><span class="p">)</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-3'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-3">#</a>
+        </div>
+        <p>Given a string of source code, parse out each comment and the code that
+follows it, and create an individual <strong>section</strong> for it.
+Sections take the form:</p>
+<pre><code>{ "docs_text": ...,
+  "docs_html": ...,
+  "code_text": ...,
+  "code_html": ...,
+  "num":       ...
+}
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">code</span><span class="p">):</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">sections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">language</span> <span class="o">=</span> <span class="n">get_language</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+    <span class="n">has_code</span> <span class="o">=</span> <span class="n">docs_text</span> <span class="o">=</span> <span class="n">code_text</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="n">code</span><span class="p">):</span>
+        <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s">&quot;docs_text&quot;</span><span class="p">:</span> <span class="n">docs</span><span class="p">,</span>
+            <span class="s">&quot;code_text&quot;</span><span class="p">:</span> <span class="n">code</span>
+        <span class="p">})</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">language</span><span class="p">[</span><span class="s">&quot;comment_matcher&quot;</span><span class="p">],</span> <span class="n">line</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">has_code</span><span class="p">:</span>
+                <span class="n">save</span><span class="p">(</span><span class="n">docs_text</span><span class="p">,</span> <span class="n">code_text</span><span class="p">)</span>
+                <span class="n">has_code</span> <span class="o">=</span> <span class="n">docs_text</span> <span class="o">=</span> <span class="n">code_text</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            <span class="n">docs_text</span> <span class="o">+=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">language</span><span class="p">[</span><span class="s">&quot;comment_matcher&quot;</span><span class="p">],</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">has_code</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">code_text</span> <span class="o">+=</span> <span class="n">line</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">save</span><span class="p">(</span><span class="n">docs_text</span><span class="p">,</span> <span class="n">code_text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sections</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-4'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-4">#</a>
+        </div>
+        <p>Highlights a single chunk of code using the <strong>Pygments</strong> module, and runs the
+text of its corresponding comment through <strong>Markdown</strong>.</p>
+<p>We process the entire file in a single call to Pygments by inserting little
+marker comments between each section and then splitting the result string
+wherever our markers occur.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="k">def</span> <span class="nf">highlight</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">sections</span><span class="p">):</span>
+    <span class="n">language</span> <span class="o">=</span> <span class="n">get_language</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">pygments</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">language</span><span class="p">[</span><span class="s">&quot;divider_text&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">section</span><span class="p">[</span><span class="s">&quot;code_text&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">),</span>
+                                <span class="n">language</span><span class="p">[</span><span class="s">&quot;lexer&quot;</span><span class="p">],</span>
+                                <span class="n">formatters</span><span class="o">.</span><span class="n">get_formatter_by_name</span><span class="p">(</span><span class="s">&quot;html&quot;</span><span class="p">))</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">highlight_start</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">highlight_end</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">fragments</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">language</span><span class="p">[</span><span class="s">&quot;divider_html&quot;</span><span class="p">],</span> <span class="n">output</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">section</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sections</span><span class="p">):</span>
+        <span class="n">section</span><span class="p">[</span><span class="s">&quot;code_html&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">highlight_start</span> <span class="o">+</span> <span class="n">fragments</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">highlight_end</span>
+        <span class="n">section</span><span class="p">[</span><span class="s">&quot;docs_html&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">markdown</span><span class="p">(</span><span class="n">section</span><span class="p">[</span><span class="s">&quot;docs_text&quot;</span><span class="p">])</span>
+        <span class="n">section</span><span class="p">[</span><span class="s">&quot;num&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-5'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-5">#</a>
+        </div>
+        <p>Once all of the code is finished highlighting, we can generate the HTML file
+and write out the documentation. Pass the completed sections into the template
+found in <code>resources/pocco.jst</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="k">def</span> <span class="nf">generate_html</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">sections</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+    <span class="n">dest</span> <span class="o">=</span> <span class="n">destination</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+    <span class="n">html</span> <span class="o">=</span> <span class="n">pocco_template</span><span class="p">({</span>
+        <span class="s">&quot;title&quot;</span><span class="p">:</span>       <span class="n">title</span><span class="p">,</span>
+        <span class="s">&quot;sections&quot;</span><span class="p">:</span>    <span class="n">sections</span><span class="p">,</span>
+        <span class="s">&quot;sources&quot;</span><span class="p">:</span>     <span class="n">sources</span><span class="p">,</span>
+        <span class="s">&quot;path&quot;</span><span class="p">:</span>        <span class="n">path</span><span class="p">,</span>
+        <span class="s">&quot;destination&quot;</span><span class="p">:</span> <span class="n">destination</span>
+    <span class="p">})</span>
+    <span class="k">print</span> <span class="s">&quot;pocco = </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-6'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-6">#</a>
+        </div>
+        <h3>Helpers &amp; Setup</h3>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-7'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-7">#</a>
+        </div>
+        <p>Import our external dependencies.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pygments</span>
+<span class="kn">import</span> <span class="nn">pystache</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">markdown</span> <span class="kn">import</span> <span class="n">markdown</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span>
+<span class="kn">from</span> <span class="nn">pygments</span> <span class="kn">import</span> <span class="n">lexers</span><span class="p">,</span> <span class="n">formatters</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-8'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-8">#</a>
+        </div>
+        <p>A list of the languages that Pocco supports, mapping the file extension to
+the name of the Pygments lexer and the symbol that indicates a comment. To
+add another language to Pocco's repertoire, add it here.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">languages</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;.coffee&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;coffee-script&quot;</span><span class="p">,</span> <span class="s">&quot;symbol&quot;</span><span class="p">:</span> <span class="s">&quot;#&quot;</span> <span class="p">},</span>
+    <span class="s">&quot;.js&quot;</span><span class="p">:</span>     <span class="p">{</span> <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;javascript&quot;</span><span class="p">,</span>    <span class="s">&quot;symbol&quot;</span><span class="p">:</span> <span class="s">&quot;//&quot;</span> <span class="p">},</span>
+    <span class="s">&quot;.rb&quot;</span><span class="p">:</span>     <span class="p">{</span> <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;ruby&quot;</span><span class="p">,</span>          <span class="s">&quot;symbol&quot;</span><span class="p">:</span> <span class="s">&quot;#&quot;</span> <span class="p">},</span>
+    <span class="s">&quot;.py&quot;</span><span class="p">:</span>     <span class="p">{</span> <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;python&quot;</span><span class="p">,</span>        <span class="s">&quot;symbol&quot;</span><span class="p">:</span> <span class="s">&quot;#&quot;</span> <span class="p">},</span>
+    <span class="s">&quot;.scm&quot;</span><span class="p">:</span>    <span class="p">{</span> <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;scheme&quot;</span><span class="p">,</span>        <span class="s">&quot;symbol&quot;</span><span class="p">:</span> <span class="s">&quot;;;&quot;</span> <span class="p">},</span>
+<span class="p">}</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-9'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-9">#</a>
+        </div>
+        <p>Build out the appropriate matchers and delimiters for each language.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="k">for</span> <span class="n">ext</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">languages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-10'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-10">#</a>
+        </div>
+        <p>Does the line begin with a comment?</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre>    <span class="n">l</span><span class="p">[</span><span class="s">&quot;comment_matcher&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&quot;^\s*&quot;</span> <span class="o">+</span> <span class="n">l</span><span class="p">[</span><span class="s">&quot;symbol&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;\s?&quot;</span><span class="p">)</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-11'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-11">#</a>
+        </div>
+        <p>The dividing token we feed into Pygments, to delimit the boundaries between
+sections.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre>    <span class="n">l</span><span class="p">[</span><span class="s">&quot;divider_text&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">l</span><span class="p">[</span><span class="s">&quot;symbol&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;DIVIDER</span><span class="se">\n</span><span class="s">&quot;</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-12'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-12">#</a>
+        </div>
+        <p>The mirror of <code>divider_text</code> that we expect Pygments to return. We can split
+on this to recover the original sections.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre>    <span class="n">l</span><span class="p">[</span><span class="s">&quot;divider_html&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\n*&lt;span class=&quot;c&quot;&gt;&#39;</span> <span class="o">+</span> <span class="n">l</span><span class="p">[</span><span class="s">&quot;symbol&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;DIVIDER&lt;/span&gt;</span><span class="se">\n</span><span class="s">*&#39;</span><span class="p">)</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-13'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-13">#</a>
+        </div>
+        <p>Get the Pygments Lexer for this language.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre>    <span class="n">l</span><span class="p">[</span><span class="s">&quot;lexer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lexers</span><span class="o">.</span><span class="n">get_lexer_by_name</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="s">&quot;name&quot;</span><span class="p">])</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-14'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-14">#</a>
+        </div>
+        <p>Get the current language we're documenting, based on the extension.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_language</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">languages</span><span class="p">[</span> <span class="n">source</span><span class="p">[</span><span class="n">source</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">):]</span> <span class="p">]</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-15'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-15">#</a>
+        </div>
+        <p>Compute the destination HTML path for an input source file path. If the source
+is <code>lib/example.coffee</code>, the HTML will be at <code>docs/example.html</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="k">def</span> <span class="nf">destination</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">filepath</span><span class="p">[</span> <span class="n">filepath</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">):</span> <span class="p">],</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s">&quot;docs/&quot;</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.html&quot;</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-16'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-16">#</a>
+        </div>
+        <p>Ensure that the destination directory exists.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="k">def</span> <span class="nf">ensure_directory</span><span class="p">():</span>
+    <span class="n">Popen</span><span class="p">([</span><span class="s">&quot;mkdir&quot;</span><span class="p">,</span> <span class="s">&quot;-p&quot;</span><span class="p">,</span> <span class="s">&quot;docs&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">template</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+    <span class="k">return</span> <span class="k">lambda</span> <span class="n">context</span><span class="p">:</span> <span class="n">pystache</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-17'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-17">#</a>
+        </div>
+        <p>Create the template that we will use to generate the Pocco HTML page.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">pocco_template</span> <span class="o">=</span> <span class="n">template</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;/resources/pocco.html&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-18'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-18">#</a>
+        </div>
+        <p>The CSS styles we"d like to apply to the documentation.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">pocco_styles</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;/resources/pocco.css&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-19'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-19">#</a>
+        </div>
+        <p>The start of each Pygments highlight block.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">highlight_start</span> <span class="o">=</span> <span class="s">&quot;&lt;div class=</span><span class="se">\&quot;</span><span class="s">highlight</span><span class="se">\&quot;</span><span class="s">&gt;&lt;pre&gt;&quot;</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-20'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-20">#</a>
+        </div>
+        <p>The end of each Pygments highlight block.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">highlight_end</span> <span class="o">=</span> <span class="s">&quot;&lt;/pre&gt;&lt;/div&gt;&quot;</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-21'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-21">#</a>
+        </div>
+        <p>Run the script.
+For each source file passed in as an argument, generate the documentation.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">sources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">sources</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">sources</span><span class="p">:</span>
+        <span class="n">ensure_directory</span><span class="p">()</span>
+        <span class="n">css</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;docs/pocco.css&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">css</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pocco_styles</span><span class="p">)</span>
+        <span class="n">css</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">next_file</span><span class="p">():</span>
+            <span class="n">generate_documentation</span><span class="p">(</span><span class="n">sources</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">sources</span><span class="p">:</span>
+                <span class="n">next_file</span><span class="p">()</span>
+        <span class="n">next_file</span><span class="p">()</span>
+
+</pre></div></pre></div>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
