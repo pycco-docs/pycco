@@ -45,11 +45,12 @@ def generate_documentation(source):
 #
 def parse(source, code):
     lines = code.split("\n")
-    if lines[0].startswith("#!"):
-        lines.pop(0)
     sections = []
     language = get_language(source)
     has_code = docs_text = code_text = ""
+
+    if lines[0].startswith("#!"):
+        lines.pop(0)
 
     def save(docs, code):
         sections.append({
@@ -148,12 +149,26 @@ for ext, l in languages.items():
 
 # Get the current language we're documenting, based on the extension.
 def get_language(source):
-    return languages[ source[source.rindex("."):] ]
+    try:
+        return languages[ source[source.rindex("."):] ]
+    except ValueError:
+        source = open(source, "r")
+        code = source.read()
+        source.close()
+        lang = lexers.guess_lexer(code).name.lower()
+        for l in languages.values():
+            if l["name"] == lang:
+                return l
+        else:
+            raise ValueError("Can't figure out the language!")
 
 # Compute the destination HTML path for an input source file path. If the source
 # is `lib/example.py`, the HTML will be at `docs/example.html`
 def destination(filepath):
-    name = filepath.replace(filepath[ filepath.rindex("."): ], "")
+    try:
+        name = filepath.replace(filepath[ filepath.rindex("."): ], "")
+    except ValueError:
+        name = filepath
     return "docs/" + path.basename(name) + ".html"
 
 # Shift items off the front of the `list` until it is empty, then return
