@@ -174,7 +174,7 @@ highlight_end = "</pre></div>"
 # Run the script.
 # For each source file passed in as an argument, generate the documentation.
 if __name__ == "__main__":
-    sources = list(sys.argv)
+    sources = list(sys.argv[1:])
     sources.sort()
     if sources:
         ensure_directory()

@@ -4,6 +4,7 @@ import os
 import sys
 
 lib = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-cmd = 'python ' + os.path.join(lib, 'pocco.py') + " ".join(sys.argv[2:])
+cmd = "python %s %s" % (os.path.join(lib, 'pocco.py'),
+                        " ".join(sys.argv[1:]))
 
 print os.popen(cmd).read(),
