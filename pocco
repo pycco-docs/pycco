@@ -129,6 +129,7 @@ languages = {
     ".rb":     { "name": "ruby",          "symbol": "#" },
     ".py":     { "name": "python",        "symbol": "#" },
     ".scm":    { "name": "scheme",        "symbol": ";;" },
+    ".lua":    { "name": "lua",           "symbol": "--" },
 }
 
 # Build out the appropriate matchers and delimiters for each language.
