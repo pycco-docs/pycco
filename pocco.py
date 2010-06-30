@@ -81,7 +81,7 @@ def highlight(source, sections):
     output = output.replace(highlight_start, "").replace(highlight_end, "")
     fragments = re.split(language["divider_html"], output)
     for i, section in enumerate(sections):
-        section["code_html"] = highlight_start + fragments[i] + highlight_end
+        section["code_html"] = highlight_start + shift(fragments, "") + highlight_end
         section["docs_html"] = markdown(section["docs_text"])
         section["num"] = i
 
@@ -137,7 +137,7 @@ for ext, l in languages.items():
 
     # The mirror of `divider_text` that we expect Pygments to return. We can split
     # on this to recover the original sections.
-    l["divider_html"] = re.compile(r'\n*<span class="c">' + l["symbol"] + 'DIVIDER</span>\n*')
+    l["divider_html"] = re.compile(r'\n*<span class="c[1]?">' + l["symbol"] + 'DIVIDER</span>\n*')
 
     # Get the Pygments Lexer for this language.
     l["lexer"] = lexers.get_lexer_by_name(l["name"])
@@ -151,6 +151,14 @@ def get_language(source):
 def destination(filepath):
     name = filepath.replace(filepath[ filepath.rindex("."): ], "")
     return "docs/" + path.basename(name) + ".html"
+
+# Shift items off the front of the `list` until it is empty, then return
+# `default`.
+def shift(list, default):
+    try:
+        return list.pop(0)
+    except IndexError:
+        return default
 
 # Ensure that the destination directory exists.
 def ensure_directory():
