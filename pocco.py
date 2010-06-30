@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # **Pocco** is a Python port of [Docco](http://jashkenas.github.com/docco/ ):
 # the original quick-and-dirty, hundred-line-long, literate-programming-style
 # documentation generator. It produces HTML that displays your comments
@@ -43,6 +45,8 @@ def generate_documentation(source):
 #
 def parse(source, code):
     lines = code.split("\n")
+    if lines[0].startswith("#!"):
+        lines.pop(0)
     sections = []
     language = get_language(source)
     has_code = docs_text = code_text = ""
@@ -168,10 +172,12 @@ def template(source):
     return lambda context: pystache.render(source, context)
 
 # Create the template that we will use to generate the Pocco HTML page.
-pocco_template = template(open(path.dirname(__file__) + "/resources/pocco.html").read())
+pocco_template = template(open(path.join(path.dirname(__file__),
+                                         "resources/pocco.html")).read())
 
 # The CSS styles we"d like to apply to the documentation.
-pocco_styles = open(path.dirname(__file__) + "/resources/pocco.css").read()
+pocco_styles = open(path.join(path.dirname(__file__),
+                              "resources/pocco.css")).read()
 
 # The start of each Pygments highlight block.
 highlight_start = "<div class=\"highlight\"><pre>"
