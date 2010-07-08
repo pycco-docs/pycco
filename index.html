@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
-  <title>pocco</title>
+  <title>pycco</title>
   <link rel="stylesheet" href="pocco.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
   <table cellspacing=0 cellpadding=0>
   <thead>
     <tr>
-      <th class=docs><h1>pocco</h1></th>
+      <th class=docs><h1>pycco</h1></th>
       <th class=code></th>
     </tr>
   </thead>
@@ -32,19 +32,19 @@
         <div class="octowrap">
           <a class="octothorpe" href="#section-1">#</a>
         </div>
-        <p><strong>Pocco</strong> is a Python port of <a href="http://jashkenas.github.com/docco/">Docco</a>:
+        <p><strong>Pycco</strong> is a Python port of <a href="http://jashkenas.github.com/docco/">Docco</a>:
 the original quick-and-dirty, hundred-line-long, literate-programming-style
 documentation generator. It produces HTML that displays your comments
 alongside your code. Comments are passed through
 <a href="http://daringfireball.net/projects/markdown/syntax">Markdown</a>, and code is
 passed through <a href="http://pygments.org/">Pygments</a> syntax highlighting.  This
-page is the result of running Pocco against its own source file.</p>
-<p>If you install Pocco, you can run it from the command-line:</p>
-<pre><code>pocco src/*.py
+page is the result of running Pycco against its own source file.</p>
+<p>If you install Pycco, you can run it from the command-line:</p>
+<pre><code>pycco src/*.py
 </code></pre>
 <p>...will generate linked HTML documentation for the named source files, saving
 it into a <code>docs</code> folder.</p>
-<p>To install Pocco, simply</p>
+<p>To install Pycco, simply</p>
 <pre><code>sudo setup.py install
 </code></pre>
       </td>
@@ -155,20 +155,20 @@ wherever our markers occur.</p>
         </div>
         <p>Once all of the code is finished highlighting, we can generate the HTML file
 and write out the documentation. Pass the completed sections into the template
-found in <code>resources/pocco.html</code></p>
+found in <code>resources/pycco.html</code></p>
       </td>
       <td class=code>
         <div class='highlight'><pre><div class="highlight"><pre><span class="k">def</span> <span class="nf">generate_html</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">sections</span><span class="p">):</span>
     <span class="n">title</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
     <span class="n">dest</span> <span class="o">=</span> <span class="n">destination</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
-    <span class="n">html</span> <span class="o">=</span> <span class="n">pocco_template</span><span class="p">({</span>
+    <span class="n">html</span> <span class="o">=</span> <span class="n">pycco_template</span><span class="p">({</span>
         <span class="s">&quot;title&quot;</span><span class="p">:</span>       <span class="n">title</span><span class="p">,</span>
         <span class="s">&quot;sections&quot;</span><span class="p">:</span>    <span class="n">sections</span><span class="p">,</span>
         <span class="s">&quot;sources&quot;</span><span class="p">:</span>     <span class="n">sources</span><span class="p">,</span>
         <span class="s">&quot;path&quot;</span><span class="p">:</span>        <span class="n">path</span><span class="p">,</span>
         <span class="s">&quot;destination&quot;</span><span class="p">:</span> <span class="n">destination</span>
     <span class="p">})</span>
-    <span class="k">print</span> <span class="s">&quot;pocco = </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;pycco = </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
     <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
     <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
     <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></pre></div></pre></div>
@@ -205,9 +205,9 @@ found in <code>resources/pocco.html</code></p>
         <div class="octowrap">
           <a class="octothorpe" href="#section-9">#</a>
         </div>
-        <p>A list of the languages that Pocco supports, mapping the file extension to
+        <p>A list of the languages that Pycco supports, mapping the file extension to
 the name of the Pygments lexer and the symbol that indicates a comment. To
-add another language to Pocco's repertoire, add it here.</p>
+add another language to Pycco's repertoire, add it here.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre><div class="highlight"><pre><span class="n">languages</span> <span class="o">=</span> <span class="p">{</span>
@@ -216,6 +216,7 @@ add another language to Pocco's repertoire, add it here.</p>
     <span class="s">&quot;.rb&quot;</span><span class="p">:</span>     <span class="p">{</span> <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;ruby&quot;</span><span class="p">,</span>          <span class="s">&quot;symbol&quot;</span><span class="p">:</span> <span class="s">&quot;#&quot;</span> <span class="p">},</span>
     <span class="s">&quot;.py&quot;</span><span class="p">:</span>     <span class="p">{</span> <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;python&quot;</span><span class="p">,</span>        <span class="s">&quot;symbol&quot;</span><span class="p">:</span> <span class="s">&quot;#&quot;</span> <span class="p">},</span>
     <span class="s">&quot;.scm&quot;</span><span class="p">:</span>    <span class="p">{</span> <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;scheme&quot;</span><span class="p">,</span>        <span class="s">&quot;symbol&quot;</span><span class="p">:</span> <span class="s">&quot;;;&quot;</span> <span class="p">},</span>
+    <span class="s">&quot;.lua&quot;</span><span class="p">:</span>    <span class="p">{</span> <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;lua&quot;</span><span class="p">,</span>           <span class="s">&quot;symbol&quot;</span><span class="p">:</span> <span class="s">&quot;--&quot;</span> <span class="p">},</span>
 <span class="p">}</span></pre></div></pre></div>
       </td>
     </tr><tr id='section-10'>
@@ -342,11 +343,11 @@ is <code>lib/example.py</code>, the HTML will be at <code>docs/example.html</cod
         <div class="octowrap">
           <a class="octothorpe" href="#section-19">#</a>
         </div>
-        <p>Create the template that we will use to generate the Pocco HTML page.</p>
+        <p>Create the template that we will use to generate the Pycco HTML page.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre><div class="highlight"><pre><span class="n">pocco_template</span> <span class="o">=</span> <span class="n">template</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span>
-                                         <span class="s">&quot;resources/pocco.html&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">())</span></pre></div></pre></div>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">pycco_template</span> <span class="o">=</span> <span class="n">template</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span>
+                                         <span class="s">&quot;resources/pycco.html&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">())</span></pre></div></pre></div>
       </td>
     </tr><tr id='section-20'>
       <td class=docs>
@@ -356,8 +357,8 @@ is <code>lib/example.py</code>, the HTML will be at <code>docs/example.html</cod
         <p>The CSS styles we"d like to apply to the documentation.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre><div class="highlight"><pre><span class="n">pocco_styles</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span>
-                              <span class="s">&quot;resources/pocco.css&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></pre></div></pre></div>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">pycco_styles</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span>
+                              <span class="s">&quot;resources/pycco.css&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></pre></div></pre></div>
       </td>
     </tr><tr id='section-21'>
       <td class=docs>
@@ -393,8 +394,8 @@ For each source file passed in as an argument, generate the documentation.</p>
     <span class="n">sources</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">sources</span><span class="p">:</span>
         <span class="n">ensure_directory</span><span class="p">()</span>
-        <span class="n">css</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;docs/pocco.css&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
-        <span class="n">css</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pocco_styles</span><span class="p">)</span>
+        <span class="n">css</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;docs/pycco.css&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">css</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pycco_styles</span><span class="p">)</span>
         <span class="n">css</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="k">def</span> <span class="nf">next_file</span><span class="p">():</span>
