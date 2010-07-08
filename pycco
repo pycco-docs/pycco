@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 
-# **Pocco** is a Python port of [Docco](http://jashkenas.github.com/docco/ ):
+# **Pycco** is a Python port of [Docco](http://jashkenas.github.com/docco/ ):
 # the original quick-and-dirty, hundred-line-long, literate-programming-style
 # documentation generator. It produces HTML that displays your comments
 # alongside your code. Comments are passed through
 # [Markdown](http://daringfireball.net/projects/markdown/syntax), and code is
 # passed through [Pygments](http://pygments.org/) syntax highlighting.  This
-# page is the result of running Pocco against its own source file.
+# page is the result of running Pycco against its own source file.
 #
-# If you install Pocco, you can run it from the command-line:
+# If you install Pycco, you can run it from the command-line:
 #
-#     pocco src/*.py
+#     pycco src/*.py
 #
 # ...will generate linked HTML documentation for the named source files, saving
 # it into a `docs` folder.
 #
-# To install Pocco, simply
+# To install Pycco, simply
 #
 #     sudo setup.py install
 #
@@ -92,18 +92,18 @@ def highlight(source, sections):
 
 # Once all of the code is finished highlighting, we can generate the HTML file
 # and write out the documentation. Pass the completed sections into the template
-# found in `resources/pocco.html`
+# found in `resources/pycco.html`
 def generate_html(source, sections):
     title = path.basename(source)
     dest = destination(source)
-    html = pocco_template({
+    html = pycco_template({
         "title":       title,
         "sections":    sections,
         "sources":     sources,
         "path":        path,
         "destination": destination
     })
-    print "pocco = %s -> %s" % (source, dest)
+    print "pycco = %s -> %s" % (source, dest)
     fh = open(dest, "w")
     fh.write(html)
     fh.close()
@@ -120,9 +120,9 @@ from os import path
 from pygments import lexers, formatters
 from subprocess import Popen, PIPE
 
-# A list of the languages that Pocco supports, mapping the file extension to
+# A list of the languages that Pycco supports, mapping the file extension to
 # the name of the Pygments lexer and the symbol that indicates a comment. To
-# add another language to Pocco's repertoire, add it here.
+# add another language to Pycco's repertoire, add it here.
 languages = {
     ".coffee": { "name": "coffee-script", "symbol": "#" },
     ".js":     { "name": "javascript",    "symbol": "//" },
@@ -187,13 +187,13 @@ def ensure_directory():
 def template(source):
     return lambda context: pystache.render(source, context)
 
-# Create the template that we will use to generate the Pocco HTML page.
-pocco_template = template(open(path.join(path.dirname(__file__),
-                                         "resources/pocco.html")).read())
+# Create the template that we will use to generate the Pycco HTML page.
+pycco_template = template(open(path.join(path.dirname(__file__),
+                                         "resources/pycco.html")).read())
 
 # The CSS styles we"d like to apply to the documentation.
-pocco_styles = open(path.join(path.dirname(__file__),
-                              "resources/pocco.css")).read()
+pycco_styles = open(path.join(path.dirname(__file__),
+                              "resources/pycco.css")).read()
 
 # The start of each Pygments highlight block.
 highlight_start = "<div class=\"highlight\"><pre>"
@@ -208,8 +208,8 @@ if __name__ == "__main__":
     sources.sort()
     if sources:
         ensure_directory()
-        css = open("docs/pocco.css", "w")
-        css.write(pocco_styles)
+        css = open("docs/pycco.css", "w")
+        css.write(pycco_styles)
         css.close()
 
         def next_file():
