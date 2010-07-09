@@ -188,6 +188,16 @@ found in <code>resources/pycco.html</code></p>
         <div class="octowrap">
           <a class="octothorpe" href="#section-8">#</a>
         </div>
+        <p>This module contains all of our static resources.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pycco_resources</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-9'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-9">#</a>
+        </div>
         <p>Import our external dependencies.</p>
       </td>
       <td class=code>
@@ -200,10 +210,10 @@ found in <code>resources/pycco.html</code></p>
 <span class="kn">from</span> <span class="nn">pygments</span> <span class="kn">import</span> <span class="n">lexers</span><span class="p">,</span> <span class="n">formatters</span>
 <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-9'>
+    </tr><tr id='section-10'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-9">#</a>
+          <a class="octothorpe" href="#section-10">#</a>
         </div>
         <p>A list of the languages that Pycco supports, mapping the file extension to
 the name of the Pygments lexer and the symbol that indicates a comment. To
@@ -219,30 +229,30 @@ add another language to Pycco's repertoire, add it here.</p>
     <span class="s">&quot;.lua&quot;</span><span class="p">:</span>    <span class="p">{</span> <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="s">&quot;lua&quot;</span><span class="p">,</span>           <span class="s">&quot;symbol&quot;</span><span class="p">:</span> <span class="s">&quot;--&quot;</span> <span class="p">},</span>
 <span class="p">}</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-10'>
+    </tr><tr id='section-11'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-10">#</a>
+          <a class="octothorpe" href="#section-11">#</a>
         </div>
         <p>Build out the appropriate matchers and delimiters for each language.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre><div class="highlight"><pre><span class="k">for</span> <span class="n">ext</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">languages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-11'>
+    </tr><tr id='section-12'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-11">#</a>
+          <a class="octothorpe" href="#section-12">#</a>
         </div>
         <p>Does the line begin with a comment?</p>
       </td>
       <td class=code>
         <div class='highlight'><pre><div class="highlight"><pre>    <span class="n">l</span><span class="p">[</span><span class="s">&quot;comment_matcher&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&quot;^\s*&quot;</span> <span class="o">+</span> <span class="n">l</span><span class="p">[</span><span class="s">&quot;symbol&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;\s?&quot;</span><span class="p">)</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-12'>
+    </tr><tr id='section-13'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-12">#</a>
+          <a class="octothorpe" href="#section-13">#</a>
         </div>
         <p>The dividing token we feed into Pygments, to delimit the boundaries between
 sections.</p>
@@ -250,10 +260,10 @@ sections.</p>
       <td class=code>
         <div class='highlight'><pre><div class="highlight"><pre>    <span class="n">l</span><span class="p">[</span><span class="s">&quot;divider_text&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">l</span><span class="p">[</span><span class="s">&quot;symbol&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;DIVIDER</span><span class="se">\n</span><span class="s">&quot;</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-13'>
+    </tr><tr id='section-14'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-13">#</a>
+          <a class="octothorpe" href="#section-14">#</a>
         </div>
         <p>The mirror of <code>divider_text</code> that we expect Pygments to return. We can split
 on this to recover the original sections.</p>
@@ -261,20 +271,20 @@ on this to recover the original sections.</p>
       <td class=code>
         <div class='highlight'><pre><div class="highlight"><pre>    <span class="n">l</span><span class="p">[</span><span class="s">&quot;divider_html&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\n*&lt;span class=&quot;c[1]?&quot;&gt;&#39;</span> <span class="o">+</span> <span class="n">l</span><span class="p">[</span><span class="s">&quot;symbol&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;DIVIDER&lt;/span&gt;</span><span class="se">\n</span><span class="s">*&#39;</span><span class="p">)</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-14'>
+    </tr><tr id='section-15'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-14">#</a>
+          <a class="octothorpe" href="#section-15">#</a>
         </div>
         <p>Get the Pygments Lexer for this language.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre><div class="highlight"><pre>    <span class="n">l</span><span class="p">[</span><span class="s">&quot;lexer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lexers</span><span class="o">.</span><span class="n">get_lexer_by_name</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="s">&quot;name&quot;</span><span class="p">])</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-15'>
+    </tr><tr id='section-16'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-15">#</a>
+          <a class="octothorpe" href="#section-16">#</a>
         </div>
         <p>Get the current language we're documenting, based on the extension.</p>
       </td>
@@ -293,10 +303,10 @@ on this to recover the original sections.</p>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Can&#39;t figure out the language!&quot;</span><span class="p">)</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-16'>
+    </tr><tr id='section-17'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-16">#</a>
+          <a class="octothorpe" href="#section-17">#</a>
         </div>
         <p>Compute the destination HTML path for an input source file path. If the source
 is <code>lib/example.py</code>, the HTML will be at <code>docs/example.html</code></p>
@@ -309,10 +319,10 @@ is <code>lib/example.py</code>, the HTML will be at <code>docs/example.html</cod
         <span class="n">name</span> <span class="o">=</span> <span class="n">filepath</span>
     <span class="k">return</span> <span class="s">&quot;docs/&quot;</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.html&quot;</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-17'>
+    </tr><tr id='section-18'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-17">#</a>
+          <a class="octothorpe" href="#section-18">#</a>
         </div>
         <p>Shift items off the front of the <code>list</code> until it is empty, then return
 <code>default</code>.</p>
@@ -324,10 +334,10 @@ is <code>lib/example.py</code>, the HTML will be at <code>docs/example.html</cod
     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-18'>
+    </tr><tr id='section-19'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-18">#</a>
+          <a class="octothorpe" href="#section-19">#</a>
         </div>
         <p>Ensure that the destination directory exists.</p>
       </td>
@@ -338,52 +348,50 @@ is <code>lib/example.py</code>, the HTML will be at <code>docs/example.html</cod
 <span class="k">def</span> <span class="nf">template</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
     <span class="k">return</span> <span class="k">lambda</span> <span class="n">context</span><span class="p">:</span> <span class="n">pystache</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span></pre></div></pre></div>
       </td>
-    </tr><tr id='section-19'>
-      <td class=docs>
-        <div class="octowrap">
-          <a class="octothorpe" href="#section-19">#</a>
-        </div>
-        <p>Create the template that we will use to generate the Pycco HTML page.</p>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre><div class="highlight"><pre><span class="n">pycco_template</span> <span class="o">=</span> <span class="n">template</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span>
-                                         <span class="s">&quot;resources/pycco.html&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">())</span></pre></div></pre></div>
-      </td>
     </tr><tr id='section-20'>
       <td class=docs>
         <div class="octowrap">
           <a class="octothorpe" href="#section-20">#</a>
         </div>
-        <p>The CSS styles we"d like to apply to the documentation.</p>
+        <p>Create the template that we will use to generate the Pycco HTML page.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre><div class="highlight"><pre><span class="n">pycco_styles</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span>
-                              <span class="s">&quot;resources/pycco.css&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></pre></div></pre></div>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">pycco_template</span> <span class="o">=</span> <span class="n">template</span><span class="p">(</span><span class="n">pycco_resources</span><span class="o">.</span><span class="n">html</span><span class="p">)</span></pre></div></pre></div>
       </td>
     </tr><tr id='section-21'>
       <td class=docs>
         <div class="octowrap">
           <a class="octothorpe" href="#section-21">#</a>
         </div>
-        <p>The start of each Pygments highlight block.</p>
+        <p>The CSS styles we"d like to apply to the documentation.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre><div class="highlight"><pre><span class="n">highlight_start</span> <span class="o">=</span> <span class="s">&quot;&lt;div class=</span><span class="se">\&quot;</span><span class="s">highlight</span><span class="se">\&quot;</span><span class="s">&gt;&lt;pre&gt;&quot;</span></pre></div></pre></div>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">pycco_styles</span> <span class="o">=</span> <span class="n">pycco_resources</span><span class="o">.</span><span class="n">css</span></pre></div></pre></div>
       </td>
     </tr><tr id='section-22'>
       <td class=docs>
         <div class="octowrap">
           <a class="octothorpe" href="#section-22">#</a>
         </div>
-        <p>The end of each Pygments highlight block.</p>
+        <p>The start of each Pygments highlight block.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre><div class="highlight"><pre><span class="n">highlight_end</span> <span class="o">=</span> <span class="s">&quot;&lt;/pre&gt;&lt;/div&gt;&quot;</span></pre></div></pre></div>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">highlight_start</span> <span class="o">=</span> <span class="s">&quot;&lt;div class=</span><span class="se">\&quot;</span><span class="s">highlight</span><span class="se">\&quot;</span><span class="s">&gt;&lt;pre&gt;&quot;</span></pre></div></pre></div>
       </td>
     </tr><tr id='section-23'>
       <td class=docs>
         <div class="octowrap">
           <a class="octothorpe" href="#section-23">#</a>
+        </div>
+        <p>The end of each Pygments highlight block.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><div class="highlight"><pre><span class="n">highlight_end</span> <span class="o">=</span> <span class="s">&quot;&lt;/pre&gt;&lt;/div&gt;&quot;</span></pre></div></pre></div>
+      </td>
+    </tr><tr id='section-24'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-24">#</a>
         </div>
         <p>Run the script.
 For each source file passed in as an argument, generate the documentation.</p>
