@@ -7,4 +7,5 @@ setup(name="Pycco",
       author="Nick Fitzgerald",
       author_email="fitzgen@gmail.com",
       url="http://fitzgen.github.com/pocco",
+      packages=["pycco_resources"],
       scripts=["pycco"])
