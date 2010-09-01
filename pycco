@@ -70,6 +70,15 @@ def parse(source, code):
     save(docs_text, code_text)
     return sections
 
+def preprocess(comment):
+# Add cross-references before having the text processed by markdown.
+# It's possible to reference another file, like this : [[file]] or a specific function of
+# another file, like this: [[file#func]]
+	def repl(match):
+		return "[%s](%s)" % (match.group(1), destination(match.group(1)))
+
+	return re.sub('\[\[(.+)\]\]', repl, comment) 
+
 # Highlights a single chunk of code using the **Pygments** module, and runs the
 # text of its corresponding comment through **Markdown**.
 #
@@ -87,7 +96,7 @@ def highlight(source, sections):
     fragments = re.split(language["divider_html"], output)
     for i, section in enumerate(sections):
         section["code_html"] = highlight_start + shift(fragments, "") + highlight_end
-        section["docs_html"] = markdown(section["docs_text"])
+        section["docs_html"] = markdown(preprocess(section["docs_text"]))
         section["num"] = i
 
 # Once all of the code is finished highlighting, we can generate the HTML file
