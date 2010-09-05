@@ -70,6 +70,35 @@ def parse(source, code):
     save(docs_text, code_text)
     return sections
 
+# === Preprocessing the comments ===
+#
+# Add cross-references before having the text processed by markdown.
+# It's possible to reference another file, like this : [[pycco.py]] or a specific section of
+# another file, like this: [[pycco.py#Highlighting]]. Of course, sections have to be manually declared before,
+# A section name is written on a single line, and surrounded by equals signs, === like this === 
+def preprocess(comment, section_nr):
+	def sanitize_section_name(name):
+		return name.strip().split(" ")[0]
+
+	def replace_crossref(match):
+		# Check if the match contains an anchor
+		if '#' in match.group(1):
+			name, anchor = match.group(1).split('#')
+			return "[%s](%s#%s)" % (name, path.basename(destination(name)), anchor)
+
+		else:
+			return "[%s](%s)" % (match.group(1), path.basename(destination(match.group(1))))
+
+	def replace_section_name(match):
+		return '<a name="%s">*%s*</a>' % (sanitize_section_name(match.group(1)), match.group(1))
+
+	comment = re.sub('===(.+)===\\n', replace_section_name, comment) 
+	comment = re.sub('\[\[(.+)\]\]', replace_crossref, comment) 
+
+	return comment
+
+# === Highlighting the source code ===
+#
 # Highlights a single chunk of code using the **Pygments** module, and runs the
 # text of its corresponding comment through **Markdown**.
 #
@@ -87,9 +116,10 @@ def highlight(source, sections):
     fragments = re.split(language["divider_html"], output)
     for i, section in enumerate(sections):
         section["code_html"] = highlight_start + shift(fragments, "") + highlight_end
-        section["docs_html"] = markdown(section["docs_text"])
+        section["docs_html"] = markdown(preprocess(section["docs_text"], i))
         section["num"] = i
 
+# === HTML Code generation ===
 # Once all of the code is finished highlighting, we can generate the HTML file
 # and write out the documentation. Pass the completed sections into the template
 # found in `resources/pycco.html`
@@ -127,7 +157,7 @@ from subprocess import Popen, PIPE
 # the name of the Pygments lexer and the symbol that indicates a comment. To
 # add another language to Pycco's repertoire, add it here.
 languages = {
-    ".coffee": { "name": "coffee-script", "symbol": "#" },
+#    ".coffee": { "name": "coffee-script", "symbol": "#" },
     ".js":     { "name": "javascript",    "symbol": "//" },
     ".rb":     { "name": "ruby",          "symbol": "#" },
     ".py":     { "name": "python",        "symbol": "#" },
