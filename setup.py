@@ -8,4 +8,5 @@ setup(name="Pycco",
       author_email="fitzgen@gmail.com",
       url="http://fitzgen.github.com/pocco",
       packages=["pycco_resources"],
-      scripts=["pycco"])
+      scripts=["pycco"], 
+      install_requires = ['markdown', 'pygments', 'pystache'])
