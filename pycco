@@ -135,7 +135,7 @@ def generate_html(source, sections):
     })
     print "pycco = %s -> %s" % (source, dest)
     fh = open(dest, "w")
-    fh.write(html)
+    fh.write(html.encode(getpreferredencoding()))
     fh.close()
 
 #### Helpers & Setup
@@ -152,6 +152,7 @@ from markdown import markdown
 from os import path
 from pygments import lexers, formatters
 from subprocess import Popen, PIPE
+from locale import getpreferredencoding
 
 # A list of the languages that Pycco supports, mapping the file extension to
 # the name of the Pygments lexer and the symbol that indicates a comment. To
