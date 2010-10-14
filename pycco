@@ -52,6 +52,12 @@ def parse(source, code):
     if lines[0].startswith("#!"):
         lines.pop(0)
 
+    if language["name"] == "python":
+        for linenum in range(2):
+            if re.search(r'coding[:=]\s*([-\w.]+)', lines[linenum]):
+                lines.pop(linenum)
+                break
+
     def save(docs, code):
         sections.append({
             "docs_text": docs,
