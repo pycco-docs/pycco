@@ -192,7 +192,7 @@ html = """\
 <head>
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
   <title>{{ title }}</title>
-  <link rel="stylesheet" href="pycco.css">
+  <link rel="stylesheet" href="{{ stylesheet }}">
 </head>
 <body>
 <div id='container'>
