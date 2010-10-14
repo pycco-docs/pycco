@@ -25,12 +25,12 @@
 # Generate the documentation for a source file by reading it in, splitting it
 # up into comment/code sections, highlighting them for the appropriate language,
 # and merging them into an HTML template.
-def generate_documentation(source):
+def generate_documentation(source, options):
     fh = open(source, "r")
     sections = parse(source, fh.read())
     highlight(source,
               sections)
-    generate_html(source, sections)
+    generate_html(source, sections, options=options)
 
 # Given a string of source code, parse out each comment and the code that
 # follows it, and create an individual **section** for it.
@@ -129,17 +129,22 @@ def highlight(source, sections):
 # Once all of the code is finished highlighting, we can generate the HTML file
 # and write out the documentation. Pass the completed sections into the template
 # found in `resources/pycco.html`
-def generate_html(source, sections):
+def generate_html(source, sections, options):
     title = path.basename(source)
-    dest = destination(source)
+    dest = destination(source, preserve_paths=options.paths)
     html = pycco_template({
         "title":       title,
+        "stylesheet":  path.relpath('docs/pycco.css', path.split(dest)[0]),
         "sections":    sections,
         "sources":     sources,
         "path":        path,
         "destination": destination
     })
     print "pycco = %s -> %s" % (source, dest)
+    try:
+        os.makedirs(path.split(dest)[0])
+    except OSError:
+        pass
     fh = open(dest, "w")
     fh.write(html.encode(getpreferredencoding()))
     fh.close()
@@ -150,6 +155,8 @@ def generate_html(source, sections):
 import pycco_resources
 
 # Import our external dependencies.
+import optparse
+import os
 import pygments
 import pystache
 import re
@@ -205,12 +212,14 @@ def get_language(source):
 
 # Compute the destination HTML path for an input source file path. If the source
 # is `lib/example.py`, the HTML will be at `docs/example.html`
-def destination(filepath):
+def destination(filepath, preserve_paths=False):
     try:
         name = filepath.replace(filepath[ filepath.rindex("."): ], "")
     except ValueError:
         name = filepath
-    return "docs/" + path.basename(name) + ".html"
+    if not preserve_paths:
+        name = path.basename(name)
+    return "docs/%s.html" % name
 
 # Shift items off the front of the `list` until it is empty, then return
 # `default`.
@@ -242,7 +251,10 @@ highlight_end = "</pre></div>"
 # Run the script.
 # For each source file passed in as an argument, generate the documentation.
 if __name__ == "__main__":
-    sources = list(sys.argv[1:])
+    parser = optparse.OptionParser()
+    parser.add_option('-p', '--paths', action='store_true',
+                      help='Preserve path structure of original files')
+    opts, sources = parser.parse_args()
     sources.sort()
     if sources:
         ensure_directory()
@@ -251,7 +263,7 @@ if __name__ == "__main__":
         css.close()
 
         def next_file():
-            generate_documentation(sources.pop(0))
+            generate_documentation(sources.pop(0), options=opts)
             if sources:
                 next_file()
         next_file()
