@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name="Pycco",
-      version="0.1.1",
+      version="0.1.2",
       description="""A Python port of Docco: the original quick-and-dirty, hundred-line-long,
       literate-programming-style documentation generator.""",
       author="Nick Fitzgerald",
