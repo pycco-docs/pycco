@@ -122,7 +122,11 @@ def highlight(source, sections):
     fragments = re.split(language["divider_html"], output)
     for i, section in enumerate(sections):
         section["code_html"] = highlight_start + shift(fragments, "") + highlight_end
-        section["docs_html"] = markdown(preprocess(section["docs_text"], i))
+        try:
+            docs_text = unicode(section["docs_text"])
+        except UnicodeError:
+            docs_text = unicode(section["docs_text"].decode('utf-8'))
+        section["docs_html"] = markdown(preprocess(docs_text, i))
         section["num"] = i
 
 # === HTML Code generation ===
