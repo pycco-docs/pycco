@@ -6,7 +6,7 @@ setup(name="Pycco",
       literate-programming-style documentation generator.""",
       author="Nick Fitzgerald",
       author_email="fitzgen@gmail.com",
-      url="http://fitzgen.github.com/pocco",
+      url="http://fitzgen.github.com/pycco",
       packages=["pycco_resources"],
       scripts=["pycco"],
       install_requires = ['markdown', 'pygments', 'pystache'])
