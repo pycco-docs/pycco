@@ -81,7 +81,7 @@ def parse(source, code):
 # Add cross-references before having the text processed by markdown.
 # It's possible to reference another file, like this : [[pycco.py]] or a specific section of
 # another file, like this: [[pycco.py#Highlighting]]. Of course, sections have to be manually declared before,
-# A section name is written on a single line, and surrounded by equals signs, === like this === 
+# A section name is written on a single line, and surrounded by equals signs, === like this ===
 def preprocess(comment, section_nr):
 	def sanitize_section_name(name):
 		return name.strip().split(" ")[0]
@@ -98,8 +98,8 @@ def preprocess(comment, section_nr):
 	def replace_section_name(match):
 		return '<a name="%s">*%s*</a>' % (sanitize_section_name(match.group(1)), match.group(1))
 
-	comment = re.sub('===(.+)===\\n', replace_section_name, comment) 
-	comment = re.sub('\[\[(.+)\]\]', replace_crossref, comment) 
+	comment = re.sub('===(.+)===\\n', replace_section_name, comment)
+	comment = re.sub('\[\[(.+)\]\]', replace_crossref, comment)
 
 	return comment
 
