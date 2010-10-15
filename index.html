@@ -137,7 +137,7 @@ Sections take the form:</p>
 Add cross-references before having the text processed by markdown.
 It's possible to reference another file, like this : <a href="pycco.html">pycco.py</a> or a specific section of
 another file, like this: <a href="pycco.html#Highlighting">pycco.py</a>. Of course, sections have to be manually declared before,
-A section name is written on a single line, and surrounded by equals signs, === like this === </p>
+A section name is written on a single line, and surrounded by equals signs, <a name="like"><em> like this </em></a></p>
       </td>
       <td class=code>
         <div class='highlight'><pre><div class="highlight"><pre><span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="n">comment</span><span class="p">,</span> <span class="n">section_nr</span><span class="p">):</span>
@@ -164,8 +164,8 @@ A section name is written on a single line, and surrounded by equals signs, === 
 	<span class="k">def</span> <span class="nf">replace_section_name</span><span class="p">(</span><span class="n">match</span><span class="p">):</span>
 		<span class="k">return</span> <span class="s">&#39;&lt;a name=&quot;</span><span class="si">%s</span><span class="s">&quot;&gt;*</span><span class="si">%s</span><span class="s">*&lt;/a&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sanitize_section_name</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
-	<span class="n">comment</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39;===(.+)===</span><span class="se">\\</span><span class="s">n&#39;</span><span class="p">,</span> <span class="n">replace_section_name</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span> 
-	<span class="n">comment</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39;\[\[(.+)\]\]&#39;</span><span class="p">,</span> <span class="n">replace_crossref</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span> 
+	<span class="n">comment</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39;===(.+)===</span><span class="se">\\</span><span class="s">n&#39;</span><span class="p">,</span> <span class="n">replace_section_name</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span>
+	<span class="n">comment</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39;\[\[(.+)\]\]&#39;</span><span class="p">,</span> <span class="n">replace_crossref</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span>
 
 	<span class="k">return</span> <span class="n">comment</span></pre></div></pre></div>
       </td>
@@ -193,7 +193,11 @@ wherever our markers occur.</p>
     <span class="n">fragments</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">language</span><span class="p">[</span><span class="s">&quot;divider_html&quot;</span><span class="p">],</span> <span class="n">output</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">section</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sections</span><span class="p">):</span>
         <span class="n">section</span><span class="p">[</span><span class="s">&quot;code_html&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">highlight_start</span> <span class="o">+</span> <span class="n">shift</span><span class="p">(</span><span class="n">fragments</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">highlight_end</span>
-        <span class="n">section</span><span class="p">[</span><span class="s">&quot;docs_html&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">markdown</span><span class="p">(</span><span class="n">preprocess</span><span class="p">(</span><span class="n">section</span><span class="p">[</span><span class="s">&quot;docs_text&quot;</span><span class="p">],</span> <span class="n">i</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">docs_text</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">section</span><span class="p">[</span><span class="s">&quot;docs_text&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">UnicodeError</span><span class="p">:</span>
+            <span class="n">docs_text</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">section</span><span class="p">[</span><span class="s">&quot;docs_text&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="n">section</span><span class="p">[</span><span class="s">&quot;docs_html&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">markdown</span><span class="p">(</span><span class="n">preprocess</span><span class="p">(</span><span class="n">docs_text</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
         <span class="n">section</span><span class="p">[</span><span class="s">&quot;num&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span></pre></div></pre></div>
       </td>
     </tr><tr id='section-8'>
