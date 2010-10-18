@@ -58,21 +58,49 @@ def parse(source, code):
                 lines.pop(linenum)
                 break
 
+
     def save(docs, code):
         sections.append({
             "docs_text": docs,
             "code_text": code
         })
 
+    multi_line = False
+    multi_line_delimeters = ['"""', "'''"]
     for line in lines:
-        if re.match(language["comment_matcher"], line):
+
+        if any([delim in line.strip() for delim in multi_line_delimeters]):
+            if not multi_line:
+                multi_line = True
+
+            else:
+                multi_line = False
+
+            line = re.sub('"""','',line)
+            line = re.sub("'''",'',line)
+            docs_text += line.strip() + '\n'
+            
+            save(docs_text, code_text)
+            code_text = has_code = docs_text = ''
+
+        elif multi_line:
+            docs_text += line.strip() + '\n'
+
+        elif re.match(language["comment_matcher"], line):
             if has_code:
                 save(docs_text, code_text)
                 has_code = docs_text = code_text = ''
             docs_text += re.sub(language["comment_matcher"], "", line) + "\n"
+
         else:
+            if docs_text:
+                save(docs_text, code_text)
+                code_text = has_code = docs_text = ''
+
             has_code = True
             code_text += line + '\n'
+
+
     save(docs_text, code_text)
     return sections
 
