@@ -69,7 +69,7 @@ def parse(source, code):
     multi_line_delimeters = ['"""', "'''"]
     for line in lines:
 
-        if any([delim in line.strip() for delim in multi_line_delimeters]):
+        if any([line.lstrip().startswith(delim) for delim in multi_line_delimeters]):
             if not multi_line:
                 multi_line = True
 
@@ -98,7 +98,7 @@ def parse(source, code):
             docs_text += re.sub(language["comment_matcher"], "", line) + "\n"
 
         else:
-            if code_text and any([x in line for x in ['class ', 'def ']]):
+            if code_text and any([line.lstrip().startswith(x) for x in ['class ', 'def ']]):
                 save(docs_text, code_text)
                 code_text = has_code = docs_text = ''
 
