@@ -87,7 +87,6 @@ def parse(source, code):
             docs_text += line.strip() + '\n'
             
             if has_code and docs_text.strip():
-                print ("delim has code", docs_text, code_text)
                 save(docs_text, code_text[:-1])
                 code_text = code_text.split('\n')[-1]
                 last_scope = 0
@@ -118,7 +117,6 @@ def parse(source, code):
 
         elif re.match(language["comment_matcher"], line):
             if has_code:
-                print ("re match", docs_text, code_text)
                 save(docs_text, code_text)
                 has_code = docs_text = code_text = ''
             docs_text += re.sub(language["comment_matcher"], "", line) + "\n"
