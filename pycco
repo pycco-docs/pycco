@@ -203,12 +203,16 @@ from locale import getpreferredencoding
 # the name of the Pygments lexer and the symbol that indicates a comment. To
 # add another language to Pycco's repertoire, add it here.
 languages = {
-#    ".coffee": { "name": "coffee-script", "symbol": "#" },
-    ".js":     { "name": "javascript",    "symbol": "//" },
-    ".rb":     { "name": "ruby",          "symbol": "#" },
-    ".py":     { "name": "python",        "symbol": "#" },
-    ".scm":    { "name": "scheme",        "symbol": ";;" },
-    ".lua":    { "name": "lua",           "symbol": "--" },
+    ".coffee": { "name": "coffee-script", "symbol": "#" },
+    ".js":  { "name": "javascript", "symbol": "//" },
+    ".rb":  { "name": "ruby", "symbol": "#" },
+    ".py":  { "name": "python", "symbol": "#" },
+    ".pl":  { "name": "perl", "symbol": "#" },
+    ".scm": { "name": "scheme", "symbol": ";;" },
+    ".lua": { "name": "lua", "symbol": "--" },
+    ".sql": { "name": "sql", "symbol": "--" },
+    ".c":   { "name": "c", "symbol": "//"},
+    ".cpp": { "name": "cpp", "symbol": "//"},
 }
 
 # Build out the appropriate matchers and delimiters for each language.
