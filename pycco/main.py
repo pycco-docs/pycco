@@ -168,7 +168,7 @@ def generate_html(source, sections, options):
         "title":       title,
         "stylesheet":  path.relpath('docs/pycco.css', path.split(dest)[0]),
         "sections":    sections,
-        "sources":     sources,
+        "source":     source,
         "path":        path,
         "destination": destination
     })
@@ -281,13 +281,9 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-# Run the script.
+# The bulk of the work is done here
 # For each source file passed in as an argument, generate the documentation.
-if __name__ == "__main__":
-    parser = optparse.OptionParser()
-    parser.add_option('-p', '--paths', action='store_true',
-                      help='Preserve path structure of original files')
-    opts, sources = parser.parse_args()
+def process(sources, options=None):
     sources.sort()
     if sources:
         ensure_directory()
@@ -296,7 +292,22 @@ if __name__ == "__main__":
         css.close()
 
         def next_file():
-            generate_documentation(sources.pop(0), options=opts)
+            generate_documentation(sources.pop(0), options)
             if sources:
                 next_file()
         next_file()
+
+
+# Hook spot for the console script
+def main():
+    parser = optparse.OptionParser()
+    parser.add_option('-p', '--paths', action='store_true',
+                      help='Preserve path structure of original files')
+
+    opts, sources = parser.parse_args()
+    process(sources, opts)
+
+# Run the script.
+if __name__ == "__main__":
+    main()
+ 
