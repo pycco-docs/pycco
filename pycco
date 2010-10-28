@@ -267,7 +267,8 @@ def shift(list, default):
 
 # Ensure that the destination directory exists.
 def ensure_directory():
-    Popen(["mkdir", "-p", "docs"]).wait()
+    if not os.path.isdir("docs"):
+        os.mkdir("docs")
 
 def template(source):
     return lambda context: pystache.render(source, context)
