@@ -83,25 +83,25 @@ def parse(source, code):
 # another file, like this: [[pycco.py#Highlighting]]. Of course, sections have to be manually declared before,
 # A section name is written on a single line, and surrounded by equals signs, === like this ===
 def preprocess(comment, section_nr):
-	def sanitize_section_name(name):
-		return name.strip().split(" ")[0]
+    def sanitize_section_name(name):
+        return name.strip().split(" ")[0]
 
-	def replace_crossref(match):
-		# Check if the match contains an anchor
-		if '#' in match.group(1):
-			name, anchor = match.group(1).split('#')
-			return "[%s](%s#%s)" % (name, path.basename(destination(name)), anchor)
+    def replace_crossref(match):
+        # Check if the match contains an anchor
+        if '#' in match.group(1):
+            name, anchor = match.group(1).split('#')
+            return "[%s](%s#%s)" % (name, path.basename(destination(name)), anchor)
 
-		else:
-			return "[%s](%s)" % (match.group(1), path.basename(destination(match.group(1))))
+        else:
+            return "[%s](%s)" % (match.group(1), path.basename(destination(match.group(1))))
 
-	def replace_section_name(match):
-		return '<a name="%s">*%s*</a>' % (sanitize_section_name(match.group(1)), match.group(1))
+    def replace_section_name(match):
+        return '<a name="%s">*%s*</a>' % (sanitize_section_name(match.group(1)), match.group(1))
 
-	comment = re.sub('===(.+)===\\n', replace_section_name, comment)
-	comment = re.sub('\[\[(.+)\]\]', replace_crossref, comment)
+    comment = re.sub('===(.+)===\\n', replace_section_name, comment)
+    comment = re.sub('\[\[(.+)\]\]', replace_crossref, comment)
 
-	return comment
+    return comment
 
 # === Highlighting the source code ===
 #
@@ -251,13 +251,9 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-# Run the script.
+# The bulk of the work is done here
 # For each source file passed in as an argument, generate the documentation.
-if __name__ == "__main__":
-    parser = optparse.OptionParser()
-    parser.add_option('-p', '--paths', action='store_true',
-                      help='Preserve path structure of original files')
-    opts, sources = parser.parse_args()
+def process(sources, options=None):
     sources.sort()
     if sources:
         ensure_directory()
@@ -266,7 +262,22 @@ if __name__ == "__main__":
         css.close()
 
         def next_file():
-            generate_documentation(sources.pop(0), options=opts)
+            generate_documentation(sources.pop(0), options)
             if sources:
                 next_file()
         next_file()
+
+
+# Hook spot for the console script
+def main():
+    parser = optparse.OptionParser()
+    parser.add_option('-p', '--paths', action='store_true',
+                      help='Preserve path structure of original files')
+
+    opts, sources = parser.parse_args()
+    process(sources, opts)
+
+# Run the script.
+if __name__ == "__main__":
+    main()
+
