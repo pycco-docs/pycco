@@ -140,7 +140,7 @@ def generate_html(source, sections, options):
         "title":       title,
         "stylesheet":  path.relpath('docs/pycco.css', path.split(dest)[0]),
         "sections":    sections,
-        "sources":     sources,
+        "sources":     source,
         "path":        path,
         "destination": destination
     })
