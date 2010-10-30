@@ -150,7 +150,7 @@ def generate_html(source, sections, options):
     except OSError:
         pass
     fh = open(dest, "w")
-    fh.write(html.encode(getpreferredencoding()))
+    fh.write(html.encode("utf-8"))
     fh.close()
 
 #### Helpers & Setup
