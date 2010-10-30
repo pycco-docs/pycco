@@ -168,8 +168,6 @@ import sys
 from markdown import markdown
 from os import path
 from pygments import lexers, formatters
-from subprocess import Popen, PIPE
-from locale import getpreferredencoding
 
 # A list of the languages that Pycco supports, mapping the file extension to
 # the name of the Pygments lexer and the symbol that indicates a comment. To
