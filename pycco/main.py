@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+__all__ = ("process",)
+
 # **Pycco** is a Python port of [Docco](http://jashkenas.github.com/docco/ ):
 # the original quick-and-dirty, hundred-line-long, literate-programming-style
 # documentation generator. It produces HTML that displays your comments
