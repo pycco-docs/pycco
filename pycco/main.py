@@ -155,6 +155,28 @@ def generate_html(source, sections, options):
     fh.write(html.encode("utf-8"))
     fh.close()
 
+# === Embeddable HTML Code generation ===
+# Once all of the code is finished highlighting, we can generate the embeddable HTML.
+def generate_embeddable_documentation(source, options):
+    fh = open(source, "r")
+    sections = parse(source, fh.read())
+    highlight(source, sections, options)
+    generate_embeddable_html(source, sections, options=options)
+
+def generate_embeddable_html(source, sections, options):
+    title = path.basename(source)
+    dest = destination(source, options)
+    html = pycco_embed_template({
+        "sections":    sections,
+        "sources":     source,
+        "path":        path,
+        "destination": destination
+    })
+    return html.encode("utf-8")
+
+
+
+
 #### Helpers & Setup
 
 # This module contains all of our static resources.
@@ -286,4 +308,3 @@ def main():
 # Run the script.
 if __name__ == "__main__":
     main()
-
