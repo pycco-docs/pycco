@@ -196,7 +196,7 @@ def generate_html(source, sections, options):
     dest = destination(source, options)
     html = pycco_template({
         "title":       title,
-        "stylesheet":  path.relpath(path.join(options.dir, "pycco.css"),
+        "stylesheet":  path.relpath(path.join(options['dir'], "pycco.css"),
                                     path.split(dest)[0]),
         "sections":    sections,
         "source":     source,
@@ -292,14 +292,14 @@ def get_language(source):
 # Compute the destination HTML path for an input source file path. If the source
 # is `lib/example.py`, the HTML will be at `docs/example.html`
 def destination(filepath, options):
-    preserve_paths = options.paths
+    preserve_paths = options['paths']
     try:
         name = filepath.replace(filepath[ filepath.rindex("."): ], "")
     except ValueError:
         name = filepath
     if not preserve_paths:
         name = path.basename(name)
-    return path.join(options.dir, "%s.html" % name)
+    return path.join(options['dir'], "%s.html" % name)
 
 # Shift items off the front of the `list` until it is empty, then return
 # `default`.
@@ -331,11 +331,11 @@ highlight_end = "</pre></div>"
 
 # The bulk of the work is done here
 # For each source file passed in as an argument, generate the documentation.
-def process(sources, options=None):
+def process(sources, options):
     sources.sort()
     if sources:
-        ensure_directory(options.dir)
-        css = open(path.join(options.dir, "pycco.css"), "w")
+        ensure_directory(options['dir'])
+        css = open(path.join(options['dir'], "pycco.css"), "w")
         css.write(pycco_styles)
         css.close()
 
@@ -357,7 +357,7 @@ def main():
                       help='The output directory that the rendered files should go to.')
 
     opts, sources = parser.parse_args()
-    process(sources, opts)
+    process(sources, opts.__dict__)
 
 # Run the script.
 if __name__ == "__main__":
