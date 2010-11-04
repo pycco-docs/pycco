@@ -73,8 +73,8 @@ def parse(source, code):
     for line in lines:
 
         # Only go into multiline comments section when one of the delimeters is
-        # found to be in a line
-        if any([delim in line.strip() for delim in multi_line_delimeters]):
+        # found to be at the start of a line
+        if any([line.lstrip().startswith(delim) for delim in multi_line_delimeters]):
             if not multi_line:
                 multi_line = True
 
@@ -87,7 +87,6 @@ def parse(source, code):
             docs_text += line.strip() + '\n'
             
             if has_code and docs_text.strip():
-                print ("delim has code", docs_text, code_text)
                 save(docs_text, code_text[:-1])
                 code_text = code_text.split('\n')[-1]
                 last_scope = 0
@@ -118,15 +117,14 @@ def parse(source, code):
 
         elif re.match(language["comment_matcher"], line):
             if has_code:
-                print ("re match", docs_text, code_text)
                 save(docs_text, code_text)
                 has_code = docs_text = code_text = ''
             docs_text += re.sub(language["comment_matcher"], "", line) + "\n"
 
         else:
-#            if docs_text:
-#                save(docs_text, code_text)
-#                code_text = has_code = docs_text = ''
+            if code_text and any([line.lstrip().startswith(x) for x in ['class ', 'def ']]):
+                save(docs_text, code_text)
+                code_text = has_code = docs_text = ''
 
             has_code = True
             code_text += line + '\n'
