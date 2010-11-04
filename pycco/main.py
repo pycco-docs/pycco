@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+__all__ = ("process",)
+
 # **Pycco** is a Python port of [Docco](http://jashkenas.github.com/docco/ ):
 # the original quick-and-dirty, hundred-line-long, literate-programming-style
 # documentation generator. It produces HTML that displays your comments
@@ -13,7 +15,7 @@
 #     pycco src/*.py
 #
 # ...will generate linked HTML documentation for the named source files, saving
-# it into a `docs` folder.
+# it into a `docs` folder by default.
 #
 # To install Pycco, simply
 #
@@ -28,8 +30,7 @@
 def generate_documentation(source, options):
     fh = open(source, "r")
     sections = parse(source, fh.read())
-    highlight(source,
-              sections)
+    highlight(source, sections, options)
     generate_html(source, sections, options=options)
 
 # Given a string of source code, parse out each comment and the code that
@@ -85,7 +86,7 @@ def parse(source, code):
             line = re.sub(language["multistart"],'',line)
             line = re.sub(language["multiend"],'',line)
             docs_text += line.strip() + '\n'
-            
+
             if has_code and docs_text.strip():
                 save(docs_text, code_text[:-1])
                 code_text = code_text.split('\n')[-1]
@@ -139,26 +140,26 @@ def parse(source, code):
 # It's possible to reference another file, like this : [[pycco.py]] or a specific section of
 # another file, like this: [[pycco.py#Highlighting]]. Of course, sections have to be manually declared before,
 # A section name is written on a single line, and surrounded by equals signs, === like this ===
-def preprocess(comment, section_nr):
-	def sanitize_section_name(name):
-		return name.strip().split(" ")[0]
+def preprocess(comment, section_nr, options):
+    def sanitize_section_name(name):
+        return name.strip().split(" ")[0]
 
-	def replace_crossref(match):
-		# Check if the match contains an anchor
-		if '#' in match.group(1):
-			name, anchor = match.group(1).split('#')
-			return "[%s](%s#%s)" % (name, path.basename(destination(name)), anchor)
+    def replace_crossref(match):
+        # Check if the match contains an anchor
+        if '#' in match.group(1):
+            name, anchor = match.group(1).split('#')
+            return "[%s](%s#%s)" % (name, path.basename(destination(name, options)), anchor)
 
-		else:
-			return "[%s](%s)" % (match.group(1), path.basename(destination(match.group(1))))
+        else:
+            return "[%s](%s)" % (match.group(1), path.basename(destination(match.group(1), options)))
 
-	def replace_section_name(match):
-		return '<a name="%s">*%s*</a>' % (sanitize_section_name(match.group(1)), match.group(1))
+    def replace_section_name(match):
+        return '<a name="%s">*%s*</a>' % (sanitize_section_name(match.group(1)), match.group(1))
 
-	comment = re.sub('===(.+)===\\n', replace_section_name, comment)
-	comment = re.sub('\[\[(.+)\]\]', replace_crossref, comment)
+    comment = re.sub('===(.+)===\\n', replace_section_name, comment)
+    comment = re.sub('\[\[(.+)\]\]', replace_crossref, comment)
 
-	return comment
+    return comment
 
 # === Highlighting the source code ===
 #
@@ -168,7 +169,7 @@ def preprocess(comment, section_nr):
 # We process the entire file in a single call to Pygments by inserting little
 # marker comments between each section and then splitting the result string
 # wherever our markers occur.
-def highlight(source, sections):
+def highlight(source, sections, options):
     language = get_language(source)
 
     output = pygments.highlight(language["divider_text"].join(section["code_text"] for section in sections),
@@ -183,7 +184,7 @@ def highlight(source, sections):
             docs_text = unicode(section["docs_text"])
         except UnicodeError:
             docs_text = unicode(section["docs_text"].decode('utf-8'))
-        section["docs_html"] = markdown(preprocess(docs_text, i))
+        section["docs_html"] = markdown(preprocess(docs_text, i, options))
         section["num"] = i
 
 # === HTML Code generation ===
@@ -192,10 +193,11 @@ def highlight(source, sections):
 # found in `resources/pycco.html`
 def generate_html(source, sections, options):
     title = path.basename(source)
-    dest = destination(source, preserve_paths=options.paths)
+    dest = destination(source, options)
     html = pycco_template({
         "title":       title,
-        "stylesheet":  path.relpath('docs/pycco.css', path.split(dest)[0]),
+        "stylesheet":  path.relpath(path.join(options.dir, "pycco.css"),
+                                    path.split(dest)[0]),
         "sections":    sections,
         "source":     source,
         "path":        path,
@@ -207,7 +209,7 @@ def generate_html(source, sections, options):
     except OSError:
         pass
     fh = open(dest, "w")
-    fh.write(html.encode(getpreferredencoding()))
+    fh.write(html.encode("utf-8"))
     fh.close()
 
 #### Helpers & Setup
@@ -225,8 +227,6 @@ import sys
 from markdown import markdown
 from os import path
 from pygments import lexers, formatters
-from subprocess import Popen, PIPE
-from locale import getpreferredencoding
 
 # A list of the languages that Pycco supports, mapping the file extension to
 # the name of the Pygments lexer and the symbol that indicates a comment. To
@@ -291,14 +291,15 @@ def get_language(source):
 
 # Compute the destination HTML path for an input source file path. If the source
 # is `lib/example.py`, the HTML will be at `docs/example.html`
-def destination(filepath, preserve_paths=False):
+def destination(filepath, options):
+    preserve_paths = options.paths
     try:
         name = filepath.replace(filepath[ filepath.rindex("."): ], "")
     except ValueError:
         name = filepath
     if not preserve_paths:
         name = path.basename(name)
-    return "docs/%s.html" % name
+    return path.join(options.dir, "%s.html" % name)
 
 # Shift items off the front of the `list` until it is empty, then return
 # `default`.
@@ -309,9 +310,9 @@ def shift(list, default):
         return default
 
 # Ensure that the destination directory exists.
-def ensure_directory():
-    if not os.path.isdir("docs"):
-        os.mkdir("docs")
+def ensure_directory(directory):
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
 
 def template(source):
     return lambda context: pystache.render(source, context)
@@ -333,8 +334,8 @@ highlight_end = "</pre></div>"
 def process(sources, options=None):
     sources.sort()
     if sources:
-        ensure_directory()
-        css = open("docs/pycco.css", "w")
+        ensure_directory(options.dir)
+        css = open(path.join(options.dir, "pycco.css"), "w")
         css.write(pycco_styles)
         css.close()
 
@@ -351,10 +352,14 @@ def main():
     parser.add_option('-p', '--paths', action='store_true',
                       help='Preserve path structure of original files')
 
+    parser.add_option('-d', '--directory', action='store', type='string',
+                      dest='dir', default='docs',
+                      help='The output directory that the rendered files should go to.')
+
     opts, sources = parser.parse_args()
     process(sources, opts)
 
 # Run the script.
 if __name__ == "__main__":
     main()
- 
+
