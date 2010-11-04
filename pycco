@@ -65,10 +65,15 @@ def parse(source, code):
             "code_text": code
         })
 
-    multi_line = False
-    multi_line_delimeters = ['"""', "'''"]
+    # Setup the variables to get ready to check for multiline comments
+    preformatted = multi_line = False
+    last_scope = 0
+    multi_line_delimeters = [language["multistart"], language["multiend"]]
+
     for line in lines:
 
+        # Only go into multiline comments section when one of the delimeters is
+        # found to be in a line
         if any([delim in line.strip() for delim in multi_line_delimeters]):
             if not multi_line:
                 multi_line = True
@@ -76,26 +81,52 @@ def parse(source, code):
             else:
                 multi_line = False
 
-            line = re.sub('"""','',line)
-            line = re.sub("'''",'',line)
+            # Get rid of the delimeters so that they aren't in the final docs
+            line = re.sub(language["multistart"],'',line)
+            line = re.sub(language["multiend"],'',line)
             docs_text += line.strip() + '\n'
             
-            save(docs_text, code_text)
-            code_text = has_code = docs_text = ''
+            if has_code and docs_text.strip():
+                print ("delim has code", docs_text, code_text)
+                save(docs_text, code_text[:-1])
+                code_text = code_text.split('\n')[-1]
+                last_scope = 0
+                has_code = docs_text = ''
 
         elif multi_line:
+            line_striped = line.rstrip()
+            current_scope = line_striped.count("    ")
+
+            # This section will parse if the line is indented at least four
+            # places, and if so know to have the final text treat it as a
+            # preformatted text block.
+            if line_striped.startswith("    ") and last_scope:
+                if current_scope > last_scope and not preformatted:
+                    preformatted = True
+                    docs_text += "<pre>"
+
+            else:
+                if preformatted:
+                    preformatted = False
+                    docs_text += "</pre>"
+
+            # Keep a tracker var to see if the scope increases, that way later
+            # the code can decided if a section is indented more than 4 spaces
+            # from the leading code.
+            last_scope = current_scope if current_scope > last_scope else last_scope
             docs_text += line.strip() + '\n'
 
         elif re.match(language["comment_matcher"], line):
             if has_code:
+                print ("re match", docs_text, code_text)
                 save(docs_text, code_text)
                 has_code = docs_text = code_text = ''
             docs_text += re.sub(language["comment_matcher"], "", line) + "\n"
 
         else:
-            if docs_text:
-                save(docs_text, code_text)
-                code_text = has_code = docs_text = ''
+#            if docs_text:
+#                save(docs_text, code_text)
+#                code_text = has_code = docs_text = ''
 
             has_code = True
             code_text += line + '\n'
@@ -204,15 +235,29 @@ from locale import getpreferredencoding
 # add another language to Pycco's repertoire, add it here.
 languages = {
     ".coffee": { "name": "coffee-script", "symbol": "#" },
-    ".js":  { "name": "javascript", "symbol": "//" },
-    ".rb":  { "name": "ruby", "symbol": "#" },
-    ".py":  { "name": "python", "symbol": "#" },
+
     ".pl":  { "name": "perl", "symbol": "#" },
-    ".scm": { "name": "scheme", "symbol": ";;" },
-    ".lua": { "name": "lua", "symbol": "--" },
+
     ".sql": { "name": "sql", "symbol": "--" },
+
     ".c":   { "name": "c", "symbol": "//"},
+
     ".cpp": { "name": "cpp", "symbol": "//"},
+
+    ".js": { "name": "javascript", "symbol": "//", 
+        "multistart": "/*", "multiend": "*/"},
+
+    ".rb": { "name": "ruby", "symbol": "#",
+        "multistart": "=begin", "multiend": "=end"},
+
+    ".py": { "name": "python", "symbol": "#",  
+        "multistart": '"""', "multiend": '"""' },
+
+    ".scm": { "name": "scheme", "symbol": ";;",
+        "multistart": "#|", "multiend": "|#"},
+
+    ".lua": { "name": "lua", "symbol": "--",
+        "multistart": "--[[", "mutliend": "--]]"},
 }
 
 # Build out the appropriate matchers and delimiters for each language.
