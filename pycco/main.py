@@ -348,7 +348,7 @@ def process(sources, options):
 
 __all__ = ("process", "generate_documentation")
 
-# Hook spot for the console script
+# Hook spot for the console script.
 def main():
     parser = optparse.OptionParser()
     parser.add_option('-p', '--paths', action='store_true',
