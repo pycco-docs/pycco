@@ -30,11 +30,13 @@
 # Generate the documentation for a source file by reading it in, splitting it up
 # into comment/code sections, highlighting them for the appropriate language,
 # and merging them into an HTML template.
-def generate_documentation(source, options):
+def generate_documentation(source, outdir=None, preserve_paths=True):
+    if not outdir:
+        raise TypeError("Missing the required 'outdir' keyword argument.")
     fh = open(source, "r")
     sections = parse(source, fh.read())
-    highlight(source, sections, options)
-    return generate_html(source, sections, options=options)
+    highlight(source, sections, preserve_paths=preserve_paths, outdir=outdir)
+    return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
 
 # Given a string of source code, parse out each comment and the code that
 # follows it, and create an individual **section** for it.
@@ -139,28 +141,43 @@ def parse(source, code):
 
 # === Preprocessing the comments ===
 #
-# Add cross-references before having the text processed by markdown.
-# It's possible to reference another file, like this : [[pycco.py]] or a specific section of
-# another file, like this: [[pycco.py#Highlighting]]. Of course, sections have to be manually declared before,
-# A section name is written on a single line, and surrounded by equals signs, === like this ===
-def preprocess(comment, section_nr, options):
+# Add cross-references before having the text processed by markdown.  It's
+# possible to reference another file, like this : `[[main.py]]` which renders
+# [[main.py]]. You can also reference a specific section of another file, like
+# this: `[[main.py#highlighting-the-source-code]]` which renders as
+# [[main.py#highlighting-the-source-code]]. Sections have to be manually
+# declared; they are written on a single line, and surrounded by equals signs:
+# `=== like this ===`
+def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
+    if not outdir:
+        raise TypeError("Missing the required 'outdir' keyword argument.")
     def sanitize_section_name(name):
-        return name.strip().split(" ")[0]
+        return "-".join(name.lower().strip().split(" "))
 
     def replace_crossref(match):
         # Check if the match contains an anchor
         if '#' in match.group(1):
             name, anchor = match.group(1).split('#')
-            return "[%s](%s#%s)" % (name, path.basename(destination(name, options)), anchor)
+            return " [%s](%s#%s)" % (name,
+                                     path.basename(destination(name,
+                                                               preserve_paths=preserve_paths,
+                                                               outdir=outdir)),
+                                     anchor)
 
         else:
-            return "[%s](%s)" % (match.group(1), path.basename(destination(match.group(1), options)))
+            return " [%s](%s)" % (match.group(1),
+                                  path.basename(destination(match.group(1),
+                                                            preserve_paths=preserve_paths,
+                                                            outdir=outdir)))
 
     def replace_section_name(match):
-        return '<a name="%s">*%s*</a>' % (sanitize_section_name(match.group(1)), match.group(1))
+        return '### <span id="%(id)s" href="%(id)s">%(name)s</span>' % {
+            "id"   : sanitize_section_name(match.group(1)),
+            "name" : match.group(1)
+        }
 
-    comment = re.sub('===(.+)===\\n', replace_section_name, comment)
-    comment = re.sub('\[\[(.+)\]\]', replace_crossref, comment)
+    comment = re.sub('^===(.+)===\\n', replace_section_name, comment)
+    comment = re.sub('[^`]\[\[(.+)\]\]', replace_crossref, comment)
 
     return comment
 
@@ -172,7 +189,9 @@ def preprocess(comment, section_nr, options):
 # We process the entire file in a single call to Pygments by inserting little
 # marker comments between each section and then splitting the result string
 # wherever our markers occur.
-def highlight(source, sections, options):
+def highlight(source, sections, preserve_paths=True, outdir=None):
+    if not outdir:
+        raise TypeError("Missing the required 'outdir' keyword argument.")
     language = get_language(source)
 
     output = pygments.highlight(language["divider_text"].join(section["code_text"] for section in sections),
@@ -187,19 +206,24 @@ def highlight(source, sections, options):
             docs_text = unicode(section["docs_text"])
         except UnicodeError:
             docs_text = unicode(section["docs_text"].decode('utf-8'))
-        section["docs_html"] = markdown(preprocess(docs_text, i, options))
+        section["docs_html"] = markdown(preprocess(docs_text,
+                                                   i,
+                                                   preserve_paths=preserve_paths,
+                                                   outdir=outdir))
         section["num"] = i
 
 # === HTML Code generation ===
 # Once all of the code is finished highlighting, we can generate the HTML file
 # and write out the documentation. Pass the completed sections into the template
 # found in `resources/pycco.html`
-def generate_html(source, sections, options):
+def generate_html(source, sections, preserve_paths=True, outdir=None):
+    if not outdir:
+        raise TypeError("Missing the required 'outdir' keyword argument")
     title = path.basename(source)
-    dest = destination(source, options)
+    dest = destination(source, preserve_paths=preserve_paths, outdir=outdir)
     return pycco_template({
         "title"       : title,
-        "stylesheet"  : path.relpath(path.join(options['dir'], "pycco.css"),
+        "stylesheet"  : path.relpath(path.join(path.dirname(dest), "pycco.css"),
                                      path.split(dest)[0]),
         "sections"    : sections,
         "source"      : source,
@@ -286,15 +310,16 @@ def get_language(source):
 
 # Compute the destination HTML path for an input source file path. If the source
 # is `lib/example.py`, the HTML will be at `docs/example.html`
-def destination(filepath, options):
-    preserve_paths = options['paths']
+def destination(filepath, preserve_paths=True, outdir=None):
+    if not outdir:
+        raise TypeError("Missing the required 'outdir' keyword argument.")
     try:
         name = filepath.replace(filepath[ filepath.rindex("."): ], "")
     except ValueError:
         name = filepath
     if not preserve_paths:
         name = path.basename(name)
-    return path.join(options['dir'], "%s.html" % name)
+    return path.join(outdir, "%s.html" % name)
 
 # Shift items off the front of the `list` until it is empty, then return
 # `default`.
@@ -325,25 +350,28 @@ highlight_start = "<div class=\"highlight\"><pre>"
 highlight_end = "</pre></div>"
 
 # For each source file passed in as an argument, generate the documentation.
-def process(sources, options):
+def process(sources, preserve_paths=True, outdir=None):
+    if not outdir:
+        raise TypeError("Missing the required 'outdir' keyword argument.")
+
     sources.sort()
     if sources:
-        ensure_directory(options['dir'])
-        css = open(path.join(options['dir'], "pycco.css"), "w")
+        ensure_directory(outdir)
+        css = open(path.join(outdir, "pycco.css"), "w")
         css.write(pycco_styles)
         css.close()
 
         def next_file():
             s = sources.pop(0)
-            dest = destination(s, options)
+            dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
 
             try:
                 os.makedirs(path.split(dest)[0])
             except OSError:
                 pass
 
-            with open(destination(s, options), "w") as f:
-                f.write(generate_documentation(s, options))
+            with open(destination(s, preserve_paths=preserve_paths, outdir=outdir), "w") as f:
+                f.write(generate_documentation(s, outdir=outdir))
 
             print "pycco = %s -> %s" % (s, dest)
 
@@ -360,13 +388,12 @@ def main():
                       help='Preserve path structure of original files')
 
     parser.add_option('-d', '--directory', action='store', type='string',
-                      dest='dir', default='docs',
+                      dest='outdir', default='docs',
                       help='The output directory that the rendered files should go to.')
 
     opts, sources = parser.parse_args()
-    process(sources, opts.__dict__)
+    process(sources, outdir=opts.outdir, preserve_paths=opts.paths)
 
 # Run the script.
 if __name__ == "__main__":
     main()
-
