@@ -140,7 +140,7 @@ def parse(source, code):
     return sections
 
 # === Preprocessing the comments ===
-#
+
 # Add cross-references before having the text processed by markdown.  It's
 # possible to reference another file, like this : `[[main.py]]` which renders
 # [[main.py]]. You can also reference a specific section of another file, like
@@ -182,7 +182,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
     return comment
 
 # === Highlighting the source code ===
-#
+
 # Highlights a single chunk of code using the **Pygments** module, and runs the
 # text of its corresponding comment through **Markdown**.
 #
@@ -213,7 +213,7 @@ def highlight(source, sections, preserve_paths=True, outdir=None):
         section["num"] = i
 
 # === HTML Code generation ===
-#
+
 # Once all of the code is finished highlighting, we can generate the HTML file
 # and write out the documentation. Pass the completed sections into the template
 # found in `resources/pycco.html`
@@ -232,7 +232,7 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
         "destination" : destination
     }).encode("utf-8")
 
-#### Helpers & Setup
+# === Helpers & Setup ===
 
 # This module contains all of our static resources.
 import pycco_resources
