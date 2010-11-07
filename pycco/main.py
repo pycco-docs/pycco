@@ -59,21 +59,78 @@ def parse(source, code):
                 lines.pop(linenum)
                 break
 
+
     def save(docs, code):
         sections.append({
             "docs_text": docs,
             "code_text": code
         })
 
+    # Setup the variables to get ready to check for multiline comments
+    preformatted = multi_line = False
+    last_scope = 0
+    multi_line_delimeters = [language["multistart"], language["multiend"]]
+
     for line in lines:
-        if re.match(language["comment_matcher"], line):
+
+        # Only go into multiline comments section when one of the delimeters is
+        # found to be at the start of a line
+        if any([line.lstrip().startswith(delim) for delim in multi_line_delimeters]):
+            if not multi_line:
+                multi_line = True
+
+            else:
+                multi_line = False
+
+            # Get rid of the delimeters so that they aren't in the final docs
+            line = re.sub(language["multistart"],'',line)
+            line = re.sub(language["multiend"],'',line)
+            docs_text += line.strip() + '\n'
+
+            if has_code and docs_text.strip():
+                save(docs_text, code_text[:-1])
+                code_text = code_text.split('\n')[-1]
+                last_scope = 0
+                has_code = docs_text = ''
+
+        elif multi_line:
+            line_striped = line.rstrip()
+            current_scope = line_striped.count("    ")
+
+            # This section will parse if the line is indented at least four
+            # places, and if so know to have the final text treat it as a
+            # preformatted text block.
+            if line_striped.startswith("    ") and last_scope:
+                if current_scope > last_scope and not preformatted:
+                    preformatted = True
+                    docs_text += "<pre>"
+
+            else:
+                if preformatted:
+                    preformatted = False
+                    docs_text += "</pre>"
+
+            # Keep a tracker var to see if the scope increases, that way later
+            # the code can decided if a section is indented more than 4 spaces
+            # from the leading code.
+            last_scope = current_scope if current_scope > last_scope else last_scope
+            docs_text += line.strip() + '\n'
+
+        elif re.match(language["comment_matcher"], line):
             if has_code:
                 save(docs_text, code_text)
                 has_code = docs_text = code_text = ''
             docs_text += re.sub(language["comment_matcher"], "", line) + "\n"
+
         else:
+            if code_text and any([line.lstrip().startswith(x) for x in ['class ', 'def ']]):
+                save(docs_text, code_text)
+                code_text = has_code = docs_text = ''
+
             has_code = True
             code_text += line + '\n'
+
+
     save(docs_text, code_text)
     return sections
 
@@ -139,10 +196,10 @@ def generate_html(source, sections, options):
     dest = destination(source, options)
     html = pycco_template({
         "title":       title,
-        "stylesheet":  path.relpath(path.join(options.dir, "pycco.css"),
+        "stylesheet":  path.relpath(path.join(options['dir'], "pycco.css"),
                                     path.split(dest)[0]),
         "sections":    sections,
-        "sources":     source,
+        "source":     source,
         "path":        path,
         "destination": destination
     })
@@ -175,12 +232,30 @@ from pygments import lexers, formatters
 # the name of the Pygments lexer and the symbol that indicates a comment. To
 # add another language to Pycco's repertoire, add it here.
 languages = {
-#    ".coffee": { "name": "coffee-script", "symbol": "#" },
-    ".js":     { "name": "javascript",    "symbol": "//" },
-    ".rb":     { "name": "ruby",          "symbol": "#" },
-    ".py":     { "name": "python",        "symbol": "#" },
-    ".scm":    { "name": "scheme",        "symbol": ";;" },
-    ".lua":    { "name": "lua",           "symbol": "--" },
+    ".coffee": { "name": "coffee-script", "symbol": "#" },
+
+    ".pl":  { "name": "perl", "symbol": "#" },
+
+    ".sql": { "name": "sql", "symbol": "--" },
+
+    ".c":   { "name": "c", "symbol": "//"},
+
+    ".cpp": { "name": "cpp", "symbol": "//"},
+
+    ".js": { "name": "javascript", "symbol": "//", 
+        "multistart": "/*", "multiend": "*/"},
+
+    ".rb": { "name": "ruby", "symbol": "#",
+        "multistart": "=begin", "multiend": "=end"},
+
+    ".py": { "name": "python", "symbol": "#",  
+        "multistart": '"""', "multiend": '"""' },
+
+    ".scm": { "name": "scheme", "symbol": ";;",
+        "multistart": "#|", "multiend": "|#"},
+
+    ".lua": { "name": "lua", "symbol": "--",
+        "multistart": "--[[", "mutliend": "--]]"},
 }
 
 # Build out the appropriate matchers and delimiters for each language.
@@ -217,14 +292,14 @@ def get_language(source):
 # Compute the destination HTML path for an input source file path. If the source
 # is `lib/example.py`, the HTML will be at `docs/example.html`
 def destination(filepath, options):
-    preserve_paths = options.paths
+    preserve_paths = options['paths']
     try:
         name = filepath.replace(filepath[ filepath.rindex("."): ], "")
     except ValueError:
         name = filepath
     if not preserve_paths:
         name = path.basename(name)
-    return path.join(options.dir, "%s.html" % name)
+    return path.join(options['dir'], "%s.html" % name)
 
 # Shift items off the front of the `list` until it is empty, then return
 # `default`.
@@ -259,8 +334,8 @@ highlight_end = "</pre></div>"
 def process(sources, options):
     sources.sort()
     if sources:
-        ensure_directory(options.dir)
-        css = open(path.join(options.dir, "pycco.css"), "w")
+        ensure_directory(options['dir'])
+        css = open(path.join(options['dir'], "pycco.css"), "w")
         css.write(pycco_styles)
         css.close()
 
@@ -276,12 +351,13 @@ def main():
     parser = optparse.OptionParser()
     parser.add_option('-p', '--paths', action='store_true',
                       help='Preserve path structure of original files')
+
     parser.add_option('-d', '--directory', action='store', type='string',
                       dest='dir', default='docs',
                       help='The output directory that the rendered files should go to.')
 
     opts, sources = parser.parse_args()
-    process(sources, opts)
+    process(sources, opts.__dict__)
 
 # Run the script.
 if __name__ == "__main__":
