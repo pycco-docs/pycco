@@ -25,7 +25,7 @@
 #     cd pycco
 #     python setup.py install
 
-#### Main Documentation Generation Functions
+# === Main Documentation Generation Functions ===
 
 # Generate the documentation for a source file by reading it in, splitting it up
 # into comment/code sections, highlighting them for the appropriate language,
@@ -213,6 +213,7 @@ def highlight(source, sections, preserve_paths=True, outdir=None):
         section["num"] = i
 
 # === HTML Code generation ===
+#
 # Once all of the code is finished highlighting, we can generate the HTML file
 # and write out the documentation. Pass the completed sections into the template
 # found in `resources/pycco.html`
