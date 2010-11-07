@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-__all__ = ("process", "generate_documentation")
-
 # **Pycco** is a Python port of [Docco](http://jashkenas.github.com/docco/ ):
 # the original quick-and-dirty, hundred-line-long, literate-programming-style
 # documentation generator. It produces HTML that displays your comments
@@ -348,6 +346,7 @@ def process(sources, options):
                 next_file()
         next_file()
 
+__all__ = ("process", "generate_documentation")
 
 # Hook spot for the console script
 def main():
