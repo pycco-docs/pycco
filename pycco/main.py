@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__all__ = ("process",)
+__all__ = ("process", "generate_documentation")
 
 # **Pycco** is a Python port of [Docco](http://jashkenas.github.com/docco/ ):
 # the original quick-and-dirty, hundred-line-long, literate-programming-style
@@ -31,7 +31,7 @@ def generate_documentation(source, options):
     fh = open(source, "r")
     sections = parse(source, fh.read())
     highlight(source, sections, options)
-    generate_html(source, sections, options=options)
+    return generate_html(source, sections, options=options)
 
 # Given a string of source code, parse out each comment and the code that
 # follows it, and create an individual **section** for it.
@@ -194,23 +194,15 @@ def highlight(source, sections, options):
 def generate_html(source, sections, options):
     title = path.basename(source)
     dest = destination(source, options)
-    html = pycco_template({
-        "title":       title,
-        "stylesheet":  path.relpath(path.join(options['dir'], "pycco.css"),
-                                    path.split(dest)[0]),
-        "sections":    sections,
-        "source":     source,
-        "path":        path,
-        "destination": destination
-    })
-    print "pycco = %s -> %s" % (source, dest)
-    try:
-        os.makedirs(path.split(dest)[0])
-    except OSError:
-        pass
-    fh = open(dest, "w")
-    fh.write(html.encode("utf-8"))
-    fh.close()
+    return pycco_template({
+        "title"       : title,
+        "stylesheet"  : path.relpath(path.join(options['dir'], "pycco.css"),
+                                     path.split(dest)[0]),
+        "sections"    : sections,
+        "source"      : source,
+        "path"        : path,
+        "destination" : destination
+    }).encode("utf-8")
 
 #### Helpers & Setup
 
@@ -242,13 +234,13 @@ languages = {
 
     ".cpp": { "name": "cpp", "symbol": "//"},
 
-    ".js": { "name": "javascript", "symbol": "//", 
+    ".js": { "name": "javascript", "symbol": "//",
         "multistart": "/*", "multiend": "*/"},
 
     ".rb": { "name": "ruby", "symbol": "#",
         "multistart": "=begin", "multiend": "=end"},
 
-    ".py": { "name": "python", "symbol": "#",  
+    ".py": { "name": "python", "symbol": "#",
         "multistart": '"""', "multiend": '"""' },
 
     ".scm": { "name": "scheme", "symbol": ";;",
@@ -320,7 +312,7 @@ def template(source):
 # Create the template that we will use to generate the Pycco HTML page.
 pycco_template = template(pycco_resources.html)
 
-# The CSS styles we"d like to apply to the documentation.
+# The CSS styles we'd like to apply to the documentation.
 pycco_styles = pycco_resources.css
 
 # The start of each Pygments highlight block.
@@ -329,7 +321,6 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-# The bulk of the work is done here
 # For each source file passed in as an argument, generate the documentation.
 def process(sources, options):
     sources.sort()
@@ -340,7 +331,19 @@ def process(sources, options):
         css.close()
 
         def next_file():
-            generate_documentation(sources.pop(0), options)
+            s = sources.pop(0)
+            dest = destination(s, options)
+
+            try:
+                os.makedirs(path.split(dest)[0])
+            except OSError:
+                pass
+
+            with open(destination(s, options), "w") as f:
+                f.write(generate_documentation(s, options))
+
+            print "pycco = %s -> %s" % (s, dest)
+
             if sources:
                 next_file()
         next_file()
