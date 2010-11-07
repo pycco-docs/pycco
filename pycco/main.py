@@ -12,18 +12,23 @@
 #
 #     pycco src/*.py
 #
-# ...will generate linked HTML documentation for the named source files, saving
-# it into a `docs` folder by default.
+# This will generate linked HTML documentation for the named source files,
+# saving it into a `docs` folder by default.
 #
 # To install Pycco, simply
 #
-#     sudo setup.py install
+#     pip install pycco
 #
+# Or, to install the latest source
+#
+#     git clone git://github.com/fitzgen/pycco.git
+#     cd pycco
+#     python setup.py install
 
 #### Main Documentation Generation Functions
 
-# Generate the documentation for a source file by reading it in, splitting it
-# up into comment/code sections, highlighting them for the appropriate language,
+# Generate the documentation for a source file by reading it in, splitting it up
+# into comment/code sections, highlighting them for the appropriate language,
 # and merging them into an HTML template.
 def generate_documentation(source, options):
     fh = open(source, "r")
