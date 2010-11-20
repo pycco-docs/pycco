@@ -276,6 +276,8 @@ languages = {
 
     ".lua": { "name": "lua", "symbol": "--",
         "multistart": "--[[", "mutliend": "--]]"},
+
+    ".erl": { "name": "erlang", "symbol": "%%" },
 }
 
 # Build out the appropriate matchers and delimiters for each language.
