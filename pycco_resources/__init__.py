@@ -19,8 +19,8 @@ p {
 h1, h2, h3, h4, h5, h6 {
   margin: 40px 0 15px 0;
 }
-  h3, h4, h5, h6 {
-    margin-top: 20px;
+h2, h3, h4, h5, h6 {
+    margin-top: 0;
   }
 #container {
   position: relative;
@@ -114,7 +114,7 @@ table td {
     border-left: 1px solid #e5e5ee;
   }
     pre, tt, code {
-      font-size: 12px; line-height: 18px;
+      line-height: 18px;
       font-family: Monaco, Consolas, "Lucida Console", monospace;
       margin: 0; padding: 0;
     }
