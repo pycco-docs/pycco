@@ -74,13 +74,13 @@ def parse(source, code):
     # Setup the variables to get ready to check for multiline comments
     preformatted = multi_line = False
     last_scope = 0
-    multi_line_delimeters = [language["multistart"], language["multiend"]]
+    multi_line_delimeters = [language.get("multistart"), language.get("multiend")]
 
     for line in lines:
 
         # Only go into multiline comments section when one of the delimeters is
         # found to be at the start of a line
-        if any([line.lstrip().startswith(delim) for delim in multi_line_delimeters]):
+        if all(multi_line_delimeters) and any([line.lstrip().startswith(delim) for delim in multi_line_delimeters]):
             if not multi_line:
                 multi_line = True
 
