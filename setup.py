@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
         name = "Pycco",
-        version = "0.1.2",
-        description = """A Python port of Docco: the original quick-and-dirty, 
+        version = "0.2.0",
+        description = """A Python port of Docco: the original quick-and-dirty,
         hundred-line-long, literate-programming-style documentation generator.
         """,
         author = "Nick Fitzgerald",
