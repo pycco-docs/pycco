@@ -113,6 +113,9 @@ table td {
     background: #f5f5ff;
     border-left: 1px solid #e5e5ee;
   }
+.code pre, .docs p code {
+  font-size: 12px;
+}
     pre, tt, code {
       line-height: 18px;
       font-family: Monaco, Consolas, "Lucida Console", monospace;

@@ -216,13 +216,22 @@ def highlight(source, sections, preserve_paths=True, outdir=None):
 
 # Once all of the code is finished highlighting, we can generate the HTML file
 # and write out the documentation. Pass the completed sections into the template
-# found in `resources/pycco.html`
+# found in `resources/pycco.html`.
+#
+# Pystache will attempt to recursively render context variables, so we must
+# replace any occurences of `{{`, which is valid in some languages, with a
+# "unique enough" identifier before rendering, and then post-process the
+# rendered template and change the identifier back to `{{`.
 def generate_html(source, sections, preserve_paths=True, outdir=None):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument")
     title = path.basename(source)
     dest = destination(source, preserve_paths=preserve_paths, outdir=outdir)
-    return pycco_template({
+
+    for sect in sections:
+        sect["code_html"] = re.sub(r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"])
+
+    rendered = pycco_template({
         "title"       : title,
         "stylesheet"  : path.relpath(path.join(path.dirname(dest), "pycco.css"),
                                      path.split(dest)[0]),
@@ -230,7 +239,9 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
         "source"      : source,
         "path"        : path,
         "destination" : destination
-    }).encode("utf-8")
+    })
+
+    return re.sub(r"__DOUBLE_OPEN_STACHE__", "{{", rendered).encode("utf-8")
 
 # === Helpers & Setup ===
 
