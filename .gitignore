@@ -1,2 +1,5 @@
 *.pyc
 /Pycco.egg-info
+build/*
+dist/*
+docs/*
