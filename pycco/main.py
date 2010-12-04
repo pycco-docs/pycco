@@ -171,12 +171,13 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
                                                             outdir=outdir)))
 
     def replace_section_name(match):
-        return '### <span id="%(id)s" href="%(id)s">%(name)s</span>' % {
-            "id"   : sanitize_section_name(match.group(1)),
-            "name" : match.group(1)
+        return '%(lvl)s <span id="%(id)s" href="%(id)s">%(name)s</span>' % {
+            "lvl"  : re.sub('=', '#', match.group(1)),
+            "id"   : sanitize_section_name(match.group(2)),
+            "name" : match.group(2)
         }
 
-    comment = re.sub('^===(.+)===\\n', replace_section_name, comment)
+    comment = re.sub('^([=]+)([^=]+)[=]*\\n', replace_section_name, comment)
     comment = re.sub('[^`]\[\[(.+)\]\]', replace_crossref, comment)
 
     return comment
