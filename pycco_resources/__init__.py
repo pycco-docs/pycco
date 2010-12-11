@@ -213,8 +213,9 @@ html = """\
   <div class='section'>
     <div class='docs'><h1>{{ title }}</h1></div>
   </div>
+  <div class='clearall'>
   {{#sections}}
-  <div id='section-{{ num }}' class='section'>
+  <div class='section' id='section-{{ num }}'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-{{ num }}'>#</a>
