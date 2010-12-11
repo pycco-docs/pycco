@@ -32,6 +32,42 @@ h2, h3, h4, h5, h6 {
   border-left: 1px solid #e5e5ee;
   z-index: -1;
 }
+#jump_to, #jump_page {
+  background: white;
+  -webkit-box-shadow: 0 0 25px #777; -moz-box-shadow: 0 0 25px #777;
+  -webkit-border-bottom-left-radius: 5px; -moz-border-radius-bottomleft: 5px;
+  font: 10px Arial;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: right;
+}
+#jump_to, #jump_wrapper {
+  position: fixed;
+  right: 0; top: 0;
+  padding: 5px 10px;
+}
+  #jump_wrapper {
+    padding: 0;
+    display: none;
+  }
+    #jump_to:hover #jump_wrapper {
+      display: block;
+    }
+    #jump_page {
+      padding: 5px 0 3px;
+      margin: 0 0 25px 25px;
+    }
+      #jump_page .source {
+        display: block;
+        padding: 5px 10px;
+        text-decoration: none;
+        border-top: 1px solid #eee;
+      }
+        #jump_page .source:hover {
+          background: #f5f5ff;
+        }
+        #jump_page .source:first-child {
+        }
 div.docs {
   float: left;
   max-width: 500px;
@@ -162,6 +198,21 @@ html = """\
 <body>
 <div id="background"></div>
 <div id='container'>
+  {{#sources?}}
+  <div id="jump_to">
+    Jump To &hellip;
+    <div id="jump_wrapper">
+      <div id="jump_page">
+        {{#sources}}
+          <a class="source" href="{{ url }}">{{ basename }}</a>
+        {{/sources}}
+      </div>
+    </div>
+  </div>
+  {{/sources?}}
+  <div class='section'>
+    <div class='docs'><h1>{{ title }}</h1></div>
+  </div>
   {{#sections}}
   <div id='section-{{ num }}' class='section'>
     <div class='docs'>
