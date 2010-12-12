@@ -66,10 +66,11 @@ def parse(source, code):
 
 
     def save(docs, code):
-        sections.append({
-            "docs_text": docs,
-            "code_text": code
-        })
+        if docs and code:
+            sections.append({
+                "docs_text": docs,
+                "code_text": code
+            })
 
     # Setup the variables to get ready to check for multiline comments
     preformatted = multi_line = False
