@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-# **Pycco** is a Python port of [Docco](http://jashkenas.github.com/docco/ ):
+# "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/ ):
 # the original quick-and-dirty, hundred-line-long, literate-programming-style
 # documentation generator. It produces HTML that displays your comments
 # alongside your code. Comments are passed through
-# [Markdown](http://daringfireball.net/projects/markdown/syntax), and code is
-# passed through [Pygments](http://pygments.org/) syntax highlighting.  This
-# page is the result of running Pycco against its own source file.
+# [Markdown](http://daringfireball.net/projects/markdown/syntax) and
+# [SmartyPants](http://daringfireball.net/projects/smartypants), while code is
+# passed through [Pygments](http://pygments.org/) for syntax highlighting.
+# This page is the result of running Pycco against its own source file.
 #
 # If you install Pycco, you can run it from the command-line:
 #
