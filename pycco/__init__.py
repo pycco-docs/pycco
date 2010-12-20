@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from .main import *
+from pycco.main import process
 
 __all__ = ("process",)
