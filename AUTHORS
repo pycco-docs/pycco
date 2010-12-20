@@ -1,9 +1,15 @@
-Alexis Metaireau
-Anders Bergh
-Antti Kaihola
-Christopher Gateley
-Jack Miller
-Morgan Goose
-Nick Fitzgerald
-goosemo
-khamidou
+Nick Fitzgerald       <fitzgen@gmail.com>
+Jeremy Ashkenas       <jashkenas@gmail.com>
+Alexis Metaireau      <alexis@notmyidea.org>
+Anders Bergh          <anders@fgsfd.se>
+Antti Kaihola         <akaihol+python@ambitone.com>
+Christopher Gateley   <christopher.gateley@gmail.com>
+Jack Miller           <jack@codezen.org>
+Morgan Goose          <morgan.goose@gmail.com>
+khamidou              <khamidou@gmail.com>
+Aaron Blohowiak       <aaron.blohowiak@gmail.com>
+Jesse Dubay           <jesse@thefortytwo.net>
+Gora Khargosh         <gora.khargosh@gmail.com>
+
+Parts of Pycco are taken from Docco, see http://github.com/jashkenas/docco for
+more information.
