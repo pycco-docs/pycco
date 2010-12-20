@@ -1,0 +1,5 @@
+include README
+include LICENSE
+include AUTHORS
+recursive-include pycco *.py
+recursive-include pycco_resources *.py
