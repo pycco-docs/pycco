@@ -331,9 +331,6 @@ def get_language(source):
 def destination(filepath, preserve_paths=True, outdir=None):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    #try:
-    #    name = filepath.replace(filepath[ filepath.rindex("."): ], "")
-    #except ValueError:
     name = filepath
     if not preserve_paths:
         name = path.basename(name)
