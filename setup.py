@@ -53,5 +53,6 @@ setup(
         'pygments',
         'pystache',
         'smartypants',
+        'cssmin',
         ],
     )

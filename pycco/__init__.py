@@ -255,7 +255,7 @@ import os
 import pygments
 import pystache
 import re
-import shutil
+import cssmin
 import sys
 from markdown import markdown
 from os import path
@@ -381,7 +381,12 @@ def process(sources, preserve_paths=True, outdir=None):
         # Copy the CSS resource file to the documentation directory.
         output_css_filepath = os.path.join(outdir, "pycco.css")
         input_css_filepath = os.path.join(DIR_PATH, "pycco.css")
-        shutil.copyfile(input_css_filepath, output_css_filepath)
+        minified_css = cssmin.cssmin(open(input_css_filepath).read())
+        try:
+            f = open(output_css_filepath, 'wb')
+            f.write(minified_css)
+        finally:
+            f.close()
 
         def next_file():
             s = sources.pop(0)
