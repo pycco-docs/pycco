@@ -35,6 +35,7 @@ from __future__ import with_statement
 # Generate the documentation for a source file by reading it in, splitting it up
 # into comment/code sections, highlighting them for the appropriate language,
 # and merging them into an HTML template.
+
 def generate_documentation(source, outdir=None, preserve_paths=True):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
@@ -171,14 +172,14 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
             name, anchor = match.group(1).split('#')
             return " [%s](%s#%s)" \
                 % (name,
-                   path.basename(destination(name,
+                   os.path.basename(destination(name,
                                              preserve_paths=preserve_paths,
                                              outdir=outdir)),
                    anchor)
         else:
             return " [%s](%s)" \
                 % (match.group(1),
-                  path.basename(destination(match.group(1),
+                  os.path.basename(destination(match.group(1),
                                             preserve_paths=preserve_paths,
                                             outdir=outdir)))
 
@@ -241,7 +242,7 @@ def highlight(source, sections, preserve_paths=True, outdir=None):
 def generate_html(source, sections, preserve_paths=True, outdir=None):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument")
-    title = path.basename(source)
+    title = os.path.basename(source)
     dest = destination(source, preserve_paths=preserve_paths, outdir=outdir)
 
     for sect in sections:
@@ -250,12 +251,11 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     rendered = pycco_template({
         "title": title,
-        "stylesheet": path.relpath(
-                            path.join(path.dirname(dest), "pycco.css"),
-                            path.split(dest)[0]),
+        "stylesheet": relpath(os.path.join(os.path.dirname(dest), "pycco.css"),
+                              os.path.split(dest)[0]),
         "sections": sections,
         "source": source,
-        "path": path,
+        "path": os.path,
         "destination": destination
     })
 
@@ -263,17 +263,51 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
 # === Helpers & Setup ===
 
-# Import our external dependencies.
+# Import system dependencies.
+import sys
+import os.path
 import optparse
-import os
+import re
+
+# Import external dependencies.
 import pygments
 import pystache
-import re
 import cssmin
-import sys
 from markdown import markdown
-from os import path
 from pygments import lexers, formatters
+
+try:
+    from os.path import relpath
+except ImportError:
+    # relpath: Python 2.5 doesn't have it.
+    def relpath(path, start=os.path.curdir):
+        """Return a relative version of a path"""
+        from os.path import abspath, sep, pardir
+
+        def commonprefix(m):
+            "Given a list of pathnames, returns the longest common leading component"
+            if not m: return ''
+            s1 = min(m)
+            s2 = max(m)
+            for i, c in enumerate(s1):
+                if c != s2[i]:
+                    return s1[:i]
+            return s1
+
+        if not path:
+            raise ValueError("no path specified")
+
+        start_list = [x for x in abspath(start).split(sep) if x]
+        path_list = [x for x in abspath(path).split(sep) if x]
+
+        # Work out how much of the filepath is shared by start and path.
+        i = len(commonprefix([start_list, path_list]))
+
+        rel_list = [pardir] * (len(start_list)-i) + path_list[i:]
+        if not rel_list:
+            return os.path.curdir
+        return os.path.join(*rel_list)
+
 
 # A list of the languages that Pycco supports, mapping the file extension to
 # the name of the Pygments lexer and the symbol that indicates a comment. To
@@ -327,7 +361,6 @@ for ext, l in languages.items():
     l["lexer"] = lexers.get_lexer_by_name(l["name"])
 
 # Get the current language we're documenting, based on the extension.
-
 def get_language(source):
     try:
         return languages[source[source.rindex("."):]]
@@ -350,8 +383,8 @@ def destination(filepath, preserve_paths=True, outdir=None):
         raise TypeError("Missing the required 'outdir' keyword argument.")
     name = filepath
     if not preserve_paths:
-        name = path.basename(name)
-    return path.join(outdir, "%s.html" % name)
+        name = os.path.basename(name)
+    return os.path.join(outdir, "%s.html" % name)
 
 # Shift items off the front of the `list` until it is empty, then return
 # `default`.
@@ -361,8 +394,8 @@ def shift(list, default):
     except IndexError:
         return default
 
-    # Ensure that the destination directory exists.
 
+# Ensure that the destination directory exists.
 def ensure_directory(directory):
     if not os.path.isdir(directory):
         os.mkdir(directory)
@@ -405,7 +438,7 @@ def process(sources, preserve_paths=True, outdir=None):
             dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
 
             try:
-                os.makedirs(path.split(dest)[0])
+                os.makedirs(os.path.split(dest)[0])
             except OSError:
                 pass
 
