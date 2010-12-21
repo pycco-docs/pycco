@@ -258,6 +258,7 @@ import os
 import pygments
 import pystache
 import re
+import shutil
 import sys
 from markdown import markdown
 from os import path
@@ -354,20 +355,22 @@ def ensure_directory(directory):
     if not os.path.isdir(directory):
         os.mkdir(directory)
 
-def template(source):
+def template(template_name, template_dir):
+    source = open(os.path.join(template_dir, template_name), 'rb').read()
     return lambda context: pystache.render(source, context)
 
-# Create the template that we will use to generate the Pycco HTML page.
-pycco_template = template(resources.html)
+# The directory path of this module.
+DIR_PATH = os.path.abspath(os.path.normpath(os.path.dirname(__file__)))
 
-# The CSS styles we'd like to apply to the documentation.
-pycco_styles = resources.css
+# Create the template that we will use to generate the Pycco HTML page.
+pycco_template = template('template.html', DIR_PATH)
 
 # The start of each Pygments highlight block.
 highlight_start = "<div class=\"highlight\"><pre>"
 
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
+
 
 # For each source file passed in as an argument, generate the documentation.
 def process(sources, preserve_paths=True, outdir=None):
@@ -377,9 +380,11 @@ def process(sources, preserve_paths=True, outdir=None):
     sources.sort()
     if sources:
         ensure_directory(outdir)
-        css = open(path.join(outdir, "pycco.css"), "w")
-        css.write(pycco_styles)
-        css.close()
+
+        # Copy the CSS resource file to the documentation directory.
+        output_css_filepath = os.path.join(outdir, "pycco.css")
+        input_css_filepath = os.path.join(DIR_PATH, "pycco.css")
+        shutil.copyfile(input_css_filepath, output_css_filepath)
 
         def next_file():
             s = sources.pop(0)
