@@ -249,9 +249,6 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
 # === Helpers & Setup ===
 
-# This module contains all of our static resources.
-from pycco import resources
-
 # Import our external dependencies.
 import optparse
 import os
