@@ -250,7 +250,7 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 # === Helpers & Setup ===
 
 # This module contains all of our static resources.
-import pycco_resources
+from pycco import resources
 
 # Import our external dependencies.
 import optparse
@@ -358,10 +358,10 @@ def template(source):
     return lambda context: pystache.render(source, context)
 
 # Create the template that we will use to generate the Pycco HTML page.
-pycco_template = template(pycco_resources.html)
+pycco_template = template(resources.html)
 
 # The CSS styles we'd like to apply to the documentation.
-pycco_styles = pycco_resources.css
+pycco_styles = resources.css
 
 # The start of each Pygments highlight block.
 highlight_start = "<div class=\"highlight\"><pre>"
