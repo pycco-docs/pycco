@@ -294,7 +294,7 @@ languages = {
         "multistart": "#|", "multiend": "|#"},
 
     ".lua": { "name": "lua", "symbol": "--",
-        "multistart": "--[[", "mutliend": "--]]"},
+        "multistart": "--[[", "multiend": "--]]"},
 
     ".erl": { "name": "erlang", "symbol": "%%" },
 }
