@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="grid.css" />
+  <link rel="stylesheet" href="syntax.css" />
+  <link rel="stylesheet" href="pycco.css" />
+</head>
+<body>
+<div class='container_2'>
+  {% if sources %}
+  <div id="jump_to">
+    Jump To &hellip;
+    <div id="jump_wrapper">
+      <div id="jump_page">
+        {% for source in sources %}
+          <a class="source" href="{{ source.url }}">{{ source.basename }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class='section grid_2'>
+    <div class='docs'><h1>{{ title }}</h1></div>
+  </div>
+  {% endif %}
+  <div class="clear"></div>
+  
+  {% for section in sections %}
+  <div class='section' id='section-{{ section.num }}'>
+    <div class='grid_1'>
+      {{ section.docs_html }} &nbsp;
+    </div>
+    <div class='grid_1'>
+      {{ section.code_html }}
+    </div>
+  </div>
+  <div class="clear"></div>
+  
+  {% endfor %}
+</div>
+</body>

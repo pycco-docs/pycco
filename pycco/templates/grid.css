@@ -1,0 +1,133 @@
+/*
+	Variable Grid System (Fluid Version).
+	Learn more ~ http://www.spry-soft.com/grids/
+	Based on 960 Grid System - http://960.gs/ & 960 Fluid - http://www.designinfluences.com/
+
+	Licensed under GPL and MIT.
+*/
+
+
+/* Containers
+----------------------------------------------------------------------------------------------------*/
+.container_2 {
+	width: 92%;
+	margin-left: 4%;
+	margin-right: 4%;
+}
+
+/* Grid >> Global
+----------------------------------------------------------------------------------------------------*/
+
+.grid_1,
+.grid_2 {
+	display:inline;
+	float: left;
+	position: relative;
+	margin-left: 1%;
+	margin-right: 1%;
+}
+
+/* Grid >> Children (Alpha ~ First, Omega ~ Last)
+----------------------------------------------------------------------------------------------------*/
+
+.alpha {
+	margin-left: 0;
+}
+
+.omega {
+	margin-right: 0;
+}
+
+/* Grid >> 2 Columns
+----------------------------------------------------------------------------------------------------*/
+
+
+.container_2 .grid_1 {
+	width:48.0%;
+}
+
+.container_2 .grid_2 {
+	width:98.0%;
+}
+
+
+
+/* Prefix Extra Space >> 2 Columns
+----------------------------------------------------------------------------------------------------*/
+
+
+.container_2 .prefix_1 {
+	padding-left:50.0%;
+}
+
+
+
+/* Suffix Extra Space >> 2 Columns
+----------------------------------------------------------------------------------------------------*/
+
+
+.container_2 .suffix_1 {
+	padding-right:50.0%;
+}
+
+
+
+/* Push Space >> 2 Columns
+----------------------------------------------------------------------------------------------------*/
+
+
+.container_2 .push_1 {
+	left:50.0%;
+}
+
+
+
+/* Pull Space >> 2 Columns
+----------------------------------------------------------------------------------------------------*/
+
+
+.container_2 .pull_1 {
+	left:-50.0%;
+}
+
+
+
+
+/* Clear Floated Elements
+----------------------------------------------------------------------------------------------------*/
+
+/* http://sonspring.com/journal/clearing-floats */
+
+.clear {
+	clear: both;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+	width: 0;
+	height: 0;
+}
+
+/* http://perishablepress.com/press/2008/02/05/lessons-learned-concerning-the-clearfix-css-hack */
+
+.clearfix:after {
+	clear: both;
+	content: ' ';
+	display: block;
+	font-size: 0;
+	line-height: 0;
+	visibility: hidden;
+	width: 0;
+	height: 0;
+}
+
+.clearfix {
+	display: inline-block;
+}
+
+* html .clearfix {
+	height: 1%;
+}
+
+.clearfix {
+	display: block;
+}
