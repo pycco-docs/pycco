@@ -29,7 +29,8 @@ def highlight(source, sections, preserve_paths=True, outdir=None):
         except UnicodeError:
             docs_text = unicode(section["doc"].decode('utf-8'))
         
-        section["docs_html"] = markdown(inspect.cleandoc(docs_text))
+        section["docs_html"] = markdown(inspect.cleandoc(docs_text),
+                                        ['extra'])
         section["num"] = i
 
 # Ensure that the destination directory exists.

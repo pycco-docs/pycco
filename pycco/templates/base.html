@@ -3,6 +3,7 @@
 <head>
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
   <title>{{ title }}</title>
+  <link rel="stylesheet" href="reset.css" />
   <link rel="stylesheet" href="grid.css" />
   <link rel="stylesheet" href="syntax.css" />
   <link rel="stylesheet" href="pycco.css" />
@@ -29,11 +30,13 @@
   
   {% for section in sections %}
   <div class='section' id='section-{{ section.num }}'>
-    <div class='grid_1'>
-      {{ section.docs_html }} &nbsp;
+    <div class='grid_1 doc'>
+      {{ section.docs_html }} 
+      {% if not section.docs_html %} &nbsp; {% endif %}
     </div>
-    <div class='grid_1'>
+    <div class='grid_1 code'>
       {{ section.code_html }}
+       {% if not section.code_html %} &nbsp; {% endif %}
     </div>
   </div>
   <div class="clear"></div>

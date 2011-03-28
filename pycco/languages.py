@@ -17,7 +17,7 @@ class LexerContext(object):
         self.code += code.rstrip() + "\n"
     
     def add_doc(self, doc):
-        self.doc += doc.rstrip() + "\n"        
+        self.doc += doc.rstrip() + "\n"
     
     def save_current_state(self):
         """
@@ -78,7 +78,7 @@ def single_line_comment(ctx, code_before, comment):
 single_line_multi_re = r'(?P<code_before>.*){multistart}(?P<comment>.*){multiend}(?P<code_after>.*)'
 multi_comment_start_re = r'(?P<code_before>.*){multistart}(?P<comment>.*)'
 multi_comment_end_re = r'(?P<comment>.*){multiend}(?P<code_after>.*)'
-single_line_comment_re = r'(?P<code_before>.*){symbol}(?P<comment>.*)'
+single_line_comment_re = r'(?P<code_before>\s*?){symbol}(?P<comment>.*)'
 catch_all_re = r'(?P<text>.*)'
 
 template_multi_matchers = [

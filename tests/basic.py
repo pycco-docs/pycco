@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-#basic.py
+# basic.py
 #
-#Created by Sebastian Hillig on 2011-03-21.
-#Copyright (c) 2011 SAP AG. All rights reserved.
+# Created by Sebastian Hillig on 2011-03-21.
+# Copyright (c) 2011 SAP AG. All rights reserved.
 
 import sys
 import os
