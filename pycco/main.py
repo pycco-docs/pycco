@@ -130,7 +130,7 @@ def parse(source, code):
             docs_text += re.sub(language["comment_matcher"], "", line) + "\n"
 
         else:
-            if code_text and any([line.lstrip().startswith(x) for x in ['class ', 'def ']]):
+            if code_text and any([line.lstrip().startswith(x) for x in ['class ', 'def ', '@']]):
                 if not code_text.lstrip().startswith("@"):
                     save(docs_text, code_text)
                     code_text = has_code = docs_text = ''
@@ -140,6 +140,7 @@ def parse(source, code):
 
 
     save(docs_text, code_text)
+
     return sections
 
 # === Preprocessing the comments ===
