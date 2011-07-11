@@ -131,8 +131,9 @@ def parse(source, code):
 
         else:
             if code_text and any([line.lstrip().startswith(x) for x in ['class ', 'def ']]):
-                save(docs_text, code_text)
-                code_text = has_code = docs_text = ''
+                if not code_text.lstrip().startswith("@"):
+                    save(docs_text, code_text)
+                    code_text = has_code = docs_text = ''
 
             has_code = True
             code_text += line + '\n'
