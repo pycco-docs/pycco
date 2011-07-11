@@ -73,7 +73,7 @@ def parse(source, code):
 
 
     def save(docs, code):
-        if docs and code:
+        if docs or code:
             sections.append({
                 "docs_text": docs,
                 "code_text": code
