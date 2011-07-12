@@ -208,10 +208,7 @@ def highlight(source, sections, preserve_paths=True, outdir=None):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     language = get_language(source)
-
-    output = \
-        pygments.highlight(language["divider_text"].join(
-                                section["code_text"] for section in sections),
+    output = pygments.highlight(language["divider_text"].join(section["code_text"].rstrip() for section in sections),
                                 language["lexer"],
                                 formatters.get_formatter_by_name("html"))
 
