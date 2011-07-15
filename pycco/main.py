@@ -276,7 +276,8 @@ from pygments import lexers, formatters
 # the name of the Pygments lexer and the symbol that indicates a comment. To
 # add another language to Pycco's repertoire, add it here.
 languages = {
-    ".coffee": { "name": "coffee-script", "symbol": "#" },
+    ".coffee": { "name": "coffee-script", "symbol": "#",
+        "multistart": '###', "multiend": '###' },
 
     ".pl":  { "name": "perl", "symbol": "#" },
 
