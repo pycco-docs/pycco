@@ -277,7 +277,7 @@ languages = {
     ".cpp": { "name": "cpp", "symbol": "//"},
 
     ".js": { "name": "javascript", "symbol": "//",
-        "multistart": "/*", "multiend": "*/"},
+        "multistart": "/\*", "multiend": "\*/"},
 
     ".rb": { "name": "ruby", "symbol": "#",
         "multistart": "=begin", "multiend": "=end"},
@@ -286,7 +286,7 @@ languages = {
         "multistart": '"""', "multiend": '"""' },
 
     ".scm": { "name": "scheme", "symbol": ";;",
-        "multistart": "#|", "multiend": "|#"},
+        "multistart": "#\|", "multiend": "\|#"},
 
     ".lua": { "name": "lua", "symbol": "--",
         "multistart": "--[[", "mutliend": "--]]"},
