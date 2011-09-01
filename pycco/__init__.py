@@ -323,8 +323,13 @@ languages = {
     ".cpp": {"name": "cpp", "symbol": "//",
              "multistart": "/*", "multiend": "*/"},
 
+<<<<<<< HEAD
     ".js": {"name": "javascript", "symbol": "//",
             "multistart": "/*", "multiend": "*/"},
+=======
+    ".js": { "name": "javascript", "symbol": "//",
+        "multistart": "/\*", "multiend": "\*/"},
+>>>>>>> fixed regex for js and scheme files
 
     ".rb": {"name": "ruby", "symbol": "#",
             "multistart": "=begin", "multiend": "=end"},
@@ -332,8 +337,13 @@ languages = {
     ".py": {"name": "python", "symbol": "#",
             "multistart": '"""', "multiend": '"""'},
 
+<<<<<<< HEAD
     ".scm": {"name": "scheme", "symbol": ";;",
              "multistart": "#|", "multiend": "|#"},
+=======
+    ".scm": { "name": "scheme", "symbol": ";;",
+        "multistart": "#\|", "multiend": "\|#"},
+>>>>>>> fixed regex for js and scheme files
 
     ".lua": {"name": "lua", "symbol": "--",
              "multistart": "--[[", "mutliend": "--]]"},
