@@ -116,7 +116,7 @@ def parse(source, code):
             # This section will parse if the line is indented at least four
             # places, and if so know to have the final text treat it as a
             # preformatted text block.
-            if (line_striped.startswith("    ") or line_striped.startswith("\t")) and last_scope:
+            if (line_striped.startswith("    ") or line_striped.startswith("\t")) and (last_scope or last_scope == 0):
                 if current_scope > last_scope and not preformatted:
                     preformatted = True
                     docs_text += "<pre>"
@@ -124,6 +124,7 @@ def parse(source, code):
             else:
                 if preformatted:
                     preformatted = False
+                    last_scope = current_scope
                     docs_text += "</pre>"
 
             # Keep a tracker var to see if the scope increases, that way later
