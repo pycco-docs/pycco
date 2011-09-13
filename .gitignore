@@ -1,5 +1,11 @@
 *.pyc
-/Pycco.egg-info
-build/*
-dist/*
-docs/*
+*.egg-info
+
+.installed.cfg
+
+bin/
+build/
+develop-eggs/
+dist/
+docs/
+

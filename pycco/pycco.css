@@ -1,4 +1,3 @@
-css = """\
 /*--------------------- Layout and Typography ----------------------------*/
 body {
   font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
@@ -81,7 +80,7 @@ div.docs {
     margin: 15px 0 15px;
     padding-left: 15px;
   }
-  .docs p tt, .docs p code {
+  .docs p tt, .docs code {
     background: #f8f8ff;
     border: 1px solid #dedede;
     font-size: 12px;
@@ -185,49 +184,3 @@ body .vc { color: #19469D }                     /* Name.Variable.Class */
 body .vg { color: #19469D }                     /* Name.Variable.Global */
 body .vi { color: #19469D }                     /* Name.Variable.Instance */
 body .il { color: #666666 }                     /* Literal.Number.Integer.Long */
-"""
-
-html = """\
-<!DOCTYPE html>
-<html>
-<head>
-  <meta http-equiv="content-type" content="text/html;charset=utf-8">
-  <title>{{ title }}</title>
-  <link rel="stylesheet" href="{{ stylesheet }}">
-</head>
-<body>
-<div id="background"></div>
-<div id='container'>
-  {{#sources?}}
-  <div id="jump_to">
-    Jump To &hellip;
-    <div id="jump_wrapper">
-      <div id="jump_page">
-        {{#sources}}
-          <a class="source" href="{{ url }}">{{ basename }}</a>
-        {{/sources}}
-      </div>
-    </div>
-  </div>
-  {{/sources?}}
-  <div class='section'>
-    <div class='docs'><h1>{{ title }}</h1></div>
-  </div>
-  <div class='clearall'>
-  {{#sections}}
-  <div class='section' id='section-{{ num }}'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-{{ num }}'>#</a>
-      </div>
-      {{{ docs_html }}}
-    </div>
-    <div class='code'>
-      {{{ code_html }}}
-    </div>
-  </div>
-  <div class='clearall'></div>
-  {{/sections}}
-</div>
-</body>
-"""

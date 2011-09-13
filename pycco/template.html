@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" type="text/css" charset="utf-8" href="{{ stylesheet }}">
+</head>
+<body>
+<div id="background"></div>
+<div id='container'>
+  {{#sources?}}
+  <div id="jump_to">
+    Jump To &hellip;
+    <div id="jump_wrapper">
+      <div id="jump_page">
+        {{#sources}}
+          <a class="source" href="{{ url }}">{{ basename }}</a>
+        {{/sources}}
+      </div>
+    </div>
+  </div>
+  {{/sources?}}
+  <div class='section'>
+    <div class='docs'><h1>{{ title }}</h1></div>
+  </div>
+  <div class='clearall'>
+  {{#sections}}
+  <div class='section' id='section-{{ num }}'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-{{ num }}'>#</a>
+      </div>
+      {{{ docs_html }}}
+    </div>
+    <div class='code'>
+      {{{ code_html }}}
+    </div>
+  </div>
+  <div class='clearall'></div>
+  {{/sections}}
+</div>
+</body>
