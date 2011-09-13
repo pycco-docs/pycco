@@ -85,9 +85,6 @@ def parse(source, code):
     multi_line_delimiters = [language.get("multistart"),
                              language.get("multiend")]
 
-    def doMultiLine():
-        pass
-    
     for line in lines:
         
         # Only go into multiline comments section when one of the delimiters is
