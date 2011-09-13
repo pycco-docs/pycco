@@ -111,12 +111,12 @@ def parse(source, code):
 
         elif multi_line:
             line_striped = line.rstrip()
-            current_scope = line_striped.count("    ")
+            current_scope = line_striped.count("    ") + line_striped.count("\t")
 
             # This section will parse if the line is indented at least four
             # places, and if so know to have the final text treat it as a
             # preformatted text block.
-            if line_striped.startswith("    ") and last_scope:
+            if (line_striped.startswith("    ") or line_striped.startswith("\t")) and last_scope:
                 if current_scope > last_scope and not preformatted:
                     preformatted = True
                     docs_text += "<pre>"
@@ -323,13 +323,11 @@ languages = {
     ".cpp": {"name": "cpp", "symbol": "//",
              "multistart": "/*", "multiend": "*/"},
 
-<<<<<<< HEAD
     ".js": {"name": "javascript", "symbol": "//",
             "multistart": "/*", "multiend": "*/"},
-=======
-    ".js": { "name": "javascript", "symbol": "//",
-        "multistart": "/\*", "multiend": "\*/"},
->>>>>>> fixed regex for js and scheme files
+			
+	".html": {"name": "html", "symbol": "//",
+            "multistart": "/*", "multiend": "*/"},
 
     ".rb": {"name": "ruby", "symbol": "#",
             "multistart": "=begin", "multiend": "=end"},
@@ -337,13 +335,8 @@ languages = {
     ".py": {"name": "python", "symbol": "#",
             "multistart": '"""', "multiend": '"""'},
 
-<<<<<<< HEAD
     ".scm": {"name": "scheme", "symbol": ";;",
              "multistart": "#|", "multiend": "|#"},
-=======
-    ".scm": { "name": "scheme", "symbol": ";;",
-        "multistart": "#\|", "multiend": "\|#"},
->>>>>>> fixed regex for js and scheme files
 
     ".lua": {"name": "lua", "symbol": "--",
              "multistart": "--[[", "mutliend": "--]]"},

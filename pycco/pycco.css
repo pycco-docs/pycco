@@ -80,7 +80,7 @@ div.docs {
     margin: 15px 0 15px;
     padding-left: 15px;
   }
-  .docs p tt, .docs p code {
+  .docs p tt, .docs code {
     background: #f8f8ff;
     border: 1px solid #dedede;
     font-size: 12px;
