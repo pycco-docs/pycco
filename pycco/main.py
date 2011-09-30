@@ -88,6 +88,11 @@ def parse(source, code):
 
             else:
                 multi_line = False
+                
+            if (multi_line
+               and line.strip().endswith(language.get("multiend"))
+               and len(line.strip()) > len(language.get("multiend"))):
+                multi_line = False
 
             # Get rid of the delimiters so that they aren't in the final docs
             line = re.sub(re.escape(language["multistart"]),'',line)
