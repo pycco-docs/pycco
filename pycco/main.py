@@ -235,14 +235,14 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
         raise TypeError("Missing the required 'outdir' keyword argument")
     title = path.basename(source)
     dest = destination(source, preserve_paths=preserve_paths, outdir=outdir)
+    csspath = path.relpath(path.join(outdir, "pycco.css"), path.split(dest)[0])
 
     for sect in sections:
         sect["code_html"] = re.sub(r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"])
 
     rendered = pycco_template({
         "title"       : title,
-        "stylesheet"  : path.relpath(path.join(path.dirname(dest), "pycco.css"),
-                                     path.split(dest)[0]),
+        "stylesheet"  : csspath,
         "sections"    : sections,
         "source"      : source,
         "path"        : path,
@@ -393,7 +393,7 @@ def process(sources, preserve_paths=True, outdir=None):
                 pass
 
             with open(destination(s, preserve_paths=preserve_paths, outdir=outdir), "w") as f:
-                f.write(generate_documentation(s, outdir=outdir))
+                f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir))
 
             print "pycco = %s -> %s" % (s, dest)
 
