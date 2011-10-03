@@ -263,6 +263,7 @@ import pygments
 import pystache
 import re
 import sys
+import time
 from markdown import markdown
 from os import path
 from pygments import lexers, formatters
@@ -376,7 +377,11 @@ def process(sources, preserve_paths=True, outdir=None):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
 
-    sources.sort()
+    # Make a copy of sources given on the command line. `main()` needs the
+    # original list when monitoring for changed files.
+    sources = sorted(sources)
+
+    # Proceed to generating the documentation.
     if sources:
         ensure_directory(outdir)
         css = open(path.join(outdir, "pycco.css"), "w")
@@ -403,6 +408,49 @@ def process(sources, preserve_paths=True, outdir=None):
 
 __all__ = ("process", "generate_documentation")
 
+
+# Monitor each source file and re-generate documentation on change.
+def monitor(sources, opts):
+    # The watchdog modules are imported in `main()` but we need to re-import
+    # here to bring them into the local namespace.
+    import watchdog.events
+    import watchdog.observers
+
+    # Watchdog operates on absolute paths, so map those to original paths
+    # as specified on the command line.
+    absolute_sources = dict((os.path.abspath(source), source)
+                            for source in sources)
+
+    class RegenerateHandler(watchdog.events.FileSystemEventHandler):
+        """A handler for recompiling files which triggered watchdog events"""
+        def on_modified(self, event):
+            """Regenerate documentation for a file which triggered an event"""
+            # Re-generate documentation from a source file if it was listed on
+            # the command line. Watchdog monitors whole directories, so other
+            # files may cause notifications as well.
+            if event.src_path in absolute_sources:
+                process([absolute_sources[event.src_path]],
+                        outdir=opts.outdir,
+                        preserve_paths=opts.paths)
+
+    # Set up an observer which monitors all directories for files given on
+    # the command line and notifies the handler defined above.
+    event_handler = RegenerateHandler()
+    observer = watchdog.observers.Observer()
+    directories = set(os.path.split(source)[0] for source in sources)
+    for directory in directories:
+        observer.schedule(event_handler, path=directory)
+
+    # Run the file change monitoring loop until the user hits Ctrl-C.
+    observer.start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+        observer.join()
+
+
 # Hook spot for the console script.
 def main():
     parser = optparse.OptionParser()
@@ -413,8 +461,23 @@ def main():
                       dest='outdir', default='docs',
                       help='The output directory that the rendered files should go to.')
 
+    parser.add_option('-w', '--watch', action='store_true',
+                      help='Watch original files and re-generate documentation on changes')
     opts, sources = parser.parse_args()
+
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths)
+
+    # If the -w / --watch option was present, monitor the source directories
+    # for changes and re-generate documentation for source files whenever they
+    # are modified.
+    if opts.watch:
+        try:
+            import watchdog.events
+            import watchdog.observers
+        except ImportError:
+            sys.exit('The -w/--watch option requires the watchdog package.')
+
+        monitor(sources, opts)
 
 # Run the script.
 if __name__ == "__main__":
