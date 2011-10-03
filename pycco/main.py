@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/ ):
+# "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/):
 # the original quick-and-dirty, hundred-line-long, literate-programming-style
 # documentation generator. It produces HTML that displays your comments
 # alongside your code. Comments are passed through
@@ -15,6 +15,9 @@
 #
 # This will generate linked HTML documentation for the named source files,
 # saving it into a `docs` folder by default.
+
+# The [source for Pycco](https://github.com/fitzgen/pycco) is available on GitHub,
+# and released under the MIT license.
 #
 # To install Pycco, simply
 #
