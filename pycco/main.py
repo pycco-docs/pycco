@@ -67,7 +67,7 @@ def parse(source, code):
 
 
     def save(docs, code):
-        if docs and code:
+        if docs or code:
             sections.append({
                 "docs_text": docs,
                 "code_text": code
@@ -135,15 +135,17 @@ def parse(source, code):
             docs_text += re.sub(language["comment_matcher"], "", line) + "\n"
 
         else:
-            if code_text and any([line.lstrip().startswith(x) for x in ['class ', 'def ']]):
-                save(docs_text, code_text)
-                code_text = has_code = docs_text = ''
+            if code_text and any([line.lstrip().startswith(x) for x in ['class ', 'def ', '@']]):
+                if not code_text.lstrip().startswith("@"):
+                    save(docs_text, code_text)
+                    code_text = has_code = docs_text = ''
 
             has_code = True
             code_text += line + '\n'
 
 
     save(docs_text, code_text)
+
     return sections
 
 # === Preprocessing the comments ===
@@ -202,7 +204,7 @@ def highlight(source, sections, preserve_paths=True, outdir=None):
         raise TypeError("Missing the required 'outdir' keyword argument.")
     language = get_language(source)
 
-    output = pygments.highlight(language["divider_text"].join(section["code_text"] for section in sections),
+    output = pygments.highlight(language["divider_text"].join(section["code_text"].rstrip() for section in sections),
                                 language["lexer"],
                                 formatters.get_formatter_by_name("html"))
 
