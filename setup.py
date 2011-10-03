@@ -16,4 +16,5 @@ setup(
                 ]
             },
         install_requires = ['markdown', 'pygments', 'pystache', 'smartypants'],
+        extras_require = {'monitoring': 'watchdog'},
         )
