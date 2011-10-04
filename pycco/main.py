@@ -189,7 +189,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
             "name" : match.group(2)
         }
 
-    comment = re.sub('^([=]+)([^=]+)[=]*\\n', replace_section_name, comment)
+    comment = re.sub('^([=]+)([^=]+)[=]*\s*$', replace_section_name, comment)
     comment = re.sub('[^`]\[\[(.+)\]\]', replace_crossref, comment)
 
     return comment
