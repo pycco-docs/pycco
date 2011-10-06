@@ -1,40 +1,45 @@
 #!/usr/bin/env python
 
-# "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/):
-# the original quick-and-dirty, hundred-line-long, literate-programming-style
-# documentation generator. It produces HTML that displays your comments
-# alongside your code. Comments are passed through
-# [Markdown](http://daringfireball.net/projects/markdown/syntax) and
-# [SmartyPants](http://daringfireball.net/projects/smartypants), while code is
-# passed through [Pygments](http://pygments.org/) for syntax highlighting.
-# This page is the result of running Pycco against its own source file.
-#
-# If you install Pycco, you can run it from the command-line:
-#
-#     pycco src/*.py
-#
-# This will generate linked HTML documentation for the named source files,
-# saving it into a `docs` folder by default.
+"""
+"**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/):
+the original quick-and-dirty, hundred-line-long, literate-programming-style
+documentation generator. It produces HTML that displays your comments
+alongside your code. Comments are passed through
+[Markdown](http://daringfireball.net/projects/markdown/syntax) and
+[SmartyPants](http://daringfireball.net/projects/smartypants), while code is
+passed through [Pygments](http://pygments.org/) for syntax highlighting.
+This page is the result of running Pycco against its own source file.
 
-# The [source for Pycco](https://github.com/fitzgen/pycco) is available on GitHub,
-# and released under the MIT license.
-#
-# To install Pycco, simply
-#
-#     pip install pycco
-#
-# Or, to install the latest source
-#
-#     git clone git://github.com/fitzgen/pycco.git
-#     cd pycco
-#     python setup.py install
+If you install Pycco, you can run it from the command-line:
+
+    pycco src/*.py
+
+This will generate linked HTML documentation for the named source files,
+saving it into a `docs` folder by default.
+
+The [source for Pycco](https://github.com/fitzgen/pycco) is available on GitHub,
+and released under the MIT license.
+
+To install Pycco, simply
+
+    pip install pycco
+
+Or, to install the latest source
+
+    git clone git://github.com/fitzgen/pycco.git
+    cd pycco
+    python setup.py install
+"""
 
 # === Main Documentation Generation Functions ===
 
-# Generate the documentation for a source file by reading it in, splitting it up
-# into comment/code sections, highlighting them for the appropriate language,
-# and merging them into an HTML template.
 def generate_documentation(source, outdir=None, preserve_paths=True):
+    """
+    Generate the documentation for a source file by reading it in, splitting it
+    up into comment/code sections, highlighting them for the appropriate
+    language, and merging them into an HTML template.
+    """
+
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     fh = open(source, "r")
@@ -42,18 +47,20 @@ def generate_documentation(source, outdir=None, preserve_paths=True):
     highlight(source, sections, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
 
-# Given a string of source code, parse out each comment and the code that
-# follows it, and create an individual **section** for it.
-# Sections take the form:
-#
-#     { "docs_text": ...,
-#       "docs_html": ...,
-#       "code_text": ...,
-#       "code_html": ...,
-#       "num":       ...
-#     }
-#
 def parse(source, code):
+    """
+    Given a string of source code, parse out each comment and the code that
+    follows it, and create an individual **section** for it.
+    Sections take the form:
+
+        { "docs_text": ...,
+          "docs_html": ...,
+          "code_text": ...,
+          "code_html": ...,
+          "num":       ...
+        }
+    """
+
     lines = code.split("\n")
     sections = []
     language = get_language(source)
@@ -153,14 +160,17 @@ def parse(source, code):
 
 # === Preprocessing the comments ===
 
-# Add cross-references before having the text processed by markdown.  It's
-# possible to reference another file, like this : `[[main.py]]` which renders
-# [[main.py]]. You can also reference a specific section of another file, like
-# this: `[[main.py#highlighting-the-source-code]]` which renders as
-# [[main.py#highlighting-the-source-code]]. Sections have to be manually
-# declared; they are written on a single line, and surrounded by equals signs:
-# `=== like this ===`
 def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
+    """
+    Add cross-references before having the text processed by markdown.  It's
+    possible to reference another file, like this : `[[main.py]]` which renders
+    [[main.py]]. You can also reference a specific section of another file, like
+    this: `[[main.py#highlighting-the-source-code]]` which renders as
+    [[main.py#highlighting-the-source-code]]. Sections have to be manually
+    declared; they are written on a single line, and surrounded by equals signs:
+    `=== like this ===`
+    """
+
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     def sanitize_section_name(name):
@@ -196,13 +206,16 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
 
 # === Highlighting the source code ===
 
-# Highlights a single chunk of code using the **Pygments** module, and runs the
-# text of its corresponding comment through **Markdown**.
-#
-# We process the entire file in a single call to Pygments by inserting little
-# marker comments between each section and then splitting the result string
-# wherever our markers occur.
 def highlight(source, sections, preserve_paths=True, outdir=None):
+    """
+    Highlights a single chunk of code using the **Pygments** module, and runs
+    the text of its corresponding comment through **Markdown**.
+
+    We process the entire file in a single call to Pygments by inserting little
+    marker comments between each section and then splitting the result string
+    wherever our markers occur.
+    """
+
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     language = get_language(source)
@@ -227,15 +240,18 @@ def highlight(source, sections, preserve_paths=True, outdir=None):
 
 # === HTML Code generation ===
 
-# Once all of the code is finished highlighting, we can generate the HTML file
-# and write out the documentation. Pass the completed sections into the template
-# found in `resources/pycco.html`.
-#
-# Pystache will attempt to recursively render context variables, so we must
-# replace any occurences of `{{`, which is valid in some languages, with a
-# "unique enough" identifier before rendering, and then post-process the
-# rendered template and change the identifier back to `{{`.
 def generate_html(source, sections, preserve_paths=True, outdir=None):
+    """
+    Once all of the code is finished highlighting, we can generate the HTML file
+    and write out the documentation. Pass the completed sections into the
+    template found in `resources/pycco.html`.
+
+    Pystache will attempt to recursively render context variables, so we must
+    replace any occurences of `{{`, which is valid in some languages, with a
+    "unique enough" identifier before rendering, and then post-process the
+    rendered template and change the identifier back to `{{`.
+    """
+
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument")
     title = path.basename(source)
@@ -321,8 +337,9 @@ for ext, l in languages.items():
     # Get the Pygments Lexer for this language.
     l["lexer"] = lexers.get_lexer_by_name(l["name"])
 
-# Get the current language we're documenting, based on the extension.
 def get_language(source):
+    """Get the current language we're documenting, based on the extension."""
+
     try:
         return languages[ source[source.rindex("."):] ]
     except ValueError:
@@ -336,9 +353,12 @@ def get_language(source):
         else:
             raise ValueError("Can't figure out the language!")
 
-# Compute the destination HTML path for an input source file path. If the source
-# is `lib/example.py`, the HTML will be at `docs/example.html`
 def destination(filepath, preserve_paths=True, outdir=None):
+    """
+    Compute the destination HTML path for an input source file path. If the
+    source is `lib/example.py`, the HTML will be at `docs/example.html`
+    """
+
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     try:
@@ -349,16 +369,20 @@ def destination(filepath, preserve_paths=True, outdir=None):
         name = path.basename(name)
     return path.join(outdir, "%s.html" % name)
 
-# Shift items off the front of the `list` until it is empty, then return
-# `default`.
 def shift(list, default):
+    """
+    Shift items off the front of the `list` until it is empty, then return
+    `default`.
+    """
+
     try:
         return list.pop(0)
     except IndexError:
         return default
 
-# Ensure that the destination directory exists.
 def ensure_directory(directory):
+    """Ensure that the destination directory exists."""
+
     if not os.path.isdir(directory):
         os.mkdir(directory)
 
@@ -377,8 +401,9 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-# For each source file passed in as an argument, generate the documentation.
 def process(sources, preserve_paths=True, outdir=None):
+    """For each source file passed as argument, generate the documentation."""
+
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
 
@@ -414,8 +439,9 @@ def process(sources, preserve_paths=True, outdir=None):
 __all__ = ("process", "generate_documentation")
 
 
-# Monitor each source file and re-generate documentation on change.
 def monitor(sources, opts):
+    """Monitor each source file and re-generate documentation on change."""
+
     # The watchdog modules are imported in `main()` but we need to re-import
     # here to bring them into the local namespace.
     import watchdog.events
@@ -456,8 +482,9 @@ def monitor(sources, opts):
         observer.join()
 
 
-# Hook spot for the console script.
 def main():
+    """Hook spot for the console script."""
+
     parser = optparse.OptionParser()
     parser.add_option('-p', '--paths', action='store_true',
                       help='Preserve path structure of original files')
