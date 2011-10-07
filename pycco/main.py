@@ -84,8 +84,7 @@ def parse(source, code):
             })
 
     # Setup the variables to get ready to check for multiline comments
-    preformatted = multi_line = False
-    last_scope = 0
+    multi_line = False
     multi_line_delimiters = [language.get("multistart"), language.get("multiend")]
 
     for line in lines:
@@ -108,35 +107,16 @@ def parse(source, code):
             line = re.sub(re.escape(language["multistart"]),'',line)
             line = re.sub(re.escape(language["multiend"]),'',line)
             docs_text += line.strip() + '\n'
+            indent_level = re.match("\s*", line).group(0)
 
             if has_code and docs_text.strip():
                 save(docs_text, code_text[:-1])
                 code_text = code_text.split('\n')[-1]
-                last_scope = 0
                 has_code = docs_text = ''
 
         elif multi_line:
-            line_striped = line.rstrip()
-            current_scope = line_striped.count("    ")
-
-            # This section will parse if the line is indented at least four
-            # places, and if so know to have the final text treat it as a
-            # preformatted text block.
-            if line_striped.startswith("    ") and last_scope:
-                if current_scope > last_scope and not preformatted:
-                    preformatted = True
-                    docs_text += "<pre>"
-
-            else:
-                if preformatted:
-                    preformatted = False
-                    docs_text += "</pre>"
-
-            # Keep a tracker var to see if the scope increases, that way later
-            # the code can decided if a section is indented more than 4 spaces
-            # from the leading code.
-            last_scope = current_scope if current_scope > last_scope else last_scope
-            docs_text += line.strip() + '\n'
+            # Remove leading spaces
+            docs_text += line[len(indent_level):] + '\n'
 
         elif re.match(language["comment_matcher"], line):
             if has_code:
