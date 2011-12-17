@@ -23,15 +23,19 @@ def get_all_files( path, extension ):
 from os import path
 
 class Source:    
-    def __init__(self, name):
+    def __init__(self, name, start):
         self.name       = name
         self.title      = path.basename( self.name )
         self.dirpath    = path.dirname( self.name ) or '.'
+        self.dirname    = path.relpath(self.dirpath, start)
+    
+    def save_path(self):
+        return "docs/%s/%s" %( self.dirname, self.title )
 
 
 class Sources:
-    def __init__(self, sources):
-        self.list = [ Source( name ) for name in sources ]
+    def __init__(self, sources, start):
+        self.list = [ Source( name, start ) for name in sources ]
         self.get  = lambda x: self.list[ index ]
 
     def names(self):

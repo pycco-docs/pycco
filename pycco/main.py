@@ -393,7 +393,7 @@ def process(sources, preserve_paths=True, outdir=None):
 
     # Make a copy of sources given on the command line. `main()` needs the
     # original list when monitoring for changed files.
-    sources = sorted(sources.names)
+    #? sources = sorted(sources)
 
     # Proceed to generating the documentation.
     if sources:
@@ -401,24 +401,20 @@ def process(sources, preserve_paths=True, outdir=None):
         css = open(path.join(outdir, "pycco.css"), "w")
         css.write(pycco_styles)
         css.close()
-
-        def next_file():
-            s = sources.pop(0)
-            dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
+        
+        for s in sources:
+            dest = destination(s.save_path(), preserve_paths=preserve_paths, outdir=outdir)
 
             try:
                 os.makedirs(path.split(dest)[0])
             except OSError:
                 pass
 
-            with open(destination(s, preserve_paths=preserve_paths, outdir=outdir), "w") as f:
+            with open(dest, "w") as f:
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir))
 
             print "pycco = %s -> %s" % (s, dest)
 
-            if sources:
-                next_file()
-        next_file()
 
 __all__ = ("process", "generate_documentation")
 
@@ -496,7 +492,7 @@ def main():
         sources = [i for i in get_all_files( filepath, filetype )]
     
     global SOURCES
-    SOURCES = Sources( sources )
+    SOURCES = Sources( sources, start )
     
     process(SOURCES, outdir=opts.outdir, preserve_paths=opts.paths)
 
