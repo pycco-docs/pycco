@@ -393,7 +393,7 @@ def process(sources, preserve_paths=True, outdir=None):
 
     # Make a copy of sources given on the command line. `main()` needs the
     # original list when monitoring for changed files.
-    sources = sorted(sources)
+    sources = sorted(sources.names)
 
     # Proceed to generating the documentation.
     if sources:
@@ -498,7 +498,7 @@ def main():
     global SOURCES
     SOURCES = Sources( sources )
     
-    process(sources, outdir=opts.outdir, preserve_paths=opts.paths)
+    process(SOURCES, outdir=opts.outdir, preserve_paths=opts.paths)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
