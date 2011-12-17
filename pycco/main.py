@@ -46,9 +46,9 @@ def generate_documentation(source, outdir=None, preserve_paths=True):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    fh = open(source, "r")
-    sections = parse(source, fh.read())
-    highlight(source, sections, preserve_paths=preserve_paths, outdir=outdir)
+    fh = open(source.name, "r")
+    sections = parse(source.name, fh.read())
+    highlight(source.name, sections, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
 
 def parse(source, code):
@@ -238,18 +238,18 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument")
-    title = path.basename(source)
-    dest = destination(source, preserve_paths=preserve_paths, outdir=outdir)
+
+    dest = destination(source.save_path(), preserve_paths=preserve_paths, outdir=outdir)
     csspath = path.relpath(path.join(outdir, "pycco.css"), path.split(dest)[0])
 
     for sect in sections:
         sect["code_html"] = re.sub(r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"])
 
     rendered = pycco_template({
-        "title"       : title,
+        "title"       : source.title,
         "stylesheet"  : csspath,
         "sections"    : sections,
-        "source"      : source,
+        "source"      : source.name,
         "path"        : path,
         "destination" : destination
     })
@@ -413,7 +413,7 @@ def process(sources, preserve_paths=True, outdir=None):
             with open(dest, "w") as f:
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir))
 
-            print "pycco = %s -> %s" % (s, dest)
+            print "pycco = %s -> %s" % (s.name, dest)
 
 
 __all__ = ("process", "generate_documentation")
