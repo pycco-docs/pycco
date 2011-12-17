@@ -31,6 +31,10 @@ Or, to install the latest source
     python setup.py install
 """
 
+import sys, os
+sys.path.append( os.path.dirname( os.path.dirname(__file__) ) )
+
+
 # === Main Documentation Generation Functions ===
 
 def generate_documentation(source, outdir=None, preserve_paths=True):
@@ -461,6 +465,7 @@ def monitor(sources, opts):
         observer.stop()
         observer.join()
 
+from utils import *
 
 def main():
     """Hook spot for the console script."""
@@ -475,7 +480,18 @@ def main():
 
     parser.add_option('-w', '--watch', action='store_true',
                       help='Watch original files and re-generate documentation on changes')
-    opts, sources = parser.parse_args()
+                     
+    parser.add_option('-a', '--all', action='store_true',
+                      help='Get all files from subfolders')
+                      
+    opts, sources   = parser.parse_args()
+
+    filepath        = os.path.dirname( sources[0] )
+    start, filetype = os.path.splitext( sources[0] )
+    start           = os.path.dirname( os.path.dirname( start ) )
+    
+    if opts.all:
+        sources = [i for i in get_all_files( filepath, filetype )]
 
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths)
 
