@@ -247,7 +247,7 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     rendered = pycco_template({
         "title"       : source.title,
-        "sources"     : SOURCES,
+        "sources"     : source.relative_paths( SOURCES ),
         "stylesheet"  : csspath,
         "sections"    : sections,
         "source"      : source.name,

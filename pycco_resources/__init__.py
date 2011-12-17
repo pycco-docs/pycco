@@ -32,6 +32,12 @@ h2, h3, h4, h5, h6 {
   border-left: 1px solid #e5e5ee;
   z-index: -1;
 }
+#pathname {
+    color: grey;
+}
+#filename {
+    text-align: right;
+}
 #jump_to, #jump_page {
   background: white;
   -webkit-box-shadow: 0 0 25px #777; -moz-box-shadow: 0 0 25px #777;
@@ -39,7 +45,6 @@ h2, h3, h4, h5, h6 {
   font: 10px Arial;
   text-transform: uppercase;
   cursor: pointer;
-  text-align: right;
 }
 #jump_to, #jump_wrapper {
   position: fixed;
@@ -207,7 +212,15 @@ html = """\
       <div id="jump_page">
         
         {{#sources}}
-          <a class="source" href="">{{ title }}</a>
+            <div id="{{ id }}" >
+              <a class="source" id="pathname"> {{ dirname }} </a>
+            </div>
+
+            <div id="{{ id }}_titles">
+              {{#titles}}
+                <a class="source" id="filename" href="{{ url }}"> {{ title }} </a>
+              {{/titles}}
+            </div>
         {{/sources}}
       
       </div>

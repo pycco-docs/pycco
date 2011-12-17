@@ -32,8 +32,29 @@ class Source:
     def save_path(self):
         return "docs/%s/%s" %( self.dirname, self.title )
     
-    def get(self, *arg):
-        return self.title
+    def relative_path(self, source):
+        html = lambda x: "%s.html" %path.splitext(x)[0]
+        rel  = path.relpath( source.dirpath, self.dirpath )
+        return "%s/%s" %( rel, html(source.title) )  
+
+    def relative_paths(self, sources):
+        root_ = ''; list_ = []; dict_ = {}; id_ = 1 
+        title    = lambda s: { 'title': s.title, 'url': self.relative_path( s ) }
+        new_dict = lambda s: { 'id': id_, 'dirname': s.dirname, 'titles': [ title( s ) ], }
+
+        for source in sources:
+            if source.dirpath != root_:
+                if dict_: 
+                    list_.append( dict_ )
+                root_  = source.dirpath
+                dict_  = new_dict( source )
+                id_   += 1
+            else:
+                dict_[ 'titles' ].append( title( source ) )
+
+        list_.append( dict_ )
+        return list_   
+
 
 class Sources:
     def __init__(self, sources, start):
