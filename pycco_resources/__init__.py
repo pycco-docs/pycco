@@ -201,6 +201,25 @@ html = """\
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
   <title>{{ title }}</title>
   <link rel="stylesheet" href="{{ stylesheet }}">
+  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    var slide_it = function( main, details ) 
+    {
+        main = "#".concat( main );
+        details = "#".concat( details );
+        $(main).click( function() {
+            console.log('fff');
+            if ( $( details ).is( ':hidden' ) ) {
+                $( main ).addClass( "active" );
+                $( details ).slideDown( 'fast' );
+            } 
+            else {
+                $( details ).slideUp( 'fast' );
+                $( main ).removeClass( "active" );
+            }
+        });
+    };
+</script>
 </head>
 <body>
 <div id="background"></div>
@@ -216,11 +235,16 @@ html = """\
               <a class="source" id="pathname"> {{ dirname }} </a>
             </div>
 
-            <div id="{{ id }}_titles">
+            <div id="{{ id }}_titles" style="display:none;">
               {{#titles}}
                 <a class="source" id="filename" href="{{ url }}"> {{ title }} </a>
               {{/titles}}
             </div>
+            
+            <script type="text/javascript" charset="utf-8">
+                slide_it( "{{ id }}",
+                          "{{ id }}_titles" );
+              </script>
         {{/sources}}
       
       </div>
