@@ -465,7 +465,9 @@ def monitor(sources, opts):
         observer.stop()
         observer.join()
 
+
 from utils import *
+SOURCES=[]
 
 def main():
     """Hook spot for the console script."""
@@ -492,7 +494,10 @@ def main():
     
     if opts.all:
         sources = [i for i in get_all_files( filepath, filetype )]
-
+    
+    global SOURCES
+    SOURCES = Sources( sources )
+    
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths)
 
     # If the -w / --watch option was present, monitor the source directories
