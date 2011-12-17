@@ -45,6 +45,7 @@ h2, h3, h4, h5, h6 {
   position: fixed;
   right: 0; top: 0;
   padding: 5px 10px;
+  z-index: 99999;
 }
   #jump_wrapper {
     padding: 0;
@@ -52,6 +53,7 @@ h2, h3, h4, h5, h6 {
   }
     #jump_to:hover #jump_wrapper {
       display: block;
+      z-index: 99999;
     }
     #jump_page {
       padding: 5px 0 3px;
