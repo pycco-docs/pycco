@@ -198,18 +198,20 @@ html = """\
 <body>
 <div id="background"></div>
 <div id='container'>
-  {{#sources?}}
+
   <div id="jump_to">
     Jump To &hellip;
     <div id="jump_wrapper">
       <div id="jump_page">
+        
         {{#sources}}
-          <a class="source" href="{{ url }}">{{ basename }}</a>
+          <a class="source" href="">{{ title }}</a>
         {{/sources}}
+      
       </div>
     </div>
   </div>
-  {{/sources?}}
+
   <div class='section'>
     <div class='docs'><h1>{{ title }}</h1></div>
   </div>

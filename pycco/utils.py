@@ -31,7 +31,9 @@ class Source:
     
     def save_path(self):
         return "docs/%s/%s" %( self.dirname, self.title )
-
+    
+    def get(self, *arg):
+        return self.title
 
 class Sources:
     def __init__(self, sources, start):
