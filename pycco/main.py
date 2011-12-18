@@ -84,7 +84,7 @@ def parse(source, code):
             })
 
     # Setup the variables to get ready to check for multiline comments
-    multi_line = False
+    listing = multi_line = False
     multi_line_delimiters = [language.get("multistart"), language.get("multiend")]
 
     for line in lines:
@@ -108,7 +108,6 @@ def parse(source, code):
             line = line.replace(language["multistart"], '')
             line = line.replace(language["multiend"], '')
             docs_text += line.strip() + '\n'
-            indent_level = re.match("\s*", line).group(0)
 
             if has_code and docs_text.strip():
                 save(docs_text, code_text[:-1])
@@ -116,8 +115,21 @@ def parse(source, code):
                 has_code = docs_text = ''
 
         elif multi_line:
-            # Remove leading spaces
-            docs_text += line[len(indent_level):] + '\n'
+            if "multimiddle" in language and line_lstripped.startswith(language["multimiddle"]):
+                line_stripped = line_lstripped.replace(language["multimiddle"], '').strip()
+            else:
+                line_stripped = line.strip()
+
+            if re.match('\w+ - \w+', line_stripped):
+                if not listing:
+                    listing = True
+                    docs_text += "<ul>"
+                line_stripped = '<li>%s</li>' % line_stripped
+            elif listing:
+                listing = False
+                docs_text += "</ul>"
+
+            docs_text += line_stripped + '\n'
 
         elif re.match(language["comment_matcher"], line):
             if has_code:
@@ -285,7 +297,7 @@ languages = {
     ".cpp": { "name": "cpp", "symbol": "//"},
 
     ".js": { "name": "javascript", "symbol": "//",
-        "multistart": "/*", "multiend": "*/"},
+        "multistart": "/*", "multiend": "*/", "multimiddle": "*"},
 
     ".rb": { "name": "ruby", "symbol": "#",
         "multistart": "=begin", "multiend": "=end"},
