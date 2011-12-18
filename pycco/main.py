@@ -88,10 +88,11 @@ def parse(source, code):
     multi_line_delimiters = [language.get("multistart"), language.get("multiend")]
 
     for line in lines:
+        line_lstripped = line.lstrip()
 
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
-        if all(multi_line_delimiters) and any([line.lstrip().startswith(delim) for delim in multi_line_delimiters]):
+        if all(multi_line_delimiters) and any([line_lstripped.startswith(delim) for delim in multi_line_delimiters]):
             if not multi_line:
                 multi_line = True
 
