@@ -208,7 +208,6 @@ html = """\
         main = "#".concat( main );
         details = "#".concat( details );
         $(main).click( function() {
-            console.log('fff');
             if ( $( details ).is( ':hidden' ) ) {
                 $( main ).addClass( "active" );
                 $( details ).slideDown( 'fast' );
@@ -235,7 +234,7 @@ html = """\
               <a class="source" id="pathname"> {{ dirname }} </a>
             </div>
 
-            <div id="{{ id }}_titles" style="display:none;">
+            <div id="{{ id }}_titles" style="display: {{ display }};">
               {{#titles}}
                 <a class="source" id="filename" href="{{ url }}"> {{ title }} </a>
               {{/titles}}

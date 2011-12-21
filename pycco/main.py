@@ -487,13 +487,12 @@ def main():
                       
     opts, sources   = parser.parse_args()
     
-
     filepath        = os.path.dirname( sources[0] )
     start, filetype = os.path.splitext( sources[0] )
     
+    print start
     if start.endswith( '*' ):
-        return
-        #raise NoFilesFound()
+        raise NoFilesFound()
     else:
         start = os.path.dirname( os.path.dirname( start ) )
     
