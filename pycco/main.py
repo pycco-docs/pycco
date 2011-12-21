@@ -46,6 +46,8 @@ def generate_documentation(source, outdir=None, preserve_paths=True):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
+    print 
+    source.name
     fh = open(source.name, "r")
     sections = parse(source.name, fh.read())
     highlight(source.name, sections, preserve_paths=preserve_paths, outdir=outdir)
@@ -484,13 +486,20 @@ def main():
                       help='Get all files from subfolders')
                       
     opts, sources   = parser.parse_args()
+    
 
     filepath        = os.path.dirname( sources[0] )
     start, filetype = os.path.splitext( sources[0] )
-    start           = os.path.dirname( os.path.dirname( start ) )
+    
+    if start.endswith( '*' ):
+        return
+        #raise NoFilesFound()
+    else:
+        start = os.path.dirname( os.path.dirname( start ) )
     
     if opts.all:
-        sources = [i for i in get_all_files( filepath, filetype )]
+        sources = [ i for i in get_all_files( filepath, filetype ) ]
+
     
     global SOURCES
     SOURCES = Sources( sources, start )
