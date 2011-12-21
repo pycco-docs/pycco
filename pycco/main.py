@@ -488,18 +488,19 @@ def main():
                       
     opts, sources   = parser.parse_args()
     
+    if not sources:
+        return
+    
     filepath        = os.path.dirname( sources[0] )
     start, filetype = os.path.splitext( sources[0] )
-    
-    print start
+        
     if start.endswith( '*' ):
-        raise NoFilesFound()
-    else:
-        start = os.path.dirname( os.path.dirname( start ) )
+        return
+    
+    start = os.path.dirname( os.path.dirname( start ) )
     
     if opts.all:
         sources = [ i for i in get_all_files( filepath, filetype ) ]
-
     
     global SOURCES
     SOURCES = Sources( sources, start )
