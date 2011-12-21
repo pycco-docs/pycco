@@ -63,6 +63,7 @@ h2, h3, h4, h5, h6 {
     #jump_page {
       padding: 5px 0 3px;
       margin: 0 0 25px 25px;
+      min-width:100px;
     }
       #jump_page .source {
         display: block;
