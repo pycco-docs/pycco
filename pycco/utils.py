@@ -16,7 +16,7 @@ def get_all_files( path, extension ):
             return ''
         else:
             return relpath + "/"
-    
+
     for path, dirs, files in os.walk( path ):
         for filename in files:
             if filename.endswith( extension ):

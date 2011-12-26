@@ -493,14 +493,14 @@ def main():
     
     filepath        = os.path.dirname( sources[0] )
     start, filetype = os.path.splitext( sources[0] )
-        
+    
     if start.endswith( '*' ):
         return
     
     start = os.path.dirname( os.path.dirname( start ) )
     
     if opts.all:
-        sources = [ i for i in get_all_files( filepath, filetype ) ]
+        sources = [ i for i in get_all_files( filepath or '.', filetype ) ]
     
     global SOURCES
     SOURCES = Sources( sources, start )
