@@ -104,15 +104,15 @@ def parse(source, code):
 
             else:
                 multi_line = False
-                
+
             if (multi_line
                and line.strip().endswith(language.get("multiend"))
                and len(line.strip()) > len(language.get("multiend"))):
                 multi_line = False
 
             # Get rid of the delimiters so that they aren't in the final docs
-            line = re.sub(re.escape(language["multistart"]),'',line)
-            line = re.sub(re.escape(language["multiend"]),'',line)
+            line = line.replace(language["multistart"], '')
+            line = line.replace(language["multiend"], '')
             docs_text += line.strip() + '\n'
             indent_level = re.match("\s*", line).group(0)
 
@@ -350,7 +350,7 @@ def destination(filepath, preserve_paths=True, outdir=None):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     try:
-        name = filepath.replace(filepath[ filepath.rindex("."): ], "")
+        name = re.sub(r"\.[^.]*$", "", filepath)
     except ValueError:
         name = filepath
     if not preserve_paths:
