@@ -497,7 +497,8 @@ def main():
     if start.endswith( '*' ):
         return
     
-    start = os.path.dirname( os.path.dirname( start ) )
+    start = os.path.dirname( os.path.dirname( os.path.abspath(start) ) )
+    #start = os.path.dirname( os.path.dirname( start ) )
     
     if opts.all:
         sources = [ i for i in get_all_files( filepath or '.', filetype ) ]
