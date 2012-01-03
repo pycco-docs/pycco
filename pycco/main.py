@@ -477,7 +477,7 @@ def main():
                       help='Preserve path structure of original files')
 
     parser.add_option('-d', '--directory', action='store', type='string',
-                      dest='outdir', default='docs',
+                      dest='outdir', default='.',
                       help='The output directory that the rendered files should go to.')
 
     parser.add_option('-w', '--watch', action='store_true',
