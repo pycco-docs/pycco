@@ -322,7 +322,7 @@ def get_language(source):
 
     try:
         return languages[ source[source.rindex("."):] ]
-    except ValueError:
+    except KeyError:
         source = open(source, "r")
         code = source.read()
         source.close()
@@ -364,7 +364,7 @@ def ensure_directory(directory):
     """Ensure that the destination directory exists."""
 
     if not os.path.isdir(directory):
-        os.mkdir(directory)
+        os.makedirs(directory)
 
 def template(source):
     return lambda context: pystache.render(source, context)
