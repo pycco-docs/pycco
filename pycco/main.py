@@ -477,7 +477,7 @@ def main():
                       help='Preserve path structure of original files')
 
     parser.add_option('-d', '--directory', action='store', type='string',
-                      dest='outdir', default='docs',
+                      dest='outdir', default='.',
                       help='The output directory that the rendered files should go to.')
 
     parser.add_option('-w', '--watch', action='store_true',
@@ -497,7 +497,8 @@ def main():
     if start.endswith( '*' ):
         return
     
-    start = os.path.dirname( os.path.dirname( start ) )
+    start = os.path.dirname( os.path.dirname( os.path.abspath(start) ) )
+    #start = os.path.dirname( os.path.dirname( start ) )
     
     if opts.all:
         sources = [ i for i in get_all_files( filepath or '.', filetype ) ]

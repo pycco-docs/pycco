@@ -32,6 +32,7 @@ class Source:
         self.title      = path.basename( self.name )
         self.dirpath    = path.dirname( self.name ) or '.'
         self.dirname    = path.relpath(self.dirpath, start)
+        self.start      = start
     
     def save_path(self):
         return "docs/%s/%s" %( self.dirname, self.title )
