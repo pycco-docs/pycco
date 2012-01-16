@@ -250,7 +250,7 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     rendered = pycco_template({
         "title"       : source.title,
-        "sources"     : source.relative_paths( SOURCES ),
+        "sources"     : source.relative_paths(SOURCES),
         "stylesheet"  : csspath,
         "sections"    : sections,
         "source"      : source.name,
@@ -486,25 +486,24 @@ def main():
     parser.add_option('-a', '--all', action='store_true',
                       help='Get all files from subfolders')
                       
-    opts, sources   = parser.parse_args()
+    opts, sources = parser.parse_args()
     
     if not sources:
         return
     
-    filepath        = os.path.dirname( sources[0] )
-    start, filetype = os.path.splitext( sources[0] )
+    filepath = os.path.dirname(sources[0])
+    start, filetype = os.path.splitext(sources[0])
     
-    if start.endswith( '*' ):
+    if start.endswith('*'):
         return
     
-    start = os.path.dirname( os.path.dirname( os.path.abspath(start) ) )
-    #start = os.path.dirname( os.path.dirname( start ) )
+    start = os.path.dirname(os.path.dirname(os.path.abspath(start)))
     
     if opts.all:
-        sources = [ i for i in get_all_files( filepath or '.', filetype ) ]
+        sources = [i for i in get_all_files(filepath or '.', filetype)]
     
     global SOURCES
-    SOURCES = Sources( sources, start )
+    SOURCES = Sources(sources, start)
     
     process(SOURCES, outdir=opts.outdir, preserve_paths=opts.paths)
 
