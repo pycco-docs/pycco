@@ -2,11 +2,6 @@ import sys
 import os
 
 
-class NoFilesFound(Exception):
-    def __str__(self):
-        return "No files were found to be processed by pycco"
-
-
 def get_all_files(path, extension):
     def relative(path):
         relpath = os.path.relpath(path)
