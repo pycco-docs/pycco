@@ -299,6 +299,11 @@ languages = {
         "multistart": "--[[", "multiend": "--]]"},
 
     ".erl": { "name": "erlang", "symbol": "%%" },
+
+    ".html": { "name": "html", "symbol": "HTMLDIVIDER",
+        "multistart": "<!--", "multiend": "-->",
+        "divider_text": "<!-- HTMLDIVIDER -->",
+        "divider_html": re.compile(r'\n*<span class="c[1]?">&lt;!-- HTMLDIVIDER --&gt;</span>\n*') },
 }
 
 # Build out the appropriate matchers and delimiters for each language.
@@ -308,11 +313,13 @@ for ext, l in languages.items():
 
     # The dividing token we feed into Pygments, to delimit the boundaries between
     # sections.
-    l["divider_text"] = "\n" + l["symbol"] + "DIVIDER\n"
+    if "divider_text" not in l:
+        l["divider_text"] = "\n" + l["symbol"] + "DIVIDER\n"
 
     # The mirror of `divider_text` that we expect Pygments to return. We can split
     # on this to recover the original sections.
-    l["divider_html"] = re.compile(r'\n*<span class="c[1]?">' + l["symbol"] + 'DIVIDER</span>\n*')
+    if "divider_html" not in l:
+        l["divider_html"] = re.compile(r'\n*<span class="c[1]?">' + l["symbol"] + 'DIVIDER</span>\n*')
 
     # Get the Pygments Lexer for this language.
     l["lexer"] = lexers.get_lexer_by_name(l["name"])
