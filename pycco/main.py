@@ -116,7 +116,10 @@ def parse(source, code):
 
         elif multi_line:
             # Remove leading spaces
-            docs_text += line[len(indent_level):] + '\n'
+            if re.match(r' {%d}' % len(indent_level), line):
+                docs_text += line[len(indent_level):] + '\n'
+            else:
+                docs_text += line + '\n'
 
         elif re.match(language["comment_matcher"], line):
             if has_code:
