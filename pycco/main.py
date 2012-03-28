@@ -183,7 +183,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
         }
 
     comment = re.sub('^([=]+)([^=]+)[=]*\s*$', replace_section_name, comment)
-    comment = re.sub('[^`]\[\[(.+)\]\]', replace_crossref, comment)
+    comment = re.sub('[^`]\[\[(.+?)\]\]', replace_crossref, comment)
 
     return comment
 
