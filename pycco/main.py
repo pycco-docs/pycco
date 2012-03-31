@@ -31,6 +31,11 @@ Or, to install the latest source
     python setup.py install
 """
 
+import sys, os
+sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath( __file__ ) ) ) )
+
+
+
 # === Main Documentation Generation Functions ===
 
 def generate_documentation(source, outdir=None, preserve_paths=True):
@@ -42,9 +47,11 @@ def generate_documentation(source, outdir=None, preserve_paths=True):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    fh = open(source, "r")
-    sections = parse(source, fh.read())
-    highlight(source, sections, preserve_paths=preserve_paths, outdir=outdir)
+    print 
+    source.name
+    fh = open(source.name, "r")
+    sections = parse(source.name, fh.read())
+    highlight(source.name, sections, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
 
 def parse(source, code):
@@ -237,18 +244,19 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument")
-    title = path.basename(source)
-    dest = destination(source, preserve_paths=preserve_paths, outdir=outdir)
+
+    dest = destination(source.save_path(), preserve_paths=preserve_paths, outdir=outdir)
     csspath = path.relpath(path.join(outdir, "pycco.css"), path.split(dest)[0])
 
     for sect in sections:
         sect["code_html"] = re.sub(r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"])
 
     rendered = pycco_template({
-        "title"       : title,
+        "title"       : source.title,
+        "sources"     : source.relative_paths( SOURCES ),
         "stylesheet"  : csspath,
         "sections"    : sections,
-        "source"      : source,
+        "source"      : source.name,
         "path"        : path,
         "destination" : destination
     })
@@ -395,7 +403,7 @@ def process(sources, preserve_paths=True, outdir=None):
 
     # Make a copy of sources given on the command line. `main()` needs the
     # original list when monitoring for changed files.
-    sources = sorted(sources)
+    #? sources = sorted(sources)
 
     # Proceed to generating the documentation.
     if sources:
@@ -403,10 +411,9 @@ def process(sources, preserve_paths=True, outdir=None):
         css = open(path.join(outdir, "pycco.css"), "w")
         css.write(pycco_styles)
         css.close()
-
-        def next_file():
-            s = sources.pop(0)
-            dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
+        
+        for s in sources:
+            dest = destination(s.save_path(), preserve_paths=preserve_paths, outdir=outdir)
 
             try:
                 os.makedirs(path.split(dest)[0])
@@ -416,11 +423,8 @@ def process(sources, preserve_paths=True, outdir=None):
             with open(dest, "w") as f:
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir))
 
-            print "pycco = %s -> %s" % (s, dest)
+            print "pycco = %s -> %s" % (s.name, dest)
 
-            if sources:
-                next_file()
-        next_file()
 
 __all__ = ("process", "generate_documentation")
 
@@ -468,6 +472,9 @@ def monitor(sources, opts):
         observer.join()
 
 
+from utils import *
+SOURCES=[]
+
 def main():
     """Hook spot for the console script."""
 
@@ -476,14 +483,36 @@ def main():
                       help='Preserve path structure of original files')
 
     parser.add_option('-d', '--directory', action='store', type='string',
-                      dest='outdir', default='docs',
+                      dest='outdir', default='.',
                       help='The output directory that the rendered files should go to.')
 
     parser.add_option('-w', '--watch', action='store_true',
                       help='Watch original files and re-generate documentation on changes')
-    opts, sources = parser.parse_args()
-
-    process(sources, outdir=opts.outdir, preserve_paths=opts.paths)
+                     
+    parser.add_option('-a', '--all', action='store_true',
+                      help='Get all files from subfolders')
+                      
+    opts, sources   = parser.parse_args()
+    
+    if not sources:
+        return
+    
+    filepath        = os.path.dirname( sources[0] )
+    start, filetype = os.path.splitext( sources[0] )
+    
+    if start.endswith( '*' ):
+        return
+    
+    start = os.path.dirname( os.path.dirname( os.path.abspath(start) ) )
+    #start = os.path.dirname( os.path.dirname( start ) )
+    
+    if opts.all:
+        sources = [ i for i in get_all_files( filepath or '.', filetype ) ]
+    
+    global SOURCES
+    SOURCES = Sources( sources, start )
+    
+    process(SOURCES, outdir=opts.outdir, preserve_paths=opts.paths)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they

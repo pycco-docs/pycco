@@ -32,6 +32,12 @@ h2, h3, h4, h5, h6 {
   border-left: 1px solid #e5e5ee;
   z-index: -1;
 }
+#pathname {
+    color: grey;
+}
+#filename {
+    text-align: right;
+}
 #jump_to, #jump_page {
   background: white;
   -webkit-box-shadow: 0 0 25px #777; -moz-box-shadow: 0 0 25px #777;
@@ -39,12 +45,12 @@ h2, h3, h4, h5, h6 {
   font: 10px Arial;
   text-transform: uppercase;
   cursor: pointer;
-  text-align: right;
 }
 #jump_to, #jump_wrapper {
   position: fixed;
   right: 0; top: 0;
   padding: 5px 10px;
+  z-index: 99999;
 }
   #jump_wrapper {
     padding: 0;
@@ -52,10 +58,12 @@ h2, h3, h4, h5, h6 {
   }
     #jump_to:hover #jump_wrapper {
       display: block;
+      z-index: 99999;
     }
     #jump_page {
       padding: 5px 0 3px;
       margin: 0 0 25px 25px;
+      min-width:100px;
     }
       #jump_page .source {
         display: block;
@@ -194,22 +202,55 @@ html = """\
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
   <title>{{ title }}</title>
   <link rel="stylesheet" href="{{ stylesheet }}">
+  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    var slide_it = function( main, details ) 
+    {
+        main = "#".concat( main );
+        details = "#".concat( details );
+        $(main).click( function() {
+            if ( $( details ).is( ':hidden' ) ) {
+                $( main ).addClass( "active" );
+                $( details ).slideDown( 'fast' );
+            } 
+            else {
+                $( details ).slideUp( 'fast' );
+                $( main ).removeClass( "active" );
+            }
+        });
+    };
+</script>
 </head>
 <body>
 <div id="background"></div>
 <div id='container'>
-  {{#sources?}}
+
   <div id="jump_to">
     Jump To &hellip;
     <div id="jump_wrapper">
       <div id="jump_page">
+        
         {{#sources}}
-          <a class="source" href="{{ url }}">{{ basename }}</a>
+            <div id="{{ id }}" >
+              <a class="source" id="pathname"> {{ dirname }} </a>
+            </div>
+
+            <div id="{{ id }}_titles" style="display: {{ display }};">
+              {{#titles}}
+                <a class="source" id="filename" href="{{ url }}"> {{ title }} </a>
+              {{/titles}}
+            </div>
+            
+            <script type="text/javascript" charset="utf-8">
+                slide_it( "{{ id }}",
+                          "{{ id }}_titles" );
+              </script>
         {{/sources}}
+      
       </div>
     </div>
   </div>
-  {{/sources?}}
+
   <div class='section'>
     <div class='docs'><h1>{{ title }}</h1></div>
   </div>
