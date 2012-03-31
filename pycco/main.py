@@ -324,8 +324,8 @@ for ext, l in languages.items():
 def get_language(source):
     """Get the current language we're documenting, based on the extension."""
 
-    m = re.match(r'.*\.(.+)', os.path.basename(source))
-    if m and languages.has_key(m.group(1)):
+    m = re.match(r'.*(\..+)', os.path.basename(source))
+    if m and m.group(1) in languages:
         return languages[m.group(1)]
     else:
         source = open(source, "r")
