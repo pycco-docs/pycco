@@ -324,9 +324,10 @@ for ext, l in languages.items():
 def get_language(source):
     """Get the current language we're documenting, based on the extension."""
 
-    try:
-        return languages[ source[source.rindex("."):] ]
-    except KeyError:
+    m = re.match(r'.*\.(.+)', os.path.basename(source))
+    if m and languages.has_key(m.group(1)):
+        return languages[m.group(1)]
+    else:
         source = open(source, "r")
         code = source.read()
         source.close()
@@ -343,14 +344,15 @@ def destination(filepath, preserve_paths=True, outdir=None):
     source is `lib/example.py`, the HTML will be at `docs/example.html`
     """
 
+    dirname, filename = path.split(filepath)
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     try:
-        name = re.sub(r"\.[^.]*$", "", filepath)
+        name = re.sub(r"\.[^.]*$", "", filename)
     except ValueError:
-        name = filepath
-    if not preserve_paths:
-        name = path.basename(name)
+        name = filename
+    if preserve_paths:
+        name = path.join(dirname, name)
     return path.join(outdir, "%s.html" % name)
 
 def shift(list, default):
@@ -411,7 +413,7 @@ def process(sources, preserve_paths=True, outdir=None):
             except OSError:
                 pass
 
-            with open(destination(s, preserve_paths=preserve_paths, outdir=outdir), "w") as f:
+            with open(dest, "w") as f:
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir))
 
             print "pycco = %s -> %s" % (s, dest)
