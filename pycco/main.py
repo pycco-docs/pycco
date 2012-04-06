@@ -216,8 +216,7 @@ def highlight(source, sections, preserve_paths=True, outdir=None, syntax=None):
             docs_text = unicode(section["docs_text"])
         except UnicodeError:
             docs_text = unicode(section["docs_text"].decode('utf-8'))
-        syntax_func = globals()[syntax]
-        section["docs_html"] = syntax_func(preprocess(docs_text,
+        section["docs_html"] = SYNTAX_FUNC(preprocess(docs_text,
                                                       i,
                                                       preserve_paths=preserve_paths,
                                                       outdir=outdir))
@@ -273,6 +272,10 @@ import time
 from markdown import markdown
 from os import path
 from pygments import lexers, formatters
+
+
+SYNTAX_FUNC = markdown  # Used for parsing docstrings and comments
+
 
 # A list of the languages that Pycco supports, mapping the file extension to
 # the name of the Pygments lexer and the symbol that indicates a comment. To
@@ -488,6 +491,13 @@ def main():
                       help='Watch original files and re-generate documentation on changes')
     opts, sources = parser.parse_args()
 
+    if syntax == 'reST':
+        try:
+            from creole.rest2html.clean_writer import rest2html
+        except ImportError:
+            sys.exit('The -s reST option requires the creole package.')
+        SYNTAX_FUNC = rest2html
+
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths, syntax=opts.syntax)
 
     # If the -w / --watch option was present, monitor the source directories
@@ -501,12 +511,6 @@ def main():
             sys.exit('The -w/--watch option requires the watchdog package.')
 
         monitor(sources, opts)
-
-    if opts.syntax == 'reST':
-        try:
-            from creole.rest2html.clean_writer import rest2html as reST
-        except ImportError:
-            sys.exit('The -s reST option requires the creole package.')
 
 
 # Run the script.
