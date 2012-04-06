@@ -6,8 +6,9 @@ the original quick-and-dirty, hundred-line-long, literate-programming-style
 documentation generator. It produces HTML that displays your comments
 alongside your code. Comments are passed through
 [Markdown](http://daringfireball.net/projects/markdown/syntax) and
-[SmartyPants](http://daringfireball.net/projects/smartypants), while code is
-passed through [Pygments](http://pygments.org/) for syntax highlighting.
+[SmartyPants](http://daringfireball.net/projects/smartypants) or either
+[reST](http://docutils.sourceforge.net/rst.html). Code is passed through
+[Pygments](http://pygments.org/) for syntax highlighting.
 This page is the result of running Pycco against its own source file.
 
 If you install Pycco, you can run it from the command-line:
@@ -33,7 +34,7 @@ Or, to install the latest source
 
 # === Main Documentation Generation Functions ===
 
-def generate_documentation(source, outdir=None, preserve_paths=True):
+def generate_documentation(source, outdir=None, preserve_paths=True, syntax=None):
     """
     Generate the documentation for a source file by reading it in, splitting it
     up into comment/code sections, highlighting them for the appropriate
@@ -44,7 +45,7 @@ def generate_documentation(source, outdir=None, preserve_paths=True):
         raise TypeError("Missing the required 'outdir' keyword argument.")
     fh = open(source, "r")
     sections = parse(source, fh.read())
-    highlight(source, sections, preserve_paths=preserve_paths, outdir=outdir)
+    highlight(source, sections, preserve_paths=preserve_paths, outdir=outdir, syntax=syntax)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
 
 def parse(source, code):
@@ -189,10 +190,10 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
 
 # === Highlighting the source code ===
 
-def highlight(source, sections, preserve_paths=True, outdir=None):
+def highlight(source, sections, preserve_paths=True, outdir=None, syntax=None):
     """
     Highlights a single chunk of code using the **Pygments** module, and runs
-    the text of its corresponding comment through **Markdown**.
+    the text of its corresponding comment through **Markdown** or **reST**.
 
     We process the entire file in a single call to Pygments by inserting little
     marker comments between each section and then splitting the result string
@@ -215,10 +216,11 @@ def highlight(source, sections, preserve_paths=True, outdir=None):
             docs_text = unicode(section["docs_text"])
         except UnicodeError:
             docs_text = unicode(section["docs_text"].decode('utf-8'))
-        section["docs_html"] = markdown(preprocess(docs_text,
-                                                   i,
-                                                   preserve_paths=preserve_paths,
-                                                   outdir=outdir))
+        syntax_func = globals()[syntax]
+        section["docs_html"] = syntax_func(preprocess(docs_text,
+                                                      i,
+                                                      preserve_paths=preserve_paths,
+                                                      outdir=outdir))
         section["num"] = i
 
 # === HTML Code generation ===
@@ -387,7 +389,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-def process(sources, preserve_paths=True, outdir=None):
+def process(sources, preserve_paths=True, outdir=None, syntax=None):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
@@ -414,7 +416,7 @@ def process(sources, preserve_paths=True, outdir=None):
                 pass
 
             with open(dest, "w") as f:
-                f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir))
+                f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir, syntax=syntax))
 
             print "pycco = %s -> %s" % (s, dest)
 
@@ -472,6 +474,9 @@ def main():
     """Hook spot for the console script."""
 
     parser = optparse.OptionParser()
+    parser.add_option('-s', '--syntax', action='store', choices=['markdown', 'reST'],
+                      help='Specify markup language: markdown, reST', default='markdown')
+
     parser.add_option('-p', '--paths', action='store_true',
                       help='Preserve path structure of original files')
 
@@ -483,7 +488,7 @@ def main():
                       help='Watch original files and re-generate documentation on changes')
     opts, sources = parser.parse_args()
 
-    process(sources, outdir=opts.outdir, preserve_paths=opts.paths)
+    process(sources, outdir=opts.outdir, preserve_paths=opts.paths, syntax=opts.syntax)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
@@ -496,6 +501,13 @@ def main():
             sys.exit('The -w/--watch option requires the watchdog package.')
 
         monitor(sources, opts)
+
+    if opts.syntax == 'reST':
+        try:
+            from creole.rest2html.clean_writer import rest2html as reST
+        except ImportError:
+            sys.exit('The -s reST option requires the creole package.')
+
 
 # Run the script.
 if __name__ == "__main__":
