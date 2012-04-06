@@ -476,6 +476,8 @@ def monitor(sources, opts):
 def main():
     """Hook spot for the console script."""
 
+    global SYNTAX_FUNC
+
     parser = optparse.OptionParser()
     parser.add_option('-s', '--syntax', action='store', choices=['markdown', 'reST'],
                       help='Specify markup language: markdown, reST', default='markdown')
@@ -491,7 +493,7 @@ def main():
                       help='Watch original files and re-generate documentation on changes')
     opts, sources = parser.parse_args()
 
-    if syntax == 'reST':
+    if opts.syntax == 'reST':
         try:
             from creole.rest2html.clean_writer import rest2html
         except ImportError:
