@@ -495,7 +495,7 @@ def main():
         try:
             from creole.rest2html.clean_writer import rest2html
         except ImportError:
-            sys.exit('The -s reST option requires the creole package.')
+            sys.exit('The -s reST option requires the python-creole package.')
         SYNTAX_FUNC = rest2html
 
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths, syntax=opts.syntax)
