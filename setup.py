@@ -16,5 +16,5 @@ setup(
                 ]
             },
         install_requires = ['markdown', 'pygments', 'pystache', 'smartypants'],
-        extras_require = {'monitoring': 'watchdog', 'reST': 'creole'},
+        extras_require = {'monitoring': 'watchdog', 'reST': 'python-creole'},
         )
