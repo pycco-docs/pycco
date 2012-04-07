@@ -6,6 +6,7 @@ body {
   line-height: 24px;
   color: #252519;
   margin: 0; padding: 0;
+  background: #f5f5ff;
 }
 a {
   color: #261a3b;
@@ -22,15 +23,18 @@ h1, h2, h3, h4, h5, h6 {
 h2, h3, h4, h5, h6 {
     margin-top: 0;
   }
+#container {
+  background: white;
+ }
 #container, div.section {
   position: relative;
 }
 #background {
-  position: fixed;
+  position: absolute;
   top: 0; left: 580px; right: 0; bottom: 0;
   background: #f5f5ff;
   border-left: 1px solid #e5e5ee;
-  z-index: -1;
+  z-index: 0;
 }
 #jump_to, #jump_page {
   background: white;
@@ -196,8 +200,8 @@ html = """\
   <link rel="stylesheet" href="{{ stylesheet }}">
 </head>
 <body>
-<div id="background"></div>
 <div id='container'>
+  <div id="background"></div>
   {{#sources?}}
   <div id="jump_to">
     Jump To &hellip;
