@@ -497,7 +497,7 @@ def main():
         sources = [i for i in get_all_files(filepath or '.', filetype)]
     
     global SOURCES
-    SOURCES = [Source(name, start) for name in sources]
+    SOURCES = sorted([Source(name, start) for name in sources])
 
     process(SOURCES, outdir=opts.outdir, preserve_paths=opts.paths)
 
