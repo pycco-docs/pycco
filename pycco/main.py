@@ -35,7 +35,6 @@ import sys, os
 sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath( __file__ ) ) ) )
 
 
-
 # === Main Documentation Generation Functions ===
 
 def generate_documentation(source, outdir=None, preserve_paths=True):
@@ -399,7 +398,7 @@ def process(sources, preserve_paths=True, outdir=None):
         css = open(path.join(outdir, "pycco.css"), "w")
         css.write(pycco_styles)
         css.close()
-        
+
         for s in sources:
             dest = destination(s.save_path(), preserve_paths=preserve_paths, outdir=outdir)
 
@@ -460,7 +459,7 @@ def monitor(sources, opts):
         observer.join()
 
 
-from utils import *
+from utils import get_all_files, Source
 SOURCES=[]
 
 def main():
@@ -476,26 +475,26 @@ def main():
 
     parser.add_option('-w', '--watch', action='store_true',
                       help='Watch original files and re-generate documentation on changes')
-                     
+
     parser.add_option('-a', '--all', action='store_true',
                       help='Get all files from subfolders')
-                      
+
     opts, sources = parser.parse_args()
-    
+
     if not sources:
         return
-    
+
     filepath = os.path.dirname(sources[0])
     start, filetype = os.path.splitext(sources[0])
-    
+
     if start.endswith('*'):
         return
-    
+
     start = os.path.dirname(os.path.dirname(os.path.abspath(start)))
-    
+
     if opts.all:
         sources = [i for i in get_all_files(filepath or '.', filetype)]
-    
+
     global SOURCES
     SOURCES = sorted([Source(name, start) for name in sources])
 
