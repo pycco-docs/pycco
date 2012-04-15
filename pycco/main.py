@@ -47,8 +47,6 @@ def generate_documentation(source, outdir=None, preserve_paths=True):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    print 
-    source.name
     fh = open(source.name, "r")
     sections = parse(source.name, fh.read())
     highlight(source.name, sections, preserve_paths=preserve_paths, outdir=outdir)
@@ -394,10 +392,6 @@ def process(sources, preserve_paths=True, outdir=None):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-
-    # Make a copy of sources given on the command line. `main()` needs the
-    # original list when monitoring for changed files.
-    #? sources = sorted(sources)
 
     # Proceed to generating the documentation.
     if sources:
