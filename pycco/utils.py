@@ -32,6 +32,9 @@ class Source:
         rel  = os.path.relpath(source.dirpath, self.dirpath)
         return "%s/%s" % (rel, html(source.title))
 
+    def __cmp__(self, other):
+        return cmp(self.name, other.name)
+
     def relative_paths(self, sources):
         root_ = ''
         list_ = []
@@ -54,16 +57,3 @@ class Source:
         if len(list_) == 1:
             list_[0]['display'] = 'block'
         return list_
-
-
-class Sources:
-    def __init__(self, sources, start):
-        self.list = [Source(name, start) for name in sources]
-        self.get  = lambda x: self.list[index]
-
-    def names(self):
-        return [i.name for i in self.list]
-
-    def __iter__(self):
-        for i in self.list:
-            yield i

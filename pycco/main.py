@@ -497,8 +497,8 @@ def main():
         sources = [i for i in get_all_files(filepath or '.', filetype)]
     
     global SOURCES
-    SOURCES = Sources(sources, start)
-    
+    SOURCES = [Source(name, start) for name in sources]
+
     process(SOURCES, outdir=opts.outdir, preserve_paths=opts.paths)
 
     # If the -w / --watch option was present, monitor the source directories
