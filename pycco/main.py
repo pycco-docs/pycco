@@ -35,7 +35,6 @@ import sys, os
 sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath( __file__ ) ) ) )
 
 
-
 # === Main Documentation Generation Functions ===
 
 def generate_documentation(source, outdir=None, preserve_paths=True):
@@ -47,8 +46,6 @@ def generate_documentation(source, outdir=None, preserve_paths=True):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    print 
-    source.name
     fh = open(source.name, "r")
     sections = parse(source.name, fh.read())
     highlight(source.name, sections, preserve_paths=preserve_paths, outdir=outdir)
@@ -104,15 +101,15 @@ def parse(source, code):
 
             else:
                 multi_line = False
-                
+
             if (multi_line
                and line.strip().endswith(language.get("multiend"))
                and len(line.strip()) > len(language.get("multiend"))):
                 multi_line = False
 
             # Get rid of the delimiters so that they aren't in the final docs
-            line = re.sub(re.escape(language["multistart"]),'',line)
-            line = re.sub(re.escape(language["multiend"]),'',line)
+            line = line.replace(language["multistart"], '')
+            line = line.replace(language["multiend"], '')
             docs_text += line.strip() + '\n'
             indent_level = re.match("\s*", line).group(0)
 
@@ -250,7 +247,7 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     rendered = pycco_template({
         "title"       : source.title,
-        "sources"     : source.relative_paths( SOURCES ),
+        "sources"     : source.relative_paths(SOURCES),
         "stylesheet"  : csspath,
         "sections"    : sections,
         "source"      : source.name,
@@ -350,7 +347,7 @@ def destination(filepath, preserve_paths=True, outdir=None):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     try:
-        name = filepath.replace(filepath[ filepath.rindex("."): ], "")
+        name = re.sub(r"\.[^.]*$", "", filepath)
     except ValueError:
         name = filepath
     if not preserve_paths:
@@ -395,17 +392,13 @@ def process(sources, preserve_paths=True, outdir=None):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
 
-    # Make a copy of sources given on the command line. `main()` needs the
-    # original list when monitoring for changed files.
-    #? sources = sorted(sources)
-
     # Proceed to generating the documentation.
     if sources:
         ensure_directory(outdir)
         css = open(path.join(outdir, "pycco.css"), "w")
         css.write(pycco_styles)
         css.close()
-        
+
         for s in sources:
             dest = destination(s.save_path(), preserve_paths=preserve_paths, outdir=outdir)
 
@@ -466,7 +459,7 @@ def monitor(sources, opts):
         observer.join()
 
 
-from utils import *
+from utils import get_all_files, Source
 SOURCES=[]
 
 def main():
@@ -482,30 +475,29 @@ def main():
 
     parser.add_option('-w', '--watch', action='store_true',
                       help='Watch original files and re-generate documentation on changes')
-                     
+
     parser.add_option('-a', '--all', action='store_true',
                       help='Get all files from subfolders')
-                      
-    opts, sources   = parser.parse_args()
-    
+
+    opts, sources = parser.parse_args()
+
     if not sources:
         return
-    
-    filepath        = os.path.dirname( sources[0] )
-    start, filetype = os.path.splitext( sources[0] )
-    
-    if start.endswith( '*' ):
+
+    filepath = os.path.dirname(sources[0])
+    start, filetype = os.path.splitext(sources[0])
+
+    if start.endswith('*'):
         return
-    
-    start = os.path.dirname( os.path.dirname( os.path.abspath(start) ) )
-    #start = os.path.dirname( os.path.dirname( start ) )
-    
+
+    start = os.path.dirname(os.path.dirname(os.path.abspath(start)))
+
     if opts.all:
-        sources = [ i for i in get_all_files( filepath or '.', filetype ) ]
-    
+        sources = [i for i in get_all_files(filepath or '.', filetype)]
+
     global SOURCES
-    SOURCES = Sources( sources, start )
-    
+    SOURCES = sorted([Source(name, start) for name in sources])
+
     process(SOURCES, outdir=opts.outdir, preserve_paths=opts.paths)
 
     # If the -w / --watch option was present, monitor the source directories
