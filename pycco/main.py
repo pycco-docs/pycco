@@ -43,11 +43,12 @@ def generate_documentation(source, outdir=None, preserve_paths=True):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     code = open(source, "r").read()
-    sections = parse(source, code)
-    highlight(source, sections, preserve_paths=preserve_paths, outdir=outdir)
+    language = get_language(source, code)
+    sections = parse(source, code, language)
+    highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
 
-def parse(source, code):
+def parse(source, code, language):
     """
     Given a string of source code, parse out each comment and the code that
     follows it, and create an individual **section** for it.
@@ -63,7 +64,6 @@ def parse(source, code):
 
     lines = code.split("\n")
     sections = []
-    language = get_language(source)
     has_code = docs_text = code_text = ""
 
     if lines[0].startswith("#!"):
@@ -189,7 +189,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
 
 # === Highlighting the source code ===
 
-def highlight(source, sections, preserve_paths=True, outdir=None):
+def highlight(source, sections, language, preserve_paths=True, outdir=None):
     """
     Highlights a single chunk of code using the **Pygments** module, and runs
     the text of its corresponding comment through **Markdown**.
@@ -201,7 +201,6 @@ def highlight(source, sections, preserve_paths=True, outdir=None):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    language = get_language(source)
 
     output = pygments.highlight(language["divider_text"].join(section["code_text"].rstrip() for section in sections),
                                 language["lexer"],
@@ -321,16 +320,13 @@ for ext, l in languages.items():
     # Get the Pygments Lexer for this language.
     l["lexer"] = lexers.get_lexer_by_name(l["name"])
 
-def get_language(source):
+def get_language(source, code):
     """Get the current language we're documenting, based on the extension."""
 
     m = re.match(r'.*(\..+)', os.path.basename(source))
     if m and m.group(1) in languages:
         return languages[m.group(1)]
     else:
-        source = open(source, "r")
-        code = source.read()
-        source.close()
         lang = lexers.guess_lexer(code).name.lower()
         for l in languages.values():
             if l["name"] == lang:
