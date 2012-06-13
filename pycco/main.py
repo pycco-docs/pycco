@@ -33,7 +33,8 @@ Or, to install the latest source
 
 # === Main Documentation Generation Functions ===
 
-def generate_documentation(source, outdir=None, preserve_paths=True):
+def generate_documentation(source, outdir=None, preserve_paths=True,
+                           language=None):
     """
     Generate the documentation for a source file by reading it in, splitting it
     up into comment/code sections, highlighting them for the appropriate
@@ -43,7 +44,7 @@ def generate_documentation(source, outdir=None, preserve_paths=True):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     code = open(source, "r").read()
-    language = get_language(source, code)
+    language = get_language(source, code, language=language)
     sections = parse(source, code, language)
     highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
@@ -320,8 +321,15 @@ for ext, l in languages.items():
     # Get the Pygments Lexer for this language.
     l["lexer"] = lexers.get_lexer_by_name(l["name"])
 
-def get_language(source, code):
+def get_language(source, code, language=None):
     """Get the current language we're documenting, based on the extension."""
+
+    if language is not None:
+        for l in languages.values():
+            if l["name"] == language:
+                return l
+        else:
+            raise ValueError("Unknown forced language: " + language)
 
     m = re.match(r'.*(\..+)', os.path.basename(source))
     if m and m.group(1) in languages:
@@ -383,7 +391,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-def process(sources, preserve_paths=True, outdir=None):
+def process(sources, preserve_paths=True, outdir=None, language=None):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
@@ -410,7 +418,8 @@ def process(sources, preserve_paths=True, outdir=None):
                 pass
 
             with open(dest, "w") as f:
-                f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir))
+                f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
+                                               language=language))
 
             print "pycco = %s -> %s" % (s, dest)
 
@@ -477,9 +486,14 @@ def main():
 
     parser.add_option('-w', '--watch', action='store_true',
                       help='Watch original files and re-generate documentation on changes')
+
+    parser.add_option('-l', '--force-language', action='store', type='string',
+                      dest='language', default=None,
+                      help='Force the language for the given files')
     opts, sources = parser.parse_args()
 
-    process(sources, outdir=opts.outdir, preserve_paths=opts.paths)
+    process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
+            language=opts.language)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
