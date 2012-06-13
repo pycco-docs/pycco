@@ -42,8 +42,8 @@ def generate_documentation(source, outdir=None, preserve_paths=True):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    fh = open(source, "r")
-    sections = parse(source, fh.read())
+    code = open(source, "r").read()
+    sections = parse(source, code)
     highlight(source, sections, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
 
