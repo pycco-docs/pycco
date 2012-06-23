@@ -303,6 +303,9 @@ languages = {
         "multistart": "--[[", "multiend": "--]]"},
 
     ".erl": { "name": "erlang", "symbol": "%%" },
+
+    ".hs": { "name": "haskell", "symbol": "--",
+        "multistart": "{-", "multiend": "-}"},
 }
 
 # Build out the appropriate matchers and delimiters for each language.
