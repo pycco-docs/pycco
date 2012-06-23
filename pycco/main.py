@@ -87,6 +87,7 @@ def parse(source, code, language):
     # Setup the variables to get ready to check for multiline comments
     multi_line = False
     multi_line_delimiters = [language.get("multistart"), language.get("multiend")]
+    multi_line_continuation = language.get("multilinecontinuation")
 
     for line in lines:
 
@@ -116,6 +117,9 @@ def parse(source, code, language):
                 has_code = docs_text = ''
 
         elif multi_line:
+            # Remove leading continuations (eg * in multi-line C/C++/Java/JS comments)
+            if line.lstrip().startswith(multi_line_continuation):
+                line = line.lstrip()[len(multi_line_continuation):]
             # Remove leading spaces
             if re.match(r' {%d}' % len(indent_level), line):
                 docs_text += line[len(indent_level):] + '\n'
@@ -283,12 +287,17 @@ languages = {
 
     ".sql": { "name": "sql", "symbol": "--" },
 
-    ".c":   { "name": "c", "symbol": "//"},
+    ".c":   { "name": "c", "symbol": "//",
+        "multistart": "/*", "multiend": "*/",
+        "multilinecontinuation": "*" },
 
-    ".cpp": { "name": "cpp", "symbol": "//"},
+    ".cpp": { "name": "cpp", "symbol": "//",
+        "multistart": "/*", "multiend": "*/",
+        "multilinecontinuation": "*" },
 
     ".js": { "name": "javascript", "symbol": "//",
-        "multistart": "/*", "multiend": "*/"},
+        "multistart": "/*", "multiend": "*/",
+        "multilinecontinuation": "*" },
 
     ".rb": { "name": "ruby", "symbol": "#",
         "multistart": "=begin", "multiend": "=end"},
