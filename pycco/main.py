@@ -304,6 +304,8 @@ languages = {
 
     ".erl": { "name": "erlang", "symbol": "%%" },
 
+    ".tcl":  { "name": "tcl", "symbol": "#" },
+
     ".hs": { "name": "haskell", "symbol": "--",
         "multistart": "{-", "multiend": "-}"},
 }
