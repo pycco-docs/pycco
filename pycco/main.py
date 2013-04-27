@@ -283,7 +283,8 @@ languages = {
 
     ".sql": { "name": "sql", "symbol": "--" },
 
-    ".c":   { "name": "c", "symbol": "//"},
+    ".c":   { "name": "c", "symbol": "//",
+        "multistart": "/*", "multiend": "*/"},
 
     ".cpp": { "name": "cpp", "symbol": "//"},
 
