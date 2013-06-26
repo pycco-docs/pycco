@@ -309,6 +309,9 @@ languages = {
 
     ".hs": { "name": "haskell", "symbol": "--",
         "multistart": "{-", "multiend": "-}"},
+
+    ".scss": { "name": "sass", "symbol": "//",
+        "multistart": "/*", "multiend": "*/"},
 }
 
 # Build out the appropriate matchers and delimiters for each language.
