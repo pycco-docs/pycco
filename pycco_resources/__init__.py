@@ -198,6 +198,9 @@ html = """\
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
   <title>{{ title }}</title>
   <link rel="stylesheet" href="{{ stylesheet }}">
+  {{#additional_stylesheet}}
+    <link rel="stylesheet" href="{{ additional_stylesheet }}">
+  {{/additional_stylesheet}}
 </head>
 <body>
 <div id='container'>
