@@ -34,7 +34,7 @@ Or, to install the latest source
 # === Main Documentation Generation Functions ===
 
 def generate_documentation(source, outdir=None, preserve_paths=True,
-                           language=None):
+                           language=None, markdown=None):
     """
     Generate the documentation for a source file by reading it in, splitting it
     up into comment/code sections, highlighting them for the appropriate
@@ -46,7 +46,8 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
     code = open(source, "r").read()
     language = get_language(source, code, language=language)
     sections = parse(source, code, language)
-    highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
+    highlight(source, sections, language, preserve_paths=preserve_paths,
+            outdir=outdir, markdown=markdown)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
 
 def parse(source, code, language):
@@ -190,7 +191,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
 
 # === Highlighting the source code ===
 
-def highlight(source, sections, language, preserve_paths=True, outdir=None):
+def highlight(source, sections, language, preserve_paths=True, outdir=None, markdown=None):
     """
     Highlights a single chunk of code using the **Pygments** module, and runs
     the text of its corresponding comment through **Markdown**.
@@ -268,7 +269,6 @@ import pystache
 import re
 import sys
 import time
-from markdown import markdown
 from os import path
 from pygments import lexers, formatters
 
@@ -397,7 +397,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-def process(sources, preserve_paths=True, outdir=None, language=None):
+def process(sources, preserve_paths=True, outdir=None, language=None, markdown=None):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
@@ -425,7 +425,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
 
             with open(dest, "w") as f:
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
-                                               language=language))
+                                               language=language, markdown=markdown))
 
             print "pycco = %s -> %s" % (s, dest)
 
@@ -496,10 +496,17 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
+
+    parser.add_option('-m', '--markdown-parser', action='store', type='string',
+                      dest='markdown', default='markdown.markdown',
+                      help='Function from a python module to use for markdown parsing.')
     opts, sources = parser.parse_args()
 
+    md_module = opts.markdown.rsplit('.', 1)
+    markdown = getattr(__import__(md_module[0], globals(), locals(), [md_module[1]], -1), md_module[1])
+
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
-            language=opts.language)
+            language=opts.language, markdown=markdown)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
