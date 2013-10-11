@@ -281,7 +281,8 @@ languages = {
 
     ".pl":  { "name": "perl", "symbol": "#" },
 
-    ".sql": { "name": "sql", "symbol": "--" },
+    ".sql": { "name": "sql", "symbol": "--",
+        "multistart": "/*", "multiend": "*/"},
 
     ".c":   { "name": "c", "symbol": "//",
         "multistart": "/*", "multiend": "*/"},
