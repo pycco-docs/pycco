@@ -1,0 +1,58 @@
+.TH PYCCO 1
+
+.SH NAME
+pycco \- documentation generator for literate programs
+
+.SH SYNOPSIS
+.B pycco 
+[\fIOPTION\fR]... [\fIFILE\fR]...
+
+.SH DESCRIPTION
+.B pycco 
+is a documentation generator for literate programs written in a variety of
+languages. Output is produced as two column HTML files with source code on the
+right and documentation on the left.  
+.B pycco
+takes documentation directly from the comments in the source files.
+
+.B pycco
+supports syntax highlighting via Pygments and formats documentation nicely
+using Markdown and SmartyPants.
+
+.B pycco
+is a Python port of \fIDocco\fR.
+
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Display a usage message on standard output and exit successfully.
+.TP
+.BR \-p ", " \-\-paths
+Preserve path structure of original files
+.TP
+.BR \-d " "\fIOUTDIR\fR ", " \-\-directory=\fIOUTDIR\fR
+Output rendered files to \fIOUTDIR\fR.
+Default is './docs'
+.TP
+.BR \-w ", " \-\-watch
+Watch original files and re-generate documentation on changes.
+
+.SH USAGE EXAMPLES
+.TP
+pycco \-p dir/**/*.py
+Generate documentation for everything inside folder 'dir'. This can be used to
+document an entire project at once. N.B. this command presumes a shell which
+supports globbing.
+.TP
+pycco \-w views.py
+Generate documentation for 'views.py' now and again if the file changes.
+.TP
+pycco \-d /tmp/ main.py
+Generate documentation for main.py, outputting the file in the '/tmp/' directory
+
+.SH AUTHORS
+Nick Fitzgerald
+(fitzgen@gmail.com)
+
+.SH SEE ALSO
+http://fitzgen.github.io/pycco/

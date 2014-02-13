@@ -17,4 +17,5 @@ setup(
             },
         install_requires = ['markdown', 'pygments', 'pystache', 'smartypants'],
         extras_require = {'monitoring': 'watchdog'},
+	data_files = [(os.path.join(sys.real_prefix, "share", "man", "man1"), 'pocco.1')]
         )
