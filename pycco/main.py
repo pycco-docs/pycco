@@ -288,6 +288,9 @@ languages = {
 
     ".cpp": { "name": "cpp", "symbol": "//"},
 
+    ".cl":   { "name": "c", "symbol": "//",
+        "multistart": "/*", "multiend": "*/"},
+
     ".js": { "name": "javascript", "symbol": "//",
         "multistart": "/*", "multiend": "*/"},
 
@@ -346,7 +349,7 @@ def get_language(source, code, language=None):
             if l["name"] == lang:
                 return l
         else:
-            raise ValueError("Can't figure out the language!")
+            raise ValueError("Can't figure out the language! of %s" % source)
 
 def destination(filepath, preserve_paths=True, outdir=None):
     """
@@ -416,6 +419,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
 
         def next_file():
             s = sources.pop(0)
+            print "pycco = %s ->" % s,
             dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
 
             try:
@@ -427,7 +431,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
                                                language=language))
 
-            print "pycco = %s -> %s" % (s, dest)
+            print dest
 
             if sources:
                 next_file()
