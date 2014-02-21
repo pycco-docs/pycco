@@ -286,6 +286,9 @@ languages = {
     ".c":   { "name": "c", "symbol": "//",
         "multistart": "/*", "multiend": "*/"},
 
+    ".h":   { "name": "c", "symbol": "//",
+        "multistart": "/*", "multiend": "*/"},
+
     ".cpp": { "name": "cpp", "symbol": "//"},
 
     ".cl":   { "name": "c", "symbol": "//",
