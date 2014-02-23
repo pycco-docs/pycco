@@ -255,6 +255,59 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     return re.sub(r"__DOUBLE_OPEN_STACHE__", "{{", rendered).encode("utf-8")
 
+# === Sitemap Generation ===
+def generate_index(files, outdir):
+
+    css_path = path.join(outdir, "pycco.css")
+
+    sections = []
+
+    def add_file(entry, path, tree):
+        node, subpath = path[0], path[1:]
+        if not node in tree:
+            tree[node] = {}
+
+        if subpath:
+            add_file(entry, subpath, tree[node])
+
+        else:
+            tree[node]['entry'] = entry
+
+    tree = {}
+    for file_path in files:
+        entry = {
+            'path': file_path,
+            'relpath': path.relpath(file_path, outdir)
+        }
+
+        add_file(entry=entry, path=entry['relpath'].split(path.sep), tree=tree)
+
+    def generate_tree_html(tree):
+        items = []
+        for node, subtree in tree.items():
+            if 'entry' in subtree:
+                html = '<li><a href="%s">%s</a></li>' % (subtree['entry']['relpath'], node)
+
+            else:
+                html = '<dl><dt>%s</dt><dd><ul>%s</ul></dd></dl>' % (node, generate_tree_html(subtree))
+
+            items.append(html)
+
+        return ''.join(items)
+
+    sections.append({'docs_html': generate_tree_html(tree)})
+
+    rendered = pycco_template({
+        "title"       : 'Index',
+        "stylesheet"  : css_path,
+        "sections"    : sections,
+        "source"      : '',
+        "path"        : path,
+        "destination" : destination
+    })
+
+    return re.sub(r"__DOUBLE_OPEN_STACHE__", "{{", rendered).encode("utf-8")
+
 # === Helpers & Setup ===
 
 # This module contains all of our static resources.
@@ -403,7 +456,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-def process(sources, preserve_paths=True, outdir=None, language=None):
+def process(sources, preserve_paths=True, outdir=None, language=None, index=False):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
@@ -420,6 +473,8 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
         css.write(pycco_styles)
         css.close()
 
+        generated_files = []
+
         def next_file():
             s = sources.pop(0)
             print "pycco = %s ->" % s,
@@ -433,12 +488,16 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
             with open(dest, "w") as f:
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
                                                language=language))
-
             print dest
+            generated_files.append(dest)
 
             if sources:
                 next_file()
         next_file()
+
+        if index:
+            with open(path.join(outdir, "index.html"), "w") as f:
+                f.write(generate_index(generated_files, outdir))
 
 __all__ = ("process", "generate_documentation")
 
@@ -503,10 +562,14 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
+
+    parser.add_option('-i', '--generate_index', action='store_true',
+                      help='Generate an index.html document with sitemap content')
+
     opts, sources = parser.parse_args()
 
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
-            language=opts.language)
+            language=opts.language, index=opts.generate_index)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
