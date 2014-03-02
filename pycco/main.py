@@ -34,7 +34,7 @@ Or, to install the latest source
 # === Main Documentation Generation Functions ===
 
 def generate_documentation(source, outdir=None, preserve_paths=True,
-                           language=None):
+                           language=None, encoding="utf8"):
     """
     Generate the documentation for a source file by reading it in, splitting it
     up into comment/code sections, highlighting them for the appropriate
@@ -43,7 +43,9 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    code = open(source, "r").read()
+    with open(source, "rb") as f:
+        code = f.read().decode(encoding)
+
     language = get_language(source, code, language=language)
     sections = parse(source, code, language)
     highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
@@ -211,10 +213,7 @@ def highlight(source, sections, language, preserve_paths=True, outdir=None):
     fragments = re.split(language["divider_html"], output)
     for i, section in enumerate(sections):
         section["code_html"] = highlight_start + shift(fragments, "") + highlight_end
-        try:
-            docs_text = unicode(section["docs_text"])
-        except UnicodeError:
-            docs_text = unicode(section["docs_text"].decode('utf-8'))
+        docs_text = section["docs_text"]
         section["docs_html"] = markdown(preprocess(docs_text,
                                                    i,
                                                    preserve_paths=preserve_paths,
@@ -397,7 +396,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-def process(sources, preserve_paths=True, outdir=None, language=None):
+def process(sources, preserve_paths=True, outdir=None, language=None, encoding="utf8"):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
@@ -410,9 +409,8 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
     # Proceed to generating the documentation.
     if sources:
         ensure_directory(outdir)
-        css = open(path.join(outdir, "pycco.css"), "w")
-        css.write(pycco_styles)
-        css.close()
+        with open(path.join(outdir, "pycco.css"), "wb") as css:
+            css.write(pycco_styles.encode("utf8"))
 
         def next_file():
             s = sources.pop(0)
@@ -423,11 +421,11 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
             except OSError:
                 pass
 
-            with open(dest, "w") as f:
+            with open(dest, "wb") as f:
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
-                                               language=language))
+                                               language=language, encoding=encoding))
 
-            print "pycco = %s -> %s" % (s, dest)
+            print("pycco = {} -> {}".format(s, dest))
 
             if sources:
                 next_file()
@@ -496,10 +494,14 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
+
+    parser.add_option('-e', '--encoding', default='utf8',
+                      help='Encoding of the source files (assumes %default by default)')
+
     opts, sources = parser.parse_args()
 
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
-            language=opts.language)
+            language=opts.language, encoding=opts.encoding)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
