@@ -311,21 +311,28 @@ languages = {
         "multistart": "{-", "multiend": "-}"},
 }
 
-# Build out the appropriate matchers and delimiters for each language.
-for ext, l in languages.items():
-    # Does the line begin with a comment?
-    l["comment_matcher"] = re.compile(r"^\s*" + l["symbol"] + "\s?")
 
-    # The dividing token we feed into Pygments, to delimit the boundaries between
-    # sections.
-    l["divider_text"] = "\n" + l["symbol"] + "DIVIDER\n"
+def setup_languages(extra_languages=None):
+    if extra_languages:
+        languages.update(extra_languages)
 
-    # The mirror of `divider_text` that we expect Pygments to return. We can split
-    # on this to recover the original sections.
-    l["divider_html"] = re.compile(r'\n*<span class="c[1]?">' + l["symbol"] + 'DIVIDER</span>\n*')
+    # Build out the appropriate matchers and delimiters for each language.
+    for ext, l in languages.items():
+        # Does the line begin with a comment?
+        l["comment_matcher"] = re.compile(r"^\s*" + l["symbol"] + "\s?")
 
-    # Get the Pygments Lexer for this language.
-    l["lexer"] = lexers.get_lexer_by_name(l["name"])
+        # The dividing token we feed into Pygments, to delimit the boundaries between
+        # sections.
+        l["divider_text"] = "\n" + l["symbol"] + "DIVIDER\n"
+
+        # The mirror of `divider_text` that we expect Pygments to return. We can split
+        # on this to recover the original sections.
+        l["divider_html"] = re.compile(r'\n*<span class="c[1]?">' + l["symbol"] + 'DIVIDER</span>\n*')
+
+        # Get the Pygments Lexer for this language.
+        l["lexer"] = lexers.get_lexer_by_name(l["name"])
+
+
 
 def get_language(source, code, language=None):
     """Get the current language we're documenting, based on the extension."""
@@ -497,6 +504,8 @@ def main():
                       dest='language', default=None,
                       help='Force the language for the given files')
     opts, sources = parser.parse_args()
+
+    setup_languages()
 
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
             language=opts.language)
