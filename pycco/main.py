@@ -63,14 +63,14 @@ def parse(source, code, language):
         }
     """
 
-    lines = code.split("\n")
+    lines = code.split('\n')
     sections = []
-    has_code = docs_text = code_text = ""
+    has_code = docs_text = code_text = ''
 
     if lines[0].startswith("#!"):
         lines.pop(0)
 
-    if language["name"] == "python":
+    if language["name"] in ('python', 'ruby'):
         for linenum, line in enumerate(lines[:2]):
             if re.search(r'coding[:=]\s*([-\w.]+)', lines[linenum]):
                 lines.pop(linenum)
@@ -258,6 +258,7 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 # === Helpers & Setup ===
 
 # This module contains all of our static resources.
+import comment_styles
 import pycco_resources
 
 # Import our external dependencies.
@@ -272,52 +273,18 @@ from markdown import markdown
 from os import path
 from pygments import lexers, formatters
 
-# A list of the languages that Pycco supports, mapping the file extension to
-# the name of the Pygments lexer and the symbol that indicates a comment. To
-# add another language to Pycco's repertoire, add it here.
-languages = {
-    ".coffee": { "name": "coffee-script", "symbol": "#",
-        "multistart": '###', "multiend": '###' },
+_comment_styles = comment_styles.DEFAULT_COMMENT_STYLES
 
-    ".pl":  { "name": "perl", "symbol": "#" },
-
-    ".sql": { "name": "sql", "symbol": "--" },
-
-    ".c":   { "name": "c", "symbol": "//",
-        "multistart": "/*", "multiend": "*/"},
-
-    ".cpp": { "name": "cpp", "symbol": "//"},
-
-    ".js": { "name": "javascript", "symbol": "//",
-        "multistart": "/*", "multiend": "*/"},
-
-    ".rb": { "name": "ruby", "symbol": "#",
-        "multistart": "=begin", "multiend": "=end"},
-
-    ".py": { "name": "python", "symbol": "#",
-        "multistart": '"""', "multiend": '"""' },
-
-    ".scm": { "name": "scheme", "symbol": ";;",
-        "multistart": "#|", "multiend": "|#"},
-
-    ".lua": { "name": "lua", "symbol": "--",
-        "multistart": "--[[", "multiend": "--]]"},
-
-    ".erl": { "name": "erlang", "symbol": "%%" },
-
-    ".tcl":  { "name": "tcl", "symbol": "#" },
-
-    ".hs": { "name": "haskell", "symbol": "--",
-        "multistart": "{-", "multiend": "-}"},
-}
-
-
-def setup_languages(extra_languages=None):
-    if extra_languages:
-        languages.update(extra_languages)
+def register_comment_styles(styles=None):
+    """
+    Registers the default set of comment styles and any
+    additional ones.
+    """
+    if styles:
+        _comment_styles.update(styles)
 
     # Build out the appropriate matchers and delimiters for each language.
-    for ext, l in languages.items():
+    for ext, l in _comment_styles.items():
         # Does the line begin with a comment?
         l["comment_matcher"] = re.compile(r"^\s*" + l["symbol"] + "\s?")
 
@@ -333,23 +300,22 @@ def setup_languages(extra_languages=None):
         l["lexer"] = lexers.get_lexer_by_name(l["name"])
 
 
-
 def get_language(source, code, language=None):
     """Get the current language we're documenting, based on the extension."""
 
     if language is not None:
-        for l in languages.values():
+        for l in _comment_styles.values():
             if l["name"] == language:
                 return l
         else:
             raise ValueError("Unknown forced language: " + language)
 
     m = re.match(r'.*(\..+)', os.path.basename(source))
-    if m and m.group(1) in languages:
-        return languages[m.group(1)]
+    if m and m.group(1) in _comment_styles:
+        return _comment_styles[m.group(1)]
     else:
         lang = lexers.guess_lexer(code).name.lower()
-        for l in languages.values():
+        for l in _comment_styles.values():
             if l["name"] == lang:
                 return l
         else:
@@ -505,7 +471,7 @@ def main():
                       help='Force the language for the given files')
     opts, sources = parser.parse_args()
 
-    setup_languages()
+    register_comment_styles()
 
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
             language=opts.language)
