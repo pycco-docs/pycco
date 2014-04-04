@@ -191,6 +191,21 @@ body .vi { color: #19469D }                     /* Name.Variable.Instance */
 body .il { color: #666666 }                     /* Literal.Number.Integer.Long */
 """
 
+# If providing a custom template the following variables
+# can be used:
+#
+# * {{ title }}: the title of the final page
+# * {{ stylesheet }}: the page stylesheet
+# * {{ sources }}: a list of source file sources
+# * {{ sections }}: the list of sections extracted from the source
+#
+# Each `source` element has an {{ url }} and {{ basename }} attributes.
+#
+# Each `section` element has the following attributes:
+#
+# * num: the index of the section
+# * `docs_html`: the documentation as HTML (to avoid escaping use `{{{ docs_html }}}`
+# * `code_html`: the Pygmentized source code fragment as HTML (to avoid HTML escaping use `{{{ code_html }}}`.
 html = """\
 <!DOCTYPE html>
 <html>

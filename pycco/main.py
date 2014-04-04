@@ -34,7 +34,7 @@ Or, to install the latest source
 # === Main Documentation Generation Functions ===
 
 def generate_documentation(source, outdir=None, preserve_paths=True,
-                           language=None):
+                           language=None, custom_template=None):
     """
     Generate the documentation for a source file by reading it in, splitting it
     up into comment/code sections, highlighting them for the appropriate
@@ -47,7 +47,7 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
     language = get_language(source, code, language=language)
     sections = parse(source, code, language)
     highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
-    return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
+    return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir, custom_template=custom_template)
 
 def parse(source, code, language):
     """
@@ -223,7 +223,7 @@ def highlight(source, sections, language, preserve_paths=True, outdir=None):
 
 # === HTML Code generation ===
 
-def generate_html(source, sections, preserve_paths=True, outdir=None):
+def generate_html(source, sections, preserve_paths=True, outdir=None, custom_template=None):
     """
     Once all of the code is finished highlighting, we can generate the HTML file
     and write out the documentation. Pass the completed sections into the
@@ -244,7 +244,12 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
     for sect in sections:
         sect["code_html"] = re.sub(r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"])
 
-    rendered = pycco_template({
+    if custom_template:
+        output_template = template(custom_template)
+    else:
+        output_template = pycco_template
+
+    rendered = output_template({
         "title"       : title,
         "stylesheet"  : csspath,
         "sections"    : sections,
