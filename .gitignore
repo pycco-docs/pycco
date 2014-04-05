@@ -5,3 +5,4 @@ dist/*
 docs/*
 .idea
 .python-version
+tests/examples/*-debug.html
