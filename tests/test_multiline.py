@@ -128,7 +128,6 @@ class BlockParser: pass
         highlight('test.py', sections, lang, outdir="/tmp")
         self.assertEqual(sections[0]['docs_html'], expected_output['html'])
 
-    @unittest.skip("No support for multi-line continuation symbols")
     def test_java(self):
         in_source = u'''
 /**
@@ -149,18 +148,63 @@ public interface AuthProvider {
     public Authenticator newAuthenticator(InetSocketAddress host) throws AuthenticationException;
 }
 '''.lstrip()
-        expected_out = u'''
-The {@code Authenticator} to use when connecting to {@code host}
+        expected_out = u''' The {@code Authenticator} to use when connecting to {@code host}
 
-@param host the Cassandra host to connect to.  
-@return The authentication implementation to use.  
- '''
+ @param host the Cassandra host to connect to.
+ @return The authentication implementation to use.
+
+'''
 
         lang = get_language('test.java', in_source, 'java')
         result = parse('test.java', in_source, lang)
 
         self.assertIsEqual(2, len(result), str(result))
         self.assertIsEqual(expected_out, result[1]['docs_text'], str(result))
+
+    def test_java_header(self):
+        in_source = u'''
+/*
+ *      Copyright (C) 2012 DataStax Inc.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
+package com.datastax.driver.core;
+
+import java.io.Closeable;
+
+import com.google.common.util.concurrent.ListenableFuture;'''
+
+        expected_out = u'''
+      Copyright (C) 2012 DataStax Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+'''
+        lang = get_language('test.java', in_source, 'java')
+        result = parse('test.java', in_source, lang)
+
+        self.assertIsEqual(2, len(result), str(result))
+        self.assertIsEqual(expected_out, result[0]['docs_text'], str(result))
 
     def test_sql(self):
         in_source = u'''

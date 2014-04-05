@@ -20,7 +20,11 @@ class BaseTest(unittest.TestCase):
 
     def assertIsEqual(self, expected, actual, msg=""):
         if msg:
-            prefix = "%r != %r" % (expected, actual)
+            if isinstance(expected, basestring) and len(expected) > 20:
+                prefix = "\n%r != \n%r"
+            else:
+                prefix = "%r != %r"
+            prefix = prefix % (expected, actual)
             msg = prefix + '\n' + msg
         self.assertEqual(expected, actual, msg)
 
