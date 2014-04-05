@@ -4,49 +4,49 @@
 DEFAULT_COMMENT_STYLES = {
     ".sh": {"name": "bash", "symbol": "#"},
 
-    ".c": {"name": "c", "symbol": "//",
-           "multistart": "/*", "multiend": "*/"},
+    '.c': {'name': 'c', 'symbol': '//',
+           'multistart': '/*', 'multiend': '*/'},
 
-    ".cpp": {"name": "cpp", "symbol": "//",
-             "multistart": "/*", "multiend": "*/"},
+    '.cpp': {'name': 'cpp', 'symbol': '//',
+             'multistart': '/*', 'multiend': '*/'},
 
-    ".cs": {"name": "csharp", "symbol": "//",
-            "multistart": "/*", "multiend": "*/"},
+    '.cs': {'name': 'csharp', 'symbol': '//',
+            'multistart': '/// <summary>', 'multiend': '/// </summary>', 'multicont': '///'}
 
-    ".coffee": {"name": "coffee-script", "symbol": "#",
-                "multistart": '###', "multiend": '###'},
+    '.coffee': {'name': 'coffee-script', 'symbol': '#',
+                'multistart': '###', 'multiend': '###'},
 
-    ".erl": {"name": "erlang", "symbol": "%%"},
+    '.erl': {'name': 'erlang', 'symbol': '%%'},
 
-    ".hs": {"name": "haskell", "symbol": "--",
-            "multistart": "{-", "multiend": "-}"},
+    '.hs': {'name': 'haskell', 'symbol': '--',
+            'multistart': '{-', 'multiend': '-}'},
 
     '.java': { 'name': 'java', 'symbol': '//',
-               'multistart': '/**', 'multiend': '*/', 'multicont': ' *'},
+               'multistart': '/*', 'multiend': '*/', 'multicont': ' *'},
 
-    ".js": {"name": "javascript", "symbol": "//",
-            "multistart": "/*", "multiend": "*/"},
+    '.js': {'name': 'javascript', 'symbol': '//',
+            'multistart': '/*', 'multiend': '*/'},
 
-    ".lua": {"name": "lua", "symbol": "--",
-             "multistart": "--[[", "multiend": "--]]"},
+    '.lua': {'name': 'lua', 'symbol': '--',
+             'multistart': '--[[', 'multiend': '--]]'},
 
-    ".php": {"name": "php", "symbol": "//",
-             "multistart": "/*", "multiend": "*/"},
+    '.php': {'name': 'php', 'symbol': '//',
+             'multistart': '/*', 'multiend': '*/'},
 
-    ".pl": {"name": "perl", "symbol": "#"},
+    '.pl': {'name': 'perl', 'symbol': '#'},
 
-    ".py": {"name": "python", "symbol": "#",
-            "multistart": '"""', "multiend": '"""'},
+    '.py': {'name': 'python', 'symbol': '#',
+            'multistart': '"""', 'multiend': '"""'},
 
-    ".rb": {"name": "ruby", "symbol": "#",
-            "multistart": "=begin", "multiend": "=end"},
+    '.rb': {'name': 'ruby', 'symbol': '#',
+            'multistart': '=begin', 'multiend': '=end'},
 
-    ".scm": {"name": "scheme", "symbol": ";;",
-             "multistart": "#|", "multiend": "|#"},
+    '.scm': {'name': 'scheme', 'symbol': ';;',
+             'multistart': '#|', 'multiend': '|#'},
 
-    ".sql": {"name": "sql", "symbol": "--",
-             "multistart": "/*", "multiend": "*/"},  # https://github.com/fitzgen/pycco/pull/70
+    '.sql': {'name': 'sql', 'symbol': '--',
+             'multistart': '/*', 'multiend': '*/'},  # https://github.com/fitzgen/pycco/pull/70
 
-    ".tcl": {"name": "tcl", "symbol": "#"},
+    '.tcl': {'name': 'tcl', 'symbol': '#'}
 
 }
