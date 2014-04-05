@@ -1,0 +1,4 @@
+- Defer `outdir` check until necessary
+- Improve the way comments about parameters are behaving
+- Improve handling of multi-line comments (e.g. Java supports /* and /**)
+- Add support for custom stylesheet <https://github.com/fitzgen/pycco/pull/68>
