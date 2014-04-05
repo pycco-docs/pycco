@@ -125,7 +125,7 @@ class BlockParser: pass
         self.assertIsEqual(len(sections), 2, str(sections))
         self.assertEqual(sections[0]['docs_text'], expected_output['text'])
 
-        highlight('test.py', sections, lang, outdir="/tmp")
+        highlight('test.py', sections, lang)
         self.assertEqual(sections[0]['docs_html'], expected_output['html'])
 
     def test_java(self):

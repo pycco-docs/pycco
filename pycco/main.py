@@ -34,20 +34,21 @@ Or, to install the latest source
 # === Main Documentation Generation Functions ===
 
 def generate_documentation(source, outdir=None, preserve_paths=True,
-                           language=None, custom_template=None):
+                           language=None, custom_template=None, extra_stylesheet=None):
     """
     Generate the documentation for a source file by reading it in, splitting it
     up into comment/code sections, highlighting them for the appropriate
     language, and merging them into an HTML template.
     """
 
-    if not outdir:
-        raise TypeError("Missing the required 'outdir' keyword argument.")
     code = open(source, "r").read()
     language = get_language(source, code, language=language)
     sections = parse(source, code, language)
     highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
-    return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir, custom_template=custom_template)
+
+    return generate_html(source, sections, preserve_paths=preserve_paths,
+                         outdir=outdir, custom_template=custom_template,
+                         extra_stylesheet=extra_stylesheet)
 
 def parse(source, code, language):
     """
@@ -159,8 +160,6 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
     `=== like this ===`
     """
 
-    if not outdir:
-        raise TypeError("Missing the required 'outdir' keyword argument.")
     def sanitize_section_name(name):
         return "-".join(name.lower().strip().split(" "))
 
@@ -204,9 +203,6 @@ def highlight(source, sections, language, preserve_paths=True, outdir=None):
     wherever our markers occur.
     """
 
-    if not outdir:
-        raise TypeError("Missing the required 'outdir' keyword argument.")
-
     output = pygments.highlight(language["divider_text"].join(section["code_text"].rstrip() for section in sections),
                                 language["lexer"],
                                 formatters.get_formatter_by_name("html"))
@@ -227,7 +223,7 @@ def highlight(source, sections, language, preserve_paths=True, outdir=None):
 
 # === HTML Code generation ===
 
-def generate_html(source, sections, preserve_paths=True, outdir=None, custom_template=None):
+def generate_html(source, sections, preserve_paths=True, outdir=None, custom_template=None, extra_stylesheet=None):
     """
     Once all of the code is finished highlighting, we can generate the HTML file
     and write out the documentation. Pass the completed sections into the
@@ -239,9 +235,9 @@ def generate_html(source, sections, preserve_paths=True, outdir=None, custom_tem
     rendered template and change the identifier back to `{{`.
     """
 
-    if not outdir:
-        raise TypeError("Missing the required 'outdir' keyword argument")
     title = path.basename(source)
+    if outdir is None:
+        outdir = '.'
     dest = destination(source, preserve_paths=preserve_paths, outdir=outdir)
     csspath = path.relpath(path.join(outdir, "pycco.css"), path.split(dest)[0])
 
@@ -256,6 +252,7 @@ def generate_html(source, sections, preserve_paths=True, outdir=None, custom_tem
     rendered = output_template({
         "title"       : title,
         "stylesheet"  : csspath,
+        "extra_css"   : extra_stylesheet,
         "sections"    : sections,
         "source"      : source,
         "path"        : path,
@@ -379,7 +376,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-def process(sources, preserve_paths=True, outdir=None, language=None):
+def process(sources, preserve_paths=True, outdir=None, language=None, extra_stylesheet=None):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
@@ -407,7 +404,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
 
             with open(dest, "w") as f:
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
-                                               language=language))
+                                               language=language, extra_stylesheet=extra_stylesheet))
 
             print "pycco = %s -> %s" % (s, dest)
 
@@ -478,12 +475,15 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
+    parser.add_option('-s', '--stylesheet', action='store', type='string',
+                      dest='extra_stylesheet', default=None,
+                      help='An additional css file to be added to output HTML')
     opts, sources = parser.parse_args()
 
     register_comment_styles()
 
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
-            language=opts.language)
+            language=opts.language, extra_stylesheet=opts.extra_stylesheet)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they

@@ -19,8 +19,7 @@ class CompleteSources(unittest.TestCase):
                 print 'ERROR: File type not supported:', fname, verr
 
     def compare_file(self, filename):
-        register_comment_styles({
-        })
+        register_comment_styles()
 
         filepath = os.path.join(SOURCE_DIR, filename)
 
@@ -32,7 +31,7 @@ class CompleteSources(unittest.TestCase):
             s['code_html'] = r'%s' % (s['code_text'] or "''")
             s['docs_html'] = r'%s' % (s['docs_text'] or "''")
 
-        out = generate_html(filepath, sections, outdir='/dev/null', custom_template=TEMPLATE)
+        out = generate_html(filepath, sections, custom_template=TEMPLATE)
 
         expected_out_file = os.path.join(SOURCE_DIR, filename + '.out')
         expected_out = codecs.open(expected_out_file, 'rb+', 'utf8').read()
@@ -54,7 +53,7 @@ def debug_file(filepath, sections, out):
     debug_fpath = filepath + '-debug.html'
 
     with open(debug_fpath, 'wb') as fout:
-        fout.write(generate_html(filepath, sections, custom_template=HTML, outdir='/dev/null').encode('utf8'))
+        fout.write(generate_html(filepath, sections, custom_template=HTML).encode('utf8'))
         fout.write("<div><pre>")
         fout.write("\n")
         fout.write(out.encode('utf8'))

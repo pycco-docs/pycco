@@ -196,6 +196,7 @@ body .il { color: #666666 }                     /* Literal.Number.Integer.Long *
 #
 # * {{ title }}: the title of the final page
 # * {{ stylesheet }}: the page stylesheet
+# * {{ extra_css }}: a custom stylesheet to be link-ed to
 # * {{ sources }}: a list of source file sources
 # * {{ sections }}: the list of sections extracted from the source
 #
@@ -213,6 +214,9 @@ html = """\
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
   <title>{{ title }}</title>
   <link rel="stylesheet" href="{{ stylesheet }}">
+  {{#extra_css}}
+  <link rel="stylesheet" href="{{ extra_css }}">
+  {{/extra_css}}
 </head>
 <body>
 <div id='container'>
