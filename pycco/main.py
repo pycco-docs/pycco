@@ -85,42 +85,46 @@ def parse(source, code, language):
             })
 
     # Setup the variables to get ready to check for multiline comments
-    multi_line = False
+    in_block_comment = False
     multi_line_delimiters = [language.get("multistart"), language.get("multiend")]
+    has_multi_line_support = all(multi_line_delimiters)
 
     for line in lines:
 
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
-        if all(multi_line_delimiters) and any([line.lstrip().startswith(delim) or line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
-            if not multi_line:
-                multi_line = True
+        if has_multi_line_support and any([line.lstrip().startswith(delim) or line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
+            in_block_comment = not in_block_comment
 
-            else:
-                multi_line = False
-
-            if (multi_line
+            if (in_block_comment
                and line.strip().endswith(language.get("multiend"))
                and len(line.strip()) > len(language.get("multiend"))):
-                multi_line = False
+                in_block_comment = False
 
             # Get rid of the delimiters so that they aren't in the final docs
+            indent_level = re.match("\s*", line).group(0)
             line = line.replace(language["multistart"], '')
             line = line.replace(language["multiend"], '')
             docs_text += line.strip() + '\n'
-            indent_level = re.match("\s*", line).group(0)
 
             if has_code and docs_text.strip():
                 save(docs_text, code_text[:-1])
                 code_text = code_text.split('\n')[-1]
                 has_code = docs_text = ''
 
-        elif multi_line:
+        elif in_block_comment:
             # Remove leading spaces
-            if re.match(r' {%d}' % len(indent_level), line):
-                docs_text += line[len(indent_level):] + '\n'
+            if 'multicont' in language:
+                indent_re = r' {%d}%s' % (len(indent_level), re.escape(language['multicont']))
             else:
-                docs_text += line + '\n'
+                indent_re = r' {%d}' % len(indent_level)
+
+            cline = re.sub(indent_re, '', line, count=1)
+            if language['name'] in ('java', ):
+                if cline.startswith('@'):
+                    cline += '  '
+
+            docs_text += cline + '\n'
 
         elif re.match(language["comment_matcher"], line):
             if has_code:
