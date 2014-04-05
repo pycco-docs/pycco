@@ -23,3 +23,41 @@ CoffeeScript (Original) - http://jashkenas.github.com/docco/
 Ruby - http://rtomayko.github.com/rocco/
 
 Sh - http://rtomayko.github.com/shocco/
+
+* * * * *
+
+This is a fork of [fitzgen's Pycco](https://github.com/fitzgen/pycco) that
+fixes and adds a couple of new features:
+
+1.  a way to invoke Pycco programmatically
+
+    ```python
+    from pycco.main import (register_comment_styles, generate_html)
+
+    register_comment_styles()
+    html = generate_html(source_path)
+    ```
+
+2.  provide additional comment styles:
+
+    ```python
+    from pycco.main import register_comment_styles
+
+    register_comment_style({
+        '.cql': {'name': 'cql', 'symbol': '//', 'multistart': '/*', 'multiend': '*/'}
+    })
+
+3.  supports continuation multi-line comment symbol.
+
+    In C, C++, Java, etc. each block comment line can start with an special character, e.g.:
+
+    ```java
+    /**
+     * This is just a normal javadoc.
+     */
+    ```
+
+    To support this case, when defining a comment style, you can add a `multicont` symbol.
+
+4.  supports providing a custom template by passing to `generate_documentation` or
+    `generate_html` a `custom_template` parameter.
