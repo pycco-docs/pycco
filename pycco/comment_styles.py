@@ -11,7 +11,7 @@ DEFAULT_COMMENT_STYLES = {
              'multistart': '/*', 'multiend': '*/'},
 
     '.cs': {'name': 'csharp', 'symbol': '//',
-            'multistart': '/// <summary>', 'multiend': '/// </summary>', 'multicont': '///'}
+            'multistart': '/// <summary>', 'multiend': '/// </summary>', 'multicont': '///'},
 
     '.coffee': {'name': 'coffee-script', 'symbol': '#',
                 'multistart': '###', 'multiend': '###'},
