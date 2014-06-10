@@ -198,6 +198,9 @@ html = """\
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
   <title>{{ title }}</title>
   <link rel="stylesheet" href="{{ stylesheet }}">
+  <script type="text/javascript"
+   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script>
 </head>
 <body>
 <div id='container'>

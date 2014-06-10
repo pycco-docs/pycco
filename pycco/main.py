@@ -296,6 +296,9 @@ languages = {
 
     ".py": { "name": "python", "symbol": "#",
         "multistart": '"""', "multiend": '"""' },
+        
+    ".pyx": { "name": "cython", "symbol": "#",
+        "multistart": '"""', "multiend": '"""' },
 
     ".scm": { "name": "scheme", "symbol": ";;",
         "multistart": "#|", "multiend": "|#"},
