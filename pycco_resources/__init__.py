@@ -84,6 +84,7 @@ div.docs {
   .docs pre {
     margin: 15px 0 15px;
     padding-left: 15px;
+    font-size: 12px;
   }
   .docs p tt, .docs p code {
     background: #f8f8ff;

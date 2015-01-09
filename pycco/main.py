@@ -31,6 +31,8 @@ Or, to install the latest source
     python setup.py install
 """
 
+from .parse import process_docs
+
 # === Main Documentation Generation Functions ===
 
 def generate_documentation(source, outdir=None, preserve_paths=True,
@@ -80,7 +82,7 @@ def parse(source, code, language):
     def save(docs, code):
         if docs or code:
             sections.append({
-                "docs_text": docs,
+                "docs_text": process_docs(docs),
                 "code_text": code
             })
 
@@ -116,11 +118,7 @@ def parse(source, code, language):
                 has_code = docs_text = ''
 
         elif multi_line:
-            # Remove leading spaces
-            if re.match(r' {%d}' % len(indent_level), line):
-                docs_text += line[len(indent_level):] + '\n'
-            else:
-                docs_text += line + '\n'
+            docs_text += line + '\n'
 
         elif re.match(language["comment_matcher"], line):
             if has_code:
