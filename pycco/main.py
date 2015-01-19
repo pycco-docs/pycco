@@ -164,17 +164,17 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
         # Check if the match contains an anchor
         if '#' in match.group(1):
             name, anchor = match.group(1).split('#')
-            return " [%s](%s#%s)" % (name,
-                                     path.basename(destination(name,
-                                                               preserve_paths=preserve_paths,
-                                                               outdir=outdir)),
-                                     anchor)
+            return "[%s](%s#%s)" % (name,
+                                    path.basename(destination(name,
+                                                              preserve_paths=preserve_paths,
+                                                              outdir=outdir)),
+                                    anchor)
 
         else:
-            return " [%s](%s)" % (match.group(1),
-                                  path.basename(destination(match.group(1),
-                                                            preserve_paths=preserve_paths,
-                                                            outdir=outdir)))
+            return "[%s](%s)" % (match.group(1),
+                                 path.basename(destination(match.group(1),
+                                                           preserve_paths=preserve_paths,
+                                                           outdir=outdir)))
 
     def replace_section_name(match):
         return '%(lvl)s <span id="%(id)s" href="%(id)s">%(name)s</span>' % {
@@ -184,7 +184,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
         }
 
     comment = re.sub('^([=]+)([^=]+)[=]*\s*$', replace_section_name, comment)
-    comment = re.sub('[^`]\[\[(.+?)\]\]', replace_crossref, comment)
+    comment = re.sub('(?<!`)\[\[(.+?)\]\]', replace_crossref, comment)
 
     return comment
 
