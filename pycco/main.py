@@ -34,20 +34,21 @@ Or, to install the latest source
 # === Main Documentation Generation Functions ===
 
 def generate_documentation(source, outdir=None, preserve_paths=True,
-                           language=None):
+                           language=None, custom_template=None, extra_stylesheet=None):
     """
     Generate the documentation for a source file by reading it in, splitting it
     up into comment/code sections, highlighting them for the appropriate
     language, and merging them into an HTML template.
     """
 
-    if not outdir:
-        raise TypeError("Missing the required 'outdir' keyword argument.")
     code = open(source, "r").read()
     language = get_language(source, code, language=language)
     sections = parse(source, code, language)
     highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
-    return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
+
+    return generate_html(source, sections, preserve_paths=preserve_paths,
+                         outdir=outdir, custom_template=custom_template,
+                         extra_stylesheet=extra_stylesheet)
 
 def parse(source, code, language):
     """
@@ -63,14 +64,14 @@ def parse(source, code, language):
         }
     """
 
-    lines = code.split("\n")
+    lines = code.split('\n')
     sections = []
-    has_code = docs_text = code_text = ""
+    has_code = docs_text = code_text = ''
 
     if lines[0].startswith("#!"):
         lines.pop(0)
 
-    if language["name"] == "python":
+    if language["name"] in ('python', 'ruby'):
         for linenum, line in enumerate(lines[:2]):
             if re.search(r'coding[:=]\s*([-\w.]+)', lines[linenum]):
                 lines.pop(linenum)
@@ -85,42 +86,46 @@ def parse(source, code, language):
             })
 
     # Setup the variables to get ready to check for multiline comments
-    multi_line = False
+    in_block_comment = False
     multi_line_delimiters = [language.get("multistart"), language.get("multiend")]
+    has_multi_line_support = all(multi_line_delimiters)
 
     for line in lines:
 
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
-        if all(multi_line_delimiters) and any([line.lstrip().startswith(delim) or line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
-            if not multi_line:
-                multi_line = True
+        if has_multi_line_support and any([line.lstrip().startswith(delim) or line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
+            in_block_comment = not in_block_comment
 
-            else:
-                multi_line = False
-
-            if (multi_line
+            if (in_block_comment
                and line.strip().endswith(language.get("multiend"))
                and len(line.strip()) > len(language.get("multiend"))):
-                multi_line = False
+                in_block_comment = False
 
             # Get rid of the delimiters so that they aren't in the final docs
+            indent_level = re.match("\s*", line).group(0)
             line = line.replace(language["multistart"], '')
             line = line.replace(language["multiend"], '')
             docs_text += line.strip() + '\n'
-            indent_level = re.match("\s*", line).group(0)
 
             if has_code and docs_text.strip():
                 save(docs_text, code_text[:-1])
                 code_text = code_text.split('\n')[-1]
                 has_code = docs_text = ''
 
-        elif multi_line:
+        elif in_block_comment:
             # Remove leading spaces
-            if re.match(r' {%d}' % len(indent_level), line):
-                docs_text += line[len(indent_level):] + '\n'
+            if 'multicont' in language:
+                indent_re = r' {%d}%s' % (len(indent_level), re.escape(language['multicont']))
             else:
-                docs_text += line + '\n'
+                indent_re = r' {%d}' % len(indent_level)
+
+            cline = re.sub(indent_re, '', line, count=1)
+            if language['name'] in ('java', ):
+                if cline.startswith('@'):
+                    cline += '  '
+
+            docs_text += cline + '\n'
 
         elif re.match(language["comment_matcher"], line):
             if has_code:
@@ -155,8 +160,6 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
     `=== like this ===`
     """
 
-    if not outdir:
-        raise TypeError("Missing the required 'outdir' keyword argument.")
     def sanitize_section_name(name):
         return "-".join(name.lower().strip().split(" "))
 
@@ -200,9 +203,6 @@ def highlight(source, sections, language, preserve_paths=True, outdir=None):
     wherever our markers occur.
     """
 
-    if not outdir:
-        raise TypeError("Missing the required 'outdir' keyword argument.")
-
     output = pygments.highlight(language["divider_text"].join(section["code_text"].rstrip() for section in sections),
                                 language["lexer"],
                                 formatters.get_formatter_by_name("html"))
@@ -223,7 +223,7 @@ def highlight(source, sections, language, preserve_paths=True, outdir=None):
 
 # === HTML Code generation ===
 
-def generate_html(source, sections, preserve_paths=True, outdir=None):
+def generate_html(source, sections, preserve_paths=True, outdir=None, custom_template=None, extra_stylesheet=None):
     """
     Once all of the code is finished highlighting, we can generate the HTML file
     and write out the documentation. Pass the completed sections into the
@@ -235,18 +235,24 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
     rendered template and change the identifier back to `{{`.
     """
 
-    if not outdir:
-        raise TypeError("Missing the required 'outdir' keyword argument")
     title = path.basename(source)
+    if outdir is None:
+        outdir = '.'
     dest = destination(source, preserve_paths=preserve_paths, outdir=outdir)
     csspath = path.relpath(path.join(outdir, "pycco.css"), path.split(dest)[0])
 
     for sect in sections:
         sect["code_html"] = re.sub(r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"])
 
-    rendered = pycco_template({
+    if custom_template:
+        output_template = template(custom_template)
+    else:
+        output_template = pycco_template
+
+    rendered = output_template({
         "title"       : title,
         "stylesheet"  : csspath,
+        "extra_css"   : extra_stylesheet,
         "sections"    : sections,
         "source"      : source,
         "path"        : path,
@@ -258,6 +264,7 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 # === Helpers & Setup ===
 
 # This module contains all of our static resources.
+import comment_styles
 import pycco_resources
 
 # Import our external dependencies.
@@ -272,77 +279,49 @@ from markdown import markdown
 from os import path
 from pygments import lexers, formatters
 
-# A list of the languages that Pycco supports, mapping the file extension to
-# the name of the Pygments lexer and the symbol that indicates a comment. To
-# add another language to Pycco's repertoire, add it here.
-languages = {
-    ".coffee": { "name": "coffee-script", "symbol": "#",
-        "multistart": '###', "multiend": '###' },
+_comment_styles = comment_styles.DEFAULT_COMMENT_STYLES
 
-    ".pl":  { "name": "perl", "symbol": "#" },
+def register_comment_styles(styles=None):
+    """
+    Registers the default set of comment styles and any
+    additional ones.
+    """
+    if styles:
+        _comment_styles.update(styles)
 
-    ".sql": { "name": "sql", "symbol": "--" },
+    # Build out the appropriate matchers and delimiters for each language.
+    for ext, l in _comment_styles.items():
+        # Does the line begin with a comment?
+        l["comment_matcher"] = re.compile(r"^\s*" + l["symbol"] + "\s?")
 
-    ".c":   { "name": "c", "symbol": "//",
-        "multistart": "/*", "multiend": "*/"},
+        # The dividing token we feed into Pygments, to delimit the boundaries between
+        # sections.
+        l["divider_text"] = "\n" + l["symbol"] + "DIVIDER\n"
 
-    ".cpp": { "name": "cpp", "symbol": "//"},
+        # The mirror of `divider_text` that we expect Pygments to return. We can split
+        # on this to recover the original sections.
+        l["divider_html"] = re.compile(r'\n*<span class="c[1]?">' + l["symbol"] + 'DIVIDER</span>\n*')
 
-    ".js": { "name": "javascript", "symbol": "//",
-        "multistart": "/*", "multiend": "*/"},
+        # Get the Pygments Lexer for this language.
+        l["lexer"] = lexers.get_lexer_by_name(l["name"])
 
-    ".rb": { "name": "ruby", "symbol": "#",
-        "multistart": "=begin", "multiend": "=end"},
-
-    ".py": { "name": "python", "symbol": "#",
-        "multistart": '"""', "multiend": '"""' },
-
-    ".scm": { "name": "scheme", "symbol": ";;",
-        "multistart": "#|", "multiend": "|#"},
-
-    ".lua": { "name": "lua", "symbol": "--",
-        "multistart": "--[[", "multiend": "--]]"},
-
-    ".erl": { "name": "erlang", "symbol": "%%" },
-
-    ".tcl":  { "name": "tcl", "symbol": "#" },
-
-    ".hs": { "name": "haskell", "symbol": "--",
-        "multistart": "{-", "multiend": "-}"},
-}
-
-# Build out the appropriate matchers and delimiters for each language.
-for ext, l in languages.items():
-    # Does the line begin with a comment?
-    l["comment_matcher"] = re.compile(r"^\s*" + l["symbol"] + "\s?")
-
-    # The dividing token we feed into Pygments, to delimit the boundaries between
-    # sections.
-    l["divider_text"] = "\n" + l["symbol"] + "DIVIDER\n"
-
-    # The mirror of `divider_text` that we expect Pygments to return. We can split
-    # on this to recover the original sections.
-    l["divider_html"] = re.compile(r'\n*<span class="c[1]?">' + l["symbol"] + 'DIVIDER</span>\n*')
-
-    # Get the Pygments Lexer for this language.
-    l["lexer"] = lexers.get_lexer_by_name(l["name"])
 
 def get_language(source, code, language=None):
     """Get the current language we're documenting, based on the extension."""
 
     if language is not None:
-        for l in languages.values():
+        for l in _comment_styles.values():
             if l["name"] == language:
                 return l
         else:
             raise ValueError("Unknown forced language: " + language)
 
     m = re.match(r'.*(\..+)', os.path.basename(source))
-    if m and m.group(1) in languages:
-        return languages[m.group(1)]
+    if m and m.group(1) in _comment_styles:
+        return _comment_styles[m.group(1)]
     else:
         lang = lexers.guess_lexer(code).name.lower()
-        for l in languages.values():
+        for l in _comment_styles.values():
             if l["name"] == lang:
                 return l
         else:
@@ -397,7 +376,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-def process(sources, preserve_paths=True, outdir=None, language=None):
+def process(sources, preserve_paths=True, outdir=None, language=None, extra_stylesheet=None):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
@@ -425,7 +404,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
 
             with open(dest, "w") as f:
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
-                                               language=language))
+                                               language=language, extra_stylesheet=extra_stylesheet))
 
             print "pycco = %s -> %s" % (s, dest)
 
@@ -496,10 +475,15 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
+    parser.add_option('-s', '--stylesheet', action='store', type='string',
+                      dest='extra_stylesheet', default=None,
+                      help='An additional css file to be added to output HTML')
     opts, sources = parser.parse_args()
 
+    register_comment_styles()
+
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
-            language=opts.language)
+            language=opts.language, extra_stylesheet=opts.extra_stylesheet)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
