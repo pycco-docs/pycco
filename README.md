@@ -58,5 +58,5 @@ fixes and adds a couple of new features:
 
     To support this case, when defining a comment style, you can add a `multicont` symbol.
 
-4.  supports providing a custom template by passing to `generate_documentation` or
-    `generate_html` a `custom_template` parameter.
+4.  supports providing a custom template by passing to `generate_documentation()` or
+    `generate_html()` a `custom_template` parameter.
