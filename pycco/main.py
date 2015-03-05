@@ -92,8 +92,8 @@ def parse(source, code, language):
 
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
-        if all(multi_line_delimiters) and any([line.lstrip().startswith(delim) or line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
-            if not multi_line:
+        if all(multi_line_delimiters) and any([line.lstrip().startswith(delim) for delim in multi_line_delimiters]):
+            if any([line.lstrip().startswith(delim) for delim in multi_line_delimiters]) and not multi_line:
                 multi_line = True
 
             else:
@@ -121,6 +121,9 @@ def parse(source, code, language):
                 docs_text += line[len(indent_level):] + '\n'
             else:
                 docs_text += line + '\n'
+            if all(multi_line_delimiters) and any([line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
+                multi_line = False
+                continue
 
         elif re.match(language["comment_matcher"], line):
             if has_code:
