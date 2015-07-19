@@ -43,11 +43,11 @@ def generate_documentation(source, encoding, outdir=None, preserve_paths=True,
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    code = open(source, "r").read()
+    code = codecs.open(source, "r", encoding).read()
     language = get_language(source, code, language=language)
     sections = parse(source, code, language)
-    highlight(source, sections, language, encoding, preserve_paths=preserve_paths, outdir=outdir)
-    return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
+    highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
+    return generate_html(source, encoding, sections, preserve_paths=preserve_paths, outdir=outdir)
 
 def parse(source, code, language):
     """
@@ -190,7 +190,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
 
 # === Highlighting the source code ===
 
-def highlight(source, sections, language, encoding, preserve_paths=True, outdir=None):
+def highlight(source, sections, language, preserve_paths=True, outdir=None):
     """
     Highlights a single chunk of code using the **Pygments** module, and runs
     the text of its corresponding comment through **Markdown**.
@@ -211,10 +211,7 @@ def highlight(source, sections, language, encoding, preserve_paths=True, outdir=
     fragments = re.split(language["divider_html"], output)
     for i, section in enumerate(sections):
         section["code_html"] = highlight_start + shift(fragments, "") + highlight_end
-        try:
-            docs_text = unicode(section["docs_text"])
-        except UnicodeError:
-            docs_text = unicode(section["docs_text"].decode(encoding))
+        docs_text = unicode(section["docs_text"])
         section["docs_html"] = markdown(preprocess(docs_text,
                                                    i,
                                                    preserve_paths=preserve_paths,
@@ -223,7 +220,7 @@ def highlight(source, sections, language, encoding, preserve_paths=True, outdir=
 
 # === HTML Code generation ===
 
-def generate_html(source, sections, preserve_paths=True, outdir=None):
+def generate_html(source, encoding, sections, preserve_paths=True, outdir=None):
     """
     Once all of the code is finished highlighting, we can generate the HTML file
     and write out the documentation. Pass the completed sections into the
@@ -245,7 +242,7 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
         sect["code_html"] = re.sub(r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"])
 
     rendered = pycco_template({
-        "title"       : title,
+        "title"       : unicode(title, encoding),
         "stylesheet"  : csspath,
         "sections"    : sections,
         "source"      : source,
@@ -271,6 +268,7 @@ import time
 from markdown import markdown
 from os import path
 from pygments import lexers, formatters
+import codecs
 
 # A list of the languages that Pycco supports, mapping the file extension to
 # the name of the Pygments lexer and the symbol that indicates a comment. To
