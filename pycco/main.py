@@ -423,18 +423,23 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
         def next_file():
             s = sources.pop(0)
             print "pycco = %s ->" % s,
-            dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
 
-            try:
-                os.makedirs(path.split(dest)[0])
-            except OSError:
-                pass
+            if os.path.isdir(s):
+                sources.extend([os.path.join(s, c) for c in os.listdir(s)])
 
-            with open(dest, "w") as f:
-                f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
-                                               language=language))
+            else:
+                dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
 
-            print dest
+                try:
+                    os.makedirs(path.split(dest)[0])
+                except OSError:
+                    pass
+
+                with open(dest, "w") as f:
+                    f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
+                                                   language=language))
+
+                print dest
 
             if sources:
                 next_file()
@@ -503,6 +508,7 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
+    parser.add_option('-r', '--recursive', action='store_true')
     opts, sources = parser.parse_args()
 
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
