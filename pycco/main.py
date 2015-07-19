@@ -421,7 +421,7 @@ def process(sources, encoding, preserve_paths=True, outdir=None, language=None, 
         css.write(pycco_styles)
         css.close()
 
-        def next_file():
+        while sources:
             s = sources.pop(0)
             print "pycco = %s ->" % s,
 
@@ -446,9 +446,6 @@ def process(sources, encoding, preserve_paths=True, outdir=None, language=None, 
 
                     print dest
 
-            if sources:
-                next_file()
-        next_file()
 
 __all__ = ("process", "generate_documentation")
 
