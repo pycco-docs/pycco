@@ -401,11 +401,11 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-def process(sources, encoding, preserve_paths=True, outdir=None, language=None, ignore=None):
+def process(sources, encoding, preserve_paths=True, outdir=None, language=None, ignore_list=None, ignore_unknown=False):
     """For each source file passed as argument, generate the documentation."""
 
-    if not ignore:
-        ignore = []
+    if not ignore_list:
+        ignore_list = []
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
@@ -425,26 +425,30 @@ def process(sources, encoding, preserve_paths=True, outdir=None, language=None, 
             s = sources.pop(0)
             print "pycco = %s ->" % s,
 
-            if s.split('.')[-1] in ignore:
-                print 'ignore'
+            if os.path.isdir(s):
+                sources.extend([os.path.join(s, c) for c in os.listdir(s)])
+                continue
             
-            else:
-                if os.path.isdir(s):
-                    sources.extend([os.path.join(s, c) for c in os.listdir(s)])
+            if s.split('.')[-1] in ignore_list:
+                print 'ignore'
+                continue
 
-                else:
-                    dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
+            if ignore_unknown and '.' + s.split('.')[-1] not in languages.keys():
+                print 'ignore'
+                continue
 
-                    try:
-                        os.makedirs(path.split(dest)[0])
-                    except OSError:
-                        pass
+            dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
 
-                    with open(dest, "w") as f:
-                        f.write(generate_documentation(s, encoding, preserve_paths=preserve_paths, outdir=outdir,
-                                                       language=language))
+            try:
+                os.makedirs(path.split(dest)[0])
+            except OSError:
+                pass
 
-                    print dest
+            with open(dest, "w") as f:
+                f.write(generate_documentation(s, encoding, preserve_paths=preserve_paths, outdir=outdir,
+                                                language=language))
+
+            print dest
 
 
 __all__ = ("process", "generate_documentation")
@@ -519,10 +523,14 @@ def main():
                       default='',
                       help='The comma separated liste of filetypes to ignore')
 
+    parser.add_option('-I', '--ignore-unknown', action='store_true',
+                      default=None,
+                      help='Ignore all unknown file types')
+
     opts, sources = parser.parse_args()
 
     process(sources, opts.encoding, outdir=opts.outdir, preserve_paths=opts.paths,
-            language=opts.language, ignore=opts.ignore.split(','))
+            language=opts.language, ignore_list=opts.ignore.split(','), ignore_unknown=opts.ignore_unknown)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
