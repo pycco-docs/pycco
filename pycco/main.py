@@ -401,8 +401,11 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-def process(sources, encoding, preserve_paths=True, outdir=None, language=None):
+def process(sources, encoding, preserve_paths=True, outdir=None, language=None, ignore=None):
     """For each source file passed as argument, generate the documentation."""
+
+    if not ignore:
+        ignore = []
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
@@ -422,22 +425,26 @@ def process(sources, encoding, preserve_paths=True, outdir=None, language=None):
             s = sources.pop(0)
             print "pycco = %s ->" % s,
 
-            if os.path.isdir(s):
-                sources.extend([os.path.join(s, c) for c in os.listdir(s)])
-
+            if s.split('.')[-1] in ignore:
+                print 'ignore'
+            
             else:
-                dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
+                if os.path.isdir(s):
+                    sources.extend([os.path.join(s, c) for c in os.listdir(s)])
 
-                try:
-                    os.makedirs(path.split(dest)[0])
-                except OSError:
-                    pass
+                else:
+                    dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
 
-                with open(dest, "w") as f:
-                    f.write(generate_documentation(s, encoding, preserve_paths=preserve_paths, outdir=outdir,
-                                                   language=language))
+                    try:
+                        os.makedirs(path.split(dest)[0])
+                    except OSError:
+                        pass
 
-                print dest
+                    with open(dest, "w") as f:
+                        f.write(generate_documentation(s, encoding, preserve_paths=preserve_paths, outdir=outdir,
+                                                       language=language))
+
+                    print dest
 
             if sources:
                 next_file()
@@ -506,14 +513,19 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
+
     parser.add_option('-e', '--encoding', action='store', type='string',
                       default='utf-8',
                       help='The encoding of the source files')
 
+    parser.add_option('-i', '--ignore', action='store', type='string',
+                      default='',
+                      help='The comma separated liste of filetypes to ignore')
+
     opts, sources = parser.parse_args()
 
     process(sources, opts.encoding, outdir=opts.outdir, preserve_paths=opts.paths,
-            language=opts.language)
+            language=opts.language, ignore=opts.ignore.split(','))
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
