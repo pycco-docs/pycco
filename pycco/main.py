@@ -33,7 +33,7 @@ Or, to install the latest source
 
 # === Main Documentation Generation Functions ===
 
-def generate_documentation(source, outdir=None, preserve_paths=True,
+def generate_documentation(source, encoding, outdir=None, preserve_paths=True,
                            language=None):
     """
     Generate the documentation for a source file by reading it in, splitting it
@@ -46,7 +46,7 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
     code = open(source, "r").read()
     language = get_language(source, code, language=language)
     sections = parse(source, code, language)
-    highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
+    highlight(source, sections, language, encoding, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
 
 def parse(source, code, language):
@@ -190,7 +190,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
 
 # === Highlighting the source code ===
 
-def highlight(source, sections, language, preserve_paths=True, outdir=None):
+def highlight(source, sections, language, encoding, preserve_paths=True, outdir=None):
     """
     Highlights a single chunk of code using the **Pygments** module, and runs
     the text of its corresponding comment through **Markdown**.
@@ -214,7 +214,7 @@ def highlight(source, sections, language, preserve_paths=True, outdir=None):
         try:
             docs_text = unicode(section["docs_text"])
         except UnicodeError:
-            docs_text = unicode(section["docs_text"].decode('utf-8'))
+            docs_text = unicode(section["docs_text"].decode(encoding))
         section["docs_html"] = markdown(preprocess(docs_text,
                                                    i,
                                                    preserve_paths=preserve_paths,
@@ -403,7 +403,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
-def process(sources, preserve_paths=True, outdir=None, language=None):
+def process(sources, encoding, preserve_paths=True, outdir=None, language=None):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
@@ -436,7 +436,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
                     pass
 
                 with open(dest, "w") as f:
-                    f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
+                    f.write(generate_documentation(s, encoding, preserve_paths=preserve_paths, outdir=outdir,
                                                    language=language))
 
                 print dest
@@ -508,10 +508,13 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
-    parser.add_option('-r', '--recursive', action='store_true')
+    parser.add_option('-e', '--encoding', action='store', type='string',
+                      default='utf-8',
+                      help='The encoding of the source files')
+
     opts, sources = parser.parse_args()
 
-    process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
+    process(sources, opts.encoding, outdir=opts.outdir, preserve_paths=opts.paths,
             language=opts.language)
 
     # If the -w / --watch option was present, monitor the source directories
