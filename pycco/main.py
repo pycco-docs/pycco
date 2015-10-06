@@ -460,8 +460,9 @@ def monitor(sources, opts):
             however get a moved event, which we can treat as a modified one if the move target
             is in the sources we want to monitor
             """
-            if event.dest_path in absolute_sources:
-                process([absolute_sources[event.dest_path]],
+            abs_dest = os.path.abspath(event.dest_path)
+            if abs_dest in absolute_sources:
+                process([absolute_sources[abs_dest]],
                         outdir=opts.outdir,
                         preserve_paths=opts.paths)
 
@@ -510,8 +511,18 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
+    parser.add_option('-R', '--recurse', action='store_true', dest='recurse', default=False,
+                      help='Recurses the directories found in the passed in input arguments')
+
     opts, sources = parser.parse_args()
 
+    recursed_sources = []
+    if opts.recurse:
+        for source in sources:
+            if os.path.isdir(source):
+                for root, dirs, files in os.walk(source):
+                    recursed_sources += [os.path.join(root, x) for x in files if os.path.splitext(x)[1] in languages.keys()]
+        sources = recursed_sources
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
             language=opts.language)
 
