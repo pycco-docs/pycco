@@ -451,6 +451,20 @@ def monitor(sources, opts):
 
     class RegenerateHandler(watchdog.events.FileSystemEventHandler):
         """A handler for recompiling files which triggered watchdog events"""
+
+        def on_moved(self, event):
+            """
+            Some editors (Geany, I'm looking at you!) first save the file to a temporary
+            one and then rename this temporary file to the original one.
+            On Linux/inotify (at least), no notification for the original file is sent, we do
+            however get a moved event, which we can treat as a modified one if the move target
+            is in the sources we want to monitor
+            """
+            if event.dest_path in absolute_sources:
+                process([absolute_sources[event.dest_path]],
+                        outdir=opts.outdir,
+                        preserve_paths=opts.paths)
+
         def on_modified(self, event):
             """Regenerate documentation for a file which triggered an event"""
             # Re-generate documentation from a source file if it was listed on
