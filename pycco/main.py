@@ -451,6 +451,21 @@ def monitor(sources, opts):
 
     class RegenerateHandler(watchdog.events.FileSystemEventHandler):
         """A handler for recompiling files which triggered watchdog events"""
+
+        def on_moved(self, event):
+            """
+            Some editors (Geany, I'm looking at you!) first save the file to a temporary
+            one and then rename this temporary file to the original one.
+            On Linux/inotify (at least), no notification for the original file is sent, we do
+            however get a moved event, which we can treat as a modified one if the move target
+            is in the sources we want to monitor
+            """
+            abs_dest = os.path.abspath(event.dest_path)
+            if abs_dest in absolute_sources:
+                process([absolute_sources[abs_dest]],
+                        outdir=opts.outdir,
+                        preserve_paths=opts.paths)
+
         def on_modified(self, event):
             """Regenerate documentation for a file which triggered an event"""
             # Re-generate documentation from a source file if it was listed on
@@ -496,8 +511,18 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
+    parser.add_option('-R', '--recurse', action='store_true', dest='recurse', default=False,
+                      help='Recurses the directories found in the passed in input arguments')
+
     opts, sources = parser.parse_args()
 
+    recursed_sources = []
+    if opts.recurse:
+        for source in sources:
+            if os.path.isdir(source):
+                for root, dirs, files in os.walk(source):
+                    recursed_sources += [os.path.join(root, x) for x in files if os.path.splitext(x)[1] in languages.keys()]
+        sources = recursed_sources
     process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
             language=opts.language)
 
