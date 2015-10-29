@@ -46,12 +46,12 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
         raise TypeError("Missing the required 'outdir' keyword argument.")
     code = open(source, "r").read()
     language = get_language(source, code, language=language)
-    sections = parse(source, code, language)
-    highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
+    sections = parse(code, language)
+    highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
 
 
-def parse(source, code, language):
+def parse(code, language):
     """
     Given a string of source code, parse out each comment and the code that
     follows it, and create an individual **section** for it.
@@ -78,7 +78,7 @@ def parse(source, code, language):
                 lines.pop(linenum)
                 break
 
-    def save(docs, code):
+    def save(docs, code, sections):
         if docs or code:
             sections.append({
                 "docs_text": docs,
@@ -87,66 +87,64 @@ def parse(source, code, language):
 
     # Setup the variables to get ready to check for multiline comments
     multi_line = False
-    multi_line_delimiters = [language.get("multistart"), language.get("multiend")]
+    multistart, multiend = [language.get("multistart"), language.get("multiend")]
+    comment_matcher = language['comment_matcher']
 
     for line in lines:
-
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
-        if all(multi_line_delimiters) and any([line.lstrip().startswith(delim) or
-                                               line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
-            if not multi_line:
-                multi_line = True
-
-            else:
-                multi_line = False
+        if multistart and multiend and \
+           any(line.lstrip().startswith(delim) or line.rstrip().endswith(delim)
+                for delim in (multistart, multiend)):
+            multi_line = not multi_line
 
             if (multi_line
-                    and line.strip().endswith(language.get("multiend"))
-                    and len(line.strip()) > len(language.get("multiend"))):
+                    and line.strip().endswith(multiend)
+                    and len(line.strip()) > len(multiend)):
                 multi_line = False
 
             # Get rid of the delimiters so that they aren't in the final docs
-            line = line.replace(language["multistart"], '')
-            line = line.replace(language["multiend"], '')
+            line = line.replace(multistart, '')
+            line = line.replace(multiend, '')
             docs_text += line.strip() + '\n'
             indent_level = re.match("\s*", line).group(0)
 
             if has_code and docs_text.strip():
-                save(docs_text, code_text[:-1])
+                save(docs_text, code_text[:-1], sections)
                 code_text = code_text.split('\n')[-1]
                 has_code = docs_text = ''
 
         elif multi_line:
             # Remove leading spaces
-            if re.match(r' {%d}' % len(indent_level), line):
+            if re.match(r' {:d}'.format(len(indent_level), line)):
                 docs_text += line[len(indent_level):] + '\n'
             else:
                 docs_text += line + '\n'
 
-        elif re.match(language["comment_matcher"], line):
+        elif re.match(comment_matcher, line):
             if has_code:
-                save(docs_text, code_text)
+                save(docs_text, code_text, sections)
                 has_code = docs_text = code_text = ''
-            docs_text += re.sub(language["comment_matcher"], "", line) + "\n"
+            docs_text += re.sub(comment_matcher, "", line) + "\n"
 
         else:
-            if code_text and any([line.lstrip().startswith(x) for x in ['class ', 'def ', '@']]):
+            if code_text and any(line.lstrip().startswith(x)
+                                 for x in ['class ', 'def ', '@']):
                 if not code_text.lstrip().startswith("@"):
-                    save(docs_text, code_text)
+                    save(docs_text, code_text, sections)
                     code_text = has_code = docs_text = ''
 
             has_code = True
             code_text += line + '\n'
 
-    save(docs_text, code_text)
+    save(docs_text, code_text, sections)
 
     return sections
 
 # === Preprocessing the comments ===
 
 
-def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
+def preprocess(comment, preserve_paths=True, outdir=None):
     """
     Add cross-references before having the text processed by markdown.  It's
     possible to reference another file, like this : `[[main.py]]` which renders
@@ -167,24 +165,27 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
         # Check if the match contains an anchor
         if '#' in match.group(1):
             name, anchor = match.group(1).split('#')
-            return " [%s](%s#%s)" % (name,
-                                     path.basename(destination(name,
-                                                               preserve_paths=preserve_paths,
-                                                               outdir=outdir)),
-                                     anchor)
+            return " [{}]({}#{})".format(name,
+                                         path.basename(destination(name,
+                                                                   preserve_paths=preserve_paths,
+                                                                   outdir=outdir)),
+                                         anchor)
 
         else:
-            return " [%s](%s)" % (match.group(1),
-                                  path.basename(destination(match.group(1),
-                                                            preserve_paths=preserve_paths,
-                                                            outdir=outdir)))
+            return " [{}]({})".format(match.group(1),
+                                      path.basename(destination(match.group(1),
+                                                                preserve_paths=preserve_paths,
+                                                                outdir=outdir)))
 
     def replace_section_name(match):
-        return '%(lvl)s <span id="%(id)s" href="%(id)s">%(name)s</span>' % {
-            "lvl": re.sub('=', '#', match.group(1)),
-            "id": sanitize_section_name(match.group(2)),
-            "name": match.group(2)
-        }
+        """
+        Replace equals-sign-formatted section names with anchor links.
+        """
+        return '{lvl} <span id="{id}" href="{id}">{name}</span>'.format(
+            lvl=re.sub('=', '#', match.group(1)),
+            id=sanitize_section_name(match.group(2)),
+            name=match.group(2)
+        )
 
     comment = re.sub('^([=]+)([^=]+)[=]*\s*$', replace_section_name, comment)
     comment = re.sub('[^`]\[\[(.+?)\]\]', replace_crossref, comment)
@@ -194,7 +195,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
 # === Highlighting the source code ===
 
 
-def highlight(source, sections, language, preserve_paths=True, outdir=None):
+def highlight(sections, language, preserve_paths=True, outdir=None):
     """
     Highlights a single chunk of code using the **Pygments** module, and runs
     the text of its corresponding comment through **Markdown**.
@@ -220,7 +221,6 @@ def highlight(source, sections, language, preserve_paths=True, outdir=None):
         except UnicodeError:
             docs_text = unicode(section["docs_text"].decode('utf-8'))
         section["docs_html"] = markdown(preprocess(docs_text,
-                                                   i,
                                                    preserve_paths=preserve_paths,
                                                    outdir=outdir))
         section["num"] = i
@@ -370,7 +370,13 @@ def destination(filepath, preserve_paths=True, outdir=None):
         name = filename
     if preserve_paths:
         name = path.join(dirname, name)
-    return path.join(outdir, "%s.html" % name)
+    dest = path.join(outdir, u"{}.html".format(name))
+    # If `join` is passed an absolute path, it will ignore any earlier path
+    # elements. We will force outdir to the beginning of the path to avoid
+    # writing outside our destination.
+    if not dest.startswith(outdir):
+        dest = outdir + os.sep + dest
+    return dest
 
 
 def shift(list, default):
@@ -438,7 +444,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
                 f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
                                                language=language))
 
-            print "pycco = %s -> %s" % (s, dest)
+            print "pycco = {} -> {}".format(s, dest)
 
             if sources:
                 next_file()

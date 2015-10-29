@@ -1,0 +1,2 @@
+pystache==0.5.4
+markdown==2.6.3

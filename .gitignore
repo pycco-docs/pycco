@@ -4,3 +4,9 @@ build/*
 dist/*
 docs/*
 /tags
+
+.cache
+.hypothesis
+.ropeproject
+
+.DS_Store
