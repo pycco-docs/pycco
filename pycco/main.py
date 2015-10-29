@@ -33,6 +33,7 @@ Or, to install the latest source
 
 # === Main Documentation Generation Functions ===
 
+
 def generate_documentation(source, outdir=None, preserve_paths=True,
                            language=None):
     """
@@ -48,6 +49,7 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
     sections = parse(source, code, language)
     highlight(source, sections, language, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
+
 
 def parse(source, code, language):
     """
@@ -76,7 +78,6 @@ def parse(source, code, language):
                 lines.pop(linenum)
                 break
 
-
     def save(docs, code):
         if docs or code:
             sections.append({
@@ -92,7 +93,8 @@ def parse(source, code, language):
 
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
-        if all(multi_line_delimiters) and any([line.lstrip().startswith(delim) or line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
+        if all(multi_line_delimiters) and any([line.lstrip().startswith(delim) or
+                                               line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
             if not multi_line:
                 multi_line = True
 
@@ -100,8 +102,8 @@ def parse(source, code, language):
                 multi_line = False
 
             if (multi_line
-               and line.strip().endswith(language.get("multiend"))
-               and len(line.strip()) > len(language.get("multiend"))):
+                    and line.strip().endswith(language.get("multiend"))
+                    and len(line.strip()) > len(language.get("multiend"))):
                 multi_line = False
 
             # Get rid of the delimiters so that they aren't in the final docs
@@ -137,12 +139,12 @@ def parse(source, code, language):
             has_code = True
             code_text += line + '\n'
 
-
     save(docs_text, code_text)
 
     return sections
 
 # === Preprocessing the comments ===
+
 
 def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
     """
@@ -157,6 +159,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
+
     def sanitize_section_name(name):
         return "-".join(name.lower().strip().split(" "))
 
@@ -178,9 +181,9 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
 
     def replace_section_name(match):
         return '%(lvl)s <span id="%(id)s" href="%(id)s">%(name)s</span>' % {
-            "lvl"  : re.sub('=', '#', match.group(1)),
-            "id"   : sanitize_section_name(match.group(2)),
-            "name" : match.group(2)
+            "lvl": re.sub('=', '#', match.group(1)),
+            "id": sanitize_section_name(match.group(2)),
+            "name": match.group(2)
         }
 
     comment = re.sub('^([=]+)([^=]+)[=]*\s*$', replace_section_name, comment)
@@ -189,6 +192,7 @@ def preprocess(comment, section_nr, preserve_paths=True, outdir=None):
     return comment
 
 # === Highlighting the source code ===
+
 
 def highlight(source, sections, language, preserve_paths=True, outdir=None):
     """
@@ -223,6 +227,7 @@ def highlight(source, sections, language, preserve_paths=True, outdir=None):
 
 # === HTML Code generation ===
 
+
 def generate_html(source, sections, preserve_paths=True, outdir=None):
     """
     Once all of the code is finished highlighting, we can generate the HTML file
@@ -245,12 +250,12 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
         sect["code_html"] = re.sub(r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"])
 
     rendered = pycco_template({
-        "title"       : title,
-        "stylesheet"  : csspath,
-        "sections"    : sections,
-        "source"      : source,
-        "path"        : path,
-        "destination" : destination
+        "title": title,
+        "stylesheet": csspath,
+        "sections": sections,
+        "source": source,
+        "path": path,
+        "destination": destination
     })
 
     return re.sub(r"__DOUBLE_OPEN_STACHE__", "{{", rendered).encode("utf-8")
@@ -276,39 +281,39 @@ from pygments import lexers, formatters
 # the name of the Pygments lexer and the symbol that indicates a comment. To
 # add another language to Pycco's repertoire, add it here.
 languages = {
-    ".coffee": { "name": "coffee-script", "symbol": "#",
-        "multistart": '###', "multiend": '###' },
+    ".coffee": {"name": "coffee-script", "symbol": "#",
+                "multistart": '###', "multiend": '###'},
 
-    ".pl":  { "name": "perl", "symbol": "#" },
+    ".pl":  {"name": "perl", "symbol": "#"},
 
-    ".sql": { "name": "sql", "symbol": "--" },
+    ".sql": {"name": "sql", "symbol": "--"},
 
-    ".c":   { "name": "c", "symbol": "//",
-        "multistart": "/*", "multiend": "*/"},
+    ".c":   {"name": "c", "symbol": "//",
+             "multistart": "/*", "multiend": "*/"},
 
-    ".cpp": { "name": "cpp", "symbol": "//"},
+    ".cpp": {"name": "cpp", "symbol": "//"},
 
-    ".js": { "name": "javascript", "symbol": "//",
-        "multistart": "/*", "multiend": "*/"},
+    ".js": {"name": "javascript", "symbol": "//",
+            "multistart": "/*", "multiend": "*/"},
 
-    ".rb": { "name": "ruby", "symbol": "#",
-        "multistart": "=begin", "multiend": "=end"},
+    ".rb": {"name": "ruby", "symbol": "#",
+            "multistart": "=begin", "multiend": "=end"},
 
-    ".py": { "name": "python", "symbol": "#",
-        "multistart": '"""', "multiend": '"""' },
+    ".py": {"name": "python", "symbol": "#",
+            "multistart": '"""', "multiend": '"""' },
 
-    ".scm": { "name": "scheme", "symbol": ";;",
-        "multistart": "#|", "multiend": "|#"},
+    ".scm": {"name": "scheme", "symbol": ";;",
+             "multistart": "#|", "multiend": "|#"},
 
-    ".lua": { "name": "lua", "symbol": "--",
-        "multistart": "--[[", "multiend": "--]]"},
+    ".lua": {"name": "lua", "symbol": "--",
+             "multistart": "--[[", "multiend": "--]]"},
 
-    ".erl": { "name": "erlang", "symbol": "%%" },
+    ".erl": {"name": "erlang", "symbol": "%%"},
 
-    ".tcl":  { "name": "tcl", "symbol": "#" },
+    ".tcl":  {"name": "tcl", "symbol": "#"},
 
-    ".hs": { "name": "haskell", "symbol": "--",
-        "multistart": "{-", "multiend": "-}"},
+    ".hs": {"name": "haskell", "symbol": "--",
+            "multistart": "{-", "multiend": "-}"},
 }
 
 # Build out the appropriate matchers and delimiters for each language.
@@ -326,6 +331,7 @@ for ext, l in languages.items():
 
     # Get the Pygments Lexer for this language.
     l["lexer"] = lexers.get_lexer_by_name(l["name"])
+
 
 def get_language(source, code, language=None):
     """Get the current language we're documenting, based on the extension."""
@@ -348,6 +354,7 @@ def get_language(source, code, language=None):
         else:
             raise ValueError("Can't figure out the language!")
 
+
 def destination(filepath, preserve_paths=True, outdir=None):
     """
     Compute the destination HTML path for an input source file path. If the
@@ -365,6 +372,7 @@ def destination(filepath, preserve_paths=True, outdir=None):
         name = path.join(dirname, name)
     return path.join(outdir, "%s.html" % name)
 
+
 def shift(list, default):
     """
     Shift items off the front of the `list` until it is empty, then return
@@ -376,11 +384,13 @@ def shift(list, default):
     except IndexError:
         return default
 
+
 def ensure_directory(directory):
     """Ensure that the destination directory exists."""
 
     if not os.path.isdir(directory):
         os.makedirs(directory)
+
 
 def template(source):
     return lambda context: pystache.render(source, context)
@@ -396,6 +406,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
+
 
 def process(sources, preserve_paths=True, outdir=None, language=None):
     """For each source file passed as argument, generate the documentation."""
@@ -451,6 +462,7 @@ def monitor(sources, opts):
 
     class RegenerateHandler(watchdog.events.FileSystemEventHandler):
         """A handler for recompiling files which triggered watchdog events"""
+
         def on_modified(self, event):
             """Regenerate documentation for a file which triggered an event"""
             # Re-generate documentation from a source file if it was listed on
