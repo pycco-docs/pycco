@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 """
 "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/):
@@ -35,7 +36,7 @@ Or, to install the latest source
 
 
 def generate_documentation(source, outdir=None, preserve_paths=True,
-                           language=None):
+                           language=None, encoding="utf8"):
     """
     Generate the documentation for a source file by reading it in, splitting it
     up into comment/code sections, highlighting them for the appropriate
@@ -44,7 +45,7 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    code = open(source, "r").read()
+    code = open(source, "rb").read().decode(encoding)
     return _generate_documentation(source, code, outdir, preserve_paths, language)
 
 
@@ -226,6 +227,8 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
             docs_text = unicode(section["docs_text"])
         except UnicodeError:
             docs_text = unicode(section["docs_text"].decode('utf-8'))
+        except NameError:
+            docs_text = section['docs_text']
         section["docs_html"] = markdown(preprocess(docs_text,
                                                    preserve_paths=preserve_paths,
                                                    outdir=outdir))
@@ -361,9 +364,9 @@ def get_language(source, code, language=None):
             else:
                 raise ValueError()
         except ValueError:
-                # If pygments can't find any lexers, it will raise its own
-                # subclass of ValueError. We will catch it and raise ours
-                # for consistency.
+            # If pygments can't find any lexers, it will raise its own
+            # subclass of ValueError. We will catch it and raise ours
+            # for consistency.
             raise ValueError("Can't figure out the language!")
 
 
@@ -403,15 +406,20 @@ def shift(list, default):
         return default
 
 
+def remove_control_chars(s):
+    # Sanitization regexp copied from
+    # http://stackoverflow.com/questions/92438/stripping-non-printable-characters-from-a-string-in-python
+    from pycco.compat import pycco_unichr
+    control_chars = ''.join(map(pycco_unichr, list(range(0, 32)) + list(range(127, 160))))
+    control_char_re = re.compile(u'[{}]'.format(re.escape(control_chars)))
+    return control_char_re.sub('', s)
+
+
 def ensure_directory(directory):
     """
     Sanitize directory string and ensure that the destination directory exists.
     """
-    # Sanitization regexp copied from
-    # http://stackoverflow.com/questions/92438/stripping-non-printable-characters-from-a-string-in-python
-    control_chars = ''.join(map(unichr, range(0, 32) + range(127, 160)))
-    control_char_re = re.compile(u'[{}]'.format(re.escape(control_chars)))
-    directory = control_char_re.sub('', directory)
+    directory = remove_control_chars(directory)
     if not os.path.isdir(directory):
         os.makedirs(directory)
 
@@ -434,7 +442,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 highlight_end = "</pre></div>"
 
 
-def process(sources, preserve_paths=True, outdir=None, language=None):
+def process(sources, preserve_paths=True, outdir=None, language=None, encoding="utf8"):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
@@ -447,8 +455,8 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
     # Proceed to generating the documentation.
     if sources:
         outdir = ensure_directory(outdir)
-        css = open(path.join(outdir, "pycco.css"), "w")
-        css.write(pycco_styles)
+        css = open(path.join(outdir, "pycco.css"), "wb")
+        css.write(pycco_styles.encode(encoding))
         css.close()
 
         def next_file():
@@ -460,11 +468,13 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
             except OSError:
                 pass
 
-            with open(dest, "w") as f:
-                f.write(generate_documentation(s, preserve_paths=preserve_paths, outdir=outdir,
-                                               language=language))
+            with open(dest, "wb") as f:
+                f.write(generate_documentation(s, preserve_paths=preserve_paths,
+                                               outdir=outdir,
+                                               language=language,
+                                               encoding=encoding))
 
-            print "pycco = {} -> {}".format(s, dest)
+            print("pycco = {} -> {}".format(s, dest))
 
             if sources:
                 next_file()
