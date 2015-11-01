@@ -45,10 +45,17 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     code = open(source, "r").read()
-    language = get_language(source, code, language=language)
+    return _generate_documentation(source, code, outdir, preserve_paths, language)
+
+
+def _generate_documentation(file_path, code, outdir, preserve_paths, language):
+    """
+    Helper function to allow documentation generation without file handling.
+    """
+    language = get_language(file_path, code, language=language)
     sections = parse(code, language)
     highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
-    return generate_html(source, sections, preserve_paths=preserve_paths, outdir=outdir)
+    return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
 
 
 def parse(code, language):
@@ -56,7 +63,6 @@ def parse(code, language):
     Given a string of source code, parse out each comment and the code that
     follows it, and create an individual **section** for it.
     Sections take the form:
-
         { "docs_text": ...,
           "docs_html": ...,
           "code_text": ...,
@@ -78,7 +84,7 @@ def parse(code, language):
                 lines.pop(linenum)
                 break
 
-    def save(docs, code, sections):
+    def save(docs, code):
         if docs or code:
             sections.append({
                 "docs_text": docs,
@@ -87,14 +93,14 @@ def parse(code, language):
 
     # Setup the variables to get ready to check for multiline comments
     multi_line = False
-    multistart, multiend = [language.get("multistart"), language.get("multiend")]
+    multistart, multiend = language.get("multistart"), language.get("multiend")
     comment_matcher = language['comment_matcher']
 
     for line in lines:
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
         if multistart and multiend and \
-           any(line.lstrip().startswith(delim) or line.rstrip().endswith(delim)
+            any(line.lstrip().startswith(delim) or line.rstrip().endswith(delim)
                 for delim in (multistart, multiend)):
             multi_line = not multi_line
 
@@ -110,20 +116,20 @@ def parse(code, language):
             indent_level = re.match("\s*", line).group(0)
 
             if has_code and docs_text.strip():
-                save(docs_text, code_text[:-1], sections)
+                save(docs_text, code_text[:-1])
                 code_text = code_text.split('\n')[-1]
                 has_code = docs_text = ''
 
         elif multi_line:
             # Remove leading spaces
-            if re.match(r' {:d}'.format(len(indent_level)), line):
+            if re.match(r' {{{:d}}}'.format(len(indent_level)), line):
                 docs_text += line[len(indent_level):] + '\n'
             else:
                 docs_text += line + '\n'
 
         elif re.match(comment_matcher, line):
             if has_code:
-                save(docs_text, code_text, sections)
+                save(docs_text, code_text)
                 has_code = docs_text = code_text = ''
             docs_text += re.sub(comment_matcher, "", line) + "\n"
 
@@ -131,13 +137,13 @@ def parse(code, language):
             if code_text and any(line.lstrip().startswith(x)
                                  for x in ['class ', 'def ', '@']):
                 if not code_text.lstrip().startswith("@"):
-                    save(docs_text, code_text, sections)
+                    save(docs_text, code_text)
                     code_text = has_code = docs_text = ''
 
             has_code = True
             code_text += line + '\n'
 
-    save(docs_text, code_text, sections)
+    save(docs_text, code_text)
 
     return sections
 
