@@ -116,7 +116,7 @@ def parse(code, language):
 
         elif multi_line:
             # Remove leading spaces
-            if re.match(r' {:d}'.format(len(indent_level), line)):
+            if re.match(r' {:d}'.format(len(indent_level)), line):
                 docs_text += line[len(indent_level):] + '\n'
             else:
                 docs_text += line + '\n'
@@ -300,7 +300,7 @@ languages = {
             "multistart": "=begin", "multiend": "=end"},
 
     ".py": {"name": "python", "symbol": "#",
-            "multistart": '"""', "multiend": '"""' },
+            "multistart": '"""', "multiend": '"""'},
 
     ".scm": {"name": "scheme", "symbol": ";;",
              "multistart": "#|", "multiend": "|#"},
@@ -343,15 +343,21 @@ def get_language(source, code, language=None):
         else:
             raise ValueError("Unknown forced language: " + language)
 
-    m = re.match(r'.*(\..+)', os.path.basename(source))
+    m = re.match(r'.*(\..+)', os.path.basename(source)) if source else None
     if m and m.group(1) in languages:
         return languages[m.group(1)]
     else:
-        lang = lexers.guess_lexer(code).name.lower()
-        for l in languages.values():
-            if l["name"] == lang:
-                return l
-        else:
+        try:
+            lang = lexers.guess_lexer(code).name.lower()
+            for l in languages.values():
+                if l["name"] == lang:
+                    return l
+            else:
+                raise ValueError()
+        except ValueError:
+                # If pygments can't find any lexers, it will raise its own
+                # subclass of ValueError. We will catch it and raise ours
+                # for consistency.
             raise ValueError("Can't figure out the language!")
 
 
@@ -392,10 +398,18 @@ def shift(list, default):
 
 
 def ensure_directory(directory):
-    """Ensure that the destination directory exists."""
-
+    """
+    Sanitize directory string and ensure that the destination directory exists.
+    """
+    # Sanitization regexp copied from
+    # http://stackoverflow.com/questions/92438/stripping-non-printable-characters-from-a-string-in-python
+    control_chars = ''.join(map(unichr, range(0, 32) + range(127, 160)))
+    control_char_re = re.compile(u'[{}]'.format(re.escape(control_chars)))
+    directory = control_char_re.sub('', directory)
     if not os.path.isdir(directory):
         os.makedirs(directory)
+
+    return directory
 
 
 def template(source):
@@ -426,7 +440,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None):
 
     # Proceed to generating the documentation.
     if sources:
-        ensure_directory(outdir)
+        outdir = ensure_directory(outdir)
         css = open(path.join(outdir, "pycco.css"), "w")
         css.write(pycco_styles)
         css.close()
