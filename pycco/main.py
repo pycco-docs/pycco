@@ -89,20 +89,36 @@ def parse(source, code, language):
     multi_line_delimiters = [language.get("multistart"), language.get("multiend")]
 
     for line in lines:
-
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
+        
         if all(multi_line_delimiters) and any([line.lstrip().startswith(delim) or line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
+
             if not multi_line:
                 multi_line = True
-
             else:
                 multi_line = False
 
+            # if multiline comment starts and ends at the start and end of the line
             if (multi_line
+               and line.strip().startswith(language.get("multistart"))
                and line.strip().endswith(language.get("multiend"))
-               and len(line.strip()) > len(language.get("multiend"))):
+               and len(line.strip()) > (len(language.get("multistart")) + len(language.get("multiend")))):
                 multi_line = False
+
+            # if we started a multi-line comment and the comment isn't the beginning of the line
+            if(multi_line):
+                if(not line.strip().startswith(language.get("multistart"))):
+                    line = line.split(language.get("multistart"))
+                    code_text += line[0] + "\n"
+                    line = language.get("multistart")+reduce(lambda x,y:x+y,line[1:])
+
+            # if we just ended a multi-line comment and the comment isn't the end of the line
+            if(not multi_line):
+                if(not line.strip().endswith(language.get("multiend"))):
+                    line = line.split(language.get("multiend"))
+                    code_text += line[0] + "\n"
+                    line = language.get("multiend")+reduce(lambda x,y:x+y,line[1:])                    
 
             # Get rid of the delimiters so that they aren't in the final docs
             line = line.replace(language["multistart"], '')
@@ -344,6 +360,8 @@ def get_language(source, code, language=None):
         lang = lexers.guess_lexer(code).name.lower()
         for l in languages.values():
             if l["name"] == lang:
+                print "First Delimiters"
+                print l.multi_line_delimiters
                 return l
         else:
             raise ValueError("Can't figure out the language!")
