@@ -360,8 +360,6 @@ def get_language(source, code, language=None):
         lang = lexers.guess_lexer(code).name.lower()
         for l in languages.values():
             if l["name"] == lang:
-                print "First Delimiters"
-                print l.multi_line_delimiters
                 return l
         else:
             raise ValueError("Can't figure out the language!")
