@@ -86,16 +86,19 @@ def parse(source, code, language):
 
     # Setup the variables to get ready to check for multiline comments
     multi_line = False
+    multi_string = False
     multi_line_delimiters = [language.get("multistart"), language.get("multiend")]
 
     for line in lines:
+        
+        process_as_code = False
 
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
         if all(multi_line_delimiters) and any([line.lstrip().startswith(delim) or line.rstrip().endswith(delim) for delim in multi_line_delimiters]):
             if not multi_line:
                 multi_line = True
-
+                
             else:
                 multi_line = False
 
@@ -104,16 +107,27 @@ def parse(source, code, language):
                and len(line.strip()) > len(language.get("multiend"))):
                 multi_line = False
 
-            # Get rid of the delimiters so that they aren't in the final docs
-            line = line.replace(language["multistart"], '')
-            line = line.replace(language["multiend"], '')
-            docs_text += line.strip() + '\n'
-            indent_level = re.match("\s*", line).group(0)
+            if((not line.strip().startswith(language.get("multistart")) and not multi_line) or multi_string):
 
-            if has_code and docs_text.strip():
-                save(docs_text, code_text[:-1])
-                code_text = code_text.split('\n')[-1]
-                has_code = docs_text = ''
+                process_as_code = True
+
+                if(multi_string):
+                    multi_line = False
+                    multi_string = False
+                else:
+                    multi_string = True
+
+            else:
+                # Get rid of the delimiters so that they aren't in the final docs
+                line = line.replace(language["multistart"], '')
+                line = line.replace(language["multiend"], '')
+                docs_text += line.strip() + '\n'
+                indent_level = re.match("\s*", line).group(0)
+
+                if has_code and docs_text.strip():
+                    save(docs_text, code_text[:-1])
+                    code_text = code_text.split('\n')[-1]
+                    has_code = docs_text = ''
 
         elif multi_line:
             # Remove leading spaces
@@ -129,13 +143,16 @@ def parse(source, code, language):
             docs_text += re.sub(language["comment_matcher"], "", line) + "\n"
 
         else:
+            process_as_code = True
+
+        if(process_as_code):
             if code_text and any([line.lstrip().startswith(x) for x in ['class ', 'def ', '@']]):
                 if not code_text.lstrip().startswith("@"):
                     save(docs_text, code_text)
                     code_text = has_code = docs_text = ''
 
             has_code = True
-            code_text += line + '\n'
+            code_text += line + '\n'        
 
 
     save(docs_text, code_text)
