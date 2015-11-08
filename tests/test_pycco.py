@@ -41,7 +41,8 @@ def test_destination(filepath, preserve_paths, outdir):
 def test_parse(choice, source):
     l = get_language(choice)
     parsed = p.parse(source, l)
-    assert [{"code_text", "docs_text"} == set(s.keys()) for s in parsed]
+    for s in parsed:
+        assert {"code_text", "docs_text"} == set(s.keys())
 
 
 def test_skip_coding_directive():
