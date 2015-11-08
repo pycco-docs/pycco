@@ -60,6 +60,13 @@ def test_multi_line_leading_spaces():
     assert parsed[0]["docs_text"] == "This is a\ncomment that\nis indented\n"
 
 
+def test_comment_with_only_cross_ref():
+    source = '''# ==Link Target==\n\ndef test_link():\n    """[[testing.py#link-target]]"""\n    pass'''
+    sections = p.parse(source, PYTHON)
+    p.highlight(sections, PYTHON, outdir=tempfile.gettempdir())
+    assert sections[1]['docs_html']  == '<p><a href="testing.html#link-target">testing.py</a></p>'
+
+
 @given(text(), text())
 def test_get_language_specify_language(source, code):
     assert p.get_language(source, code, language="python") == p.languages['.py']
