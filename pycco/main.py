@@ -172,7 +172,6 @@ def preprocess(comment, preserve_paths=True, outdir=None):
         # Check if the match contains an anchor
         if '#' in match.group(1):
             name, anchor = match.group(1).split('#')
-
             return " [{}]({}#{})".format(name,
                                          path.basename(destination(name,
                                                                    preserve_paths=preserve_paths,
