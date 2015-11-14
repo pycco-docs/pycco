@@ -48,8 +48,6 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
     code = open(source, "rb").read().decode(encoding)
     return _generate_documentation(source, code, outdir, preserve_paths, language)
 
-<<<<<<< HEAD
-
 def _generate_documentation(file_path, code, outdir, preserve_paths, language):
     """
     Helper function to allow documentation generation without file handling.
@@ -59,18 +57,6 @@ def _generate_documentation(file_path, code, outdir, preserve_paths, language):
     highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
 
-=======
-
-def _generate_documentation(file_path, code, outdir, preserve_paths, language):
-    """
-    Helper function to allow documentation generation without file handling.
-    """
-    language = get_language(file_path, code, language=language)
-    sections = parse(code, language)
-    highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
-    return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
-
->>>>>>> bbeee06f1222fa47439717d2e4b642a41e9d7f4b
 
 def parse(code, language):
     """
