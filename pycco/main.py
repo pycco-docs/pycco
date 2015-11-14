@@ -48,6 +48,7 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
     code = open(source, "rb").read().decode(encoding)
     return _generate_documentation(source, code, outdir, preserve_paths, language)
 
+
 def _generate_documentation(file_path, code, outdir, preserve_paths, language):
     """
     Helper function to allow documentation generation without file handling.
