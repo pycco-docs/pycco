@@ -120,6 +120,7 @@ def test_generate_documentation():
 def test_process(preserve_paths, choice):
     lang_name = choice([l["name"] for l in p.languages.values()])
     p.process([PYCCO_SOURCE], preserve_paths=preserve_paths, outdir=tempfile.gettempdir(), language=lang_name)
+<<<<<<< HEAD
 
 
 def test_ensure_multiline_string_support():
@@ -139,3 +140,5 @@ def x():
 
     assert docs_code_tuple_list[0]['docs_text'] == ''
     assert "#" not in docs_code_tuple_list[1]['docs_text'] 
+=======
+>>>>>>> bbeee06f1222fa47439717d2e4b642a41e9d7f4b

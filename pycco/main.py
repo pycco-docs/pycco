@@ -48,6 +48,7 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
     code = open(source, "rb").read().decode(encoding)
     return _generate_documentation(source, code, outdir, preserve_paths, language)
 
+<<<<<<< HEAD
 
 def _generate_documentation(file_path, code, outdir, preserve_paths, language):
     """
@@ -58,6 +59,18 @@ def _generate_documentation(file_path, code, outdir, preserve_paths, language):
     highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
 
+=======
+
+def _generate_documentation(file_path, code, outdir, preserve_paths, language):
+    """
+    Helper function to allow documentation generation without file handling.
+    """
+    language = get_language(file_path, code, language=language)
+    sections = parse(code, language)
+    highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
+    return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
+
+>>>>>>> bbeee06f1222fa47439717d2e4b642a41e9d7f4b
 
 def parse(code, language):
     """
@@ -113,6 +126,7 @@ def parse(code, language):
                     and len(line.strip()) > len(multiend)):
                 multi_line = False
 
+
             if((not line.strip().startswith(multistart) and not multi_line) or multi_string):
 
                 process_as_code = True
@@ -152,6 +166,7 @@ def parse(code, language):
             process_as_code = True
 
         if(process_as_code):
+
             if code_text and any(line.lstrip().startswith(x)
                                  for x in ['class ', 'def ', '@']):
                 if not code_text.lstrip().startswith("@"):
@@ -159,7 +174,7 @@ def parse(code, language):
                     code_text = has_code = docs_text = ''
 
             has_code = True
-            code_text += line + '\n'        
+            code_text += line + '\n'
 
     save(docs_text, code_text)
 
