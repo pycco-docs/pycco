@@ -64,7 +64,7 @@ def test_comment_with_only_cross_ref():
     source = '''# ==Link Target==\n\ndef test_link():\n    """[[testing.py#link-target]]"""\n    pass'''
     sections = p.parse(source, PYTHON)
     p.highlight(sections, PYTHON, outdir=tempfile.gettempdir())
-    assert sections[1]['docs_html']  == '<p><a href="testing.html#link-target">testing.py</a></p>'
+    assert sections[1]['docs_html'] == '<p><a href="testing.html#link-target">testing.py</a></p>'
 
 
 @given(text(), text())
@@ -124,19 +124,18 @@ def test_process(preserve_paths, choice):
 
 def test_ensure_multiline_string_support():
     code = '''x = """
-how about this?
+multi-line-string
 """
 
-y = z  # is this where it should be?
+y = z  # comment
 
-# how did this get so *BIG!*
+# *comment with formatting*
 
 def x():
-    """how would you fix?
+    """multi-line-string
     """'''
 
-    docs_code_tuple_list = p.parse(code,PYTHON)
+    docs_code_tuple_list = p.parse(code, PYTHON)
 
     assert docs_code_tuple_list[0]['docs_text'] == ''
-    assert "#" not in docs_code_tuple_list[1]['docs_text'] 
-
+    assert "#" not in docs_code_tuple_list[1]['docs_text']

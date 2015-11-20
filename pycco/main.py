@@ -100,32 +100,32 @@ def parse(code, language):
 
     for line in lines:
         process_as_code = False
-
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
-        if multistart and multiend and \
-            any(line.lstrip().startswith(delim) or line.rstrip().endswith(delim)
-                for delim in (multistart, multiend)):
+        if multistart and multiend \
+           and any(line.lstrip().startswith(delim) or line.rstrip().endswith(delim)
+                   for delim in (multistart, multiend)):
             multi_line = not multi_line
 
-            if (multi_line
-                    and line.strip().endswith(multiend)
-                    and len(line.strip()) > len(multiend)):
+            if multi_line \
+               and line.strip().endswith(multiend) \
+               and len(line.strip()) > len(multiend):
                 multi_line = False
 
-
-            if((not line.strip().startswith(multistart) and not multi_line) or multi_string):
+            if not line.strip().startswith(multistart) and not multi_line \
+               or multi_string:
 
                 process_as_code = True
 
-                if(multi_string):
+                if multi_string:
                     multi_line = False
                     multi_string = False
                 else:
                     multi_string = True
 
             else:
-                # Get rid of the delimiters so that they aren't in the final docs
+                # Get rid of the delimiters so that they aren't in the final
+                # docs
                 line = line.replace(multistart, '')
                 line = line.replace(multiend, '')
                 docs_text += line.strip() + '\n'
@@ -152,8 +152,7 @@ def parse(code, language):
         else:
             process_as_code = True
 
-        if(process_as_code):
-
+        if process_as_code:
             if code_text and any(line.lstrip().startswith(x)
                                  for x in ['class ', 'def ', '@']):
                 if not code_text.lstrip().startswith("@"):
@@ -516,6 +515,7 @@ def monitor(sources, opts):
                             for source in sources)
 
     class RegenerateHandler(watchdog.events.FileSystemEventHandler):
+
         """A handler for recompiling files which triggered watchdog events"""
 
         def on_modified(self, event):
