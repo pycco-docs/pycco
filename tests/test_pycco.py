@@ -1,11 +1,10 @@
-import copy
 import os
 import tempfile
 import time
 
 import pytest
-from hypothesis import given, example, assume
-from hypothesis.strategies import lists, text, booleans, choices, none
+from hypothesis import given, example
+from hypothesis.strategies import text, booleans, choices, none
 
 import pycco.main as p
 
@@ -17,16 +16,6 @@ FOO_FUNCTION = """def foo():\n    return True"""
 
 def get_language(choice):
     return choice(list(p.languages.values()))
-
-
-@given(lists(text()), text())
-def test_shift(fragments, default):
-    if fragments == []:
-        assert p.shift(fragments, default) == default
-    else:
-        fragments2 = copy.copy(fragments)
-        head = p.shift(fragments, default)
-        assert [head] + fragments == fragments2
 
 
 @given(text(), booleans(), text(min_size=1))
@@ -63,8 +52,8 @@ def test_multi_line_leading_spaces():
 def test_comment_with_only_cross_ref():
     source = '''# ==Link Target==\n\ndef test_link():\n    """[[testing.py#link-target]]"""\n    pass'''
     sections = p.parse(source, PYTHON)
-    p.highlight(sections, PYTHON, outdir=tempfile.gettempdir())
-    assert sections[1]['docs_html'] == '<p><a href="testing.html#link-target">testing.py</a></p>'
+    highlighted = p.highlight(sections, PYTHON, outdir=tempfile.gettempdir())
+    assert highlighted[1]['docs_html'] == '<p><a href="testing.html#link-target">testing.py</a></p>'
 
 
 @given(text(), text())

@@ -32,6 +32,23 @@ Or, to install the latest source
     python setup.py install
 """
 
+# === Helpers & Setup ===
+
+# This module contains all of our static resources.
+import pycco_resources
+
+# Import our external dependencies.
+import optparse
+import os
+import pygments
+import pystache
+import re
+import sys
+import time
+from markdown import markdown
+from os import path
+from pygments import lexers, formatters
+
 # === Main Documentation Generation Functions ===
 
 
@@ -55,8 +72,8 @@ def _generate_documentation(file_path, code, outdir, preserve_paths, language):
     """
     language = get_language(file_path, code, language=language)
     sections = parse(code, language)
-    highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
-    return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
+    highlighted = highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
+    return generate_html(file_path, highlighted, preserve_paths=preserve_paths, outdir=outdir)
 
 
 def parse(code, language):
@@ -190,17 +207,19 @@ def preprocess(comment, preserve_paths=True, outdir=None):
         # Check if the match contains an anchor
         if '#' in match.group(1):
             name, anchor = match.group(1).split('#')
-            return " [{}]({}#{})".format(name,
-                                         path.basename(destination(name,
-                                                                   preserve_paths=preserve_paths,
-                                                                   outdir=outdir)),
-                                         anchor)
+            return " [{}]({}#{})"\
+                .format(name,
+                        path.basename(destination(name,
+                                                  preserve_paths=preserve_paths,
+                                                  outdir=outdir)),
+                        anchor)
 
         else:
-            return " [{}]({})".format(match.group(1),
-                                      path.basename(destination(match.group(1),
-                                                                preserve_paths=preserve_paths,
-                                                                outdir=outdir)))
+            return " [{}]({})"\
+                .format(match.group(1),
+                        path.basename(destination(match.group(1),
+                                                  preserve_paths=preserve_paths,
+                                                  outdir=outdir)))
 
     def replace_section_name(match):
         """
@@ -219,8 +238,14 @@ def preprocess(comment, preserve_paths=True, outdir=None):
 
 # === Highlighting the source code ===
 
+# The start of each Pygments highlight block.
+highlight_start = "<div class=\"highlight\"><pre>"
 
-def highlight(sections, language, preserve_paths=True, outdir=None):
+# The end of each Pygments highlight block.
+highlight_end = "</pre></div>"
+
+
+def highlight(sections, language, **kwargs):
     """
     Highlights a single chunk of code using the **Pygments** module, and runs
     the text of its corresponding comment through **Markdown**.
@@ -229,30 +254,45 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
     marker comments between each section and then splitting the result string
     wherever our markers occur.
     """
-
-    if not outdir:
-        raise TypeError("Missing the required 'outdir' keyword argument.")
-
-    output = pygments.highlight(language["divider_text"].join(section["code_text"].rstrip() for section in sections),
-                                language["lexer"],
-                                formatters.get_formatter_by_name("html"))
+    from compat import pycco_zip_longest
+    output = pygments.highlight(
+        language["divider_text"].join(section["code_text"].rstrip()
+                                      for section in sections),
+        language["lexer"],
+        formatters.get_formatter_by_name("html"))
 
     output = output.replace(highlight_start, "").replace(highlight_end, "")
     fragments = re.split(language["divider_html"], output)
-    for i, section in enumerate(sections):
-        section["code_html"] = highlight_start + shift(fragments, "") + highlight_end
-        try:
-            docs_text = unicode(section["docs_text"])
-        except UnicodeError:
-            docs_text = unicode(section["docs_text"].decode('utf-8'))
-        except NameError:
-            docs_text = section['docs_text']
-        section["docs_html"] = markdown(preprocess(docs_text,
+    zipped = pycco_zip_longest(fragments, sections, xrange(len(sections)), fillvalue="")
+
+    return [highlight_section(*z, **kwargs) for z in zipped]
+
+
+def highlight_section(fragment, section, i, preserve_paths=True, outdir=None):
+    if not outdir:
+        raise TypeError("Missing the required 'outdir' keyword argument.")
+
+    highlighted = {}
+    highlighted["code_html"] = "".join([highlight_start,
+                                        fragment,
+                                        highlight_end])
+    try:
+        docs_text = unicode(section["docs_text"])
+    except UnicodeError:
+        docs_text = unicode(section["docs_text"].decode('utf-8'))
+    except NameError:
+        docs_text = section['docs_text']
+
+    highlighted["docs_html"] = markdown(preprocess(docs_text,
                                                    preserve_paths=preserve_paths,
                                                    outdir=outdir))
-        section["num"] = i
+    highlighted["num"] = i
+    return highlighted
 
 # === HTML Code generation ===
+
+# Create the template that we will use to generate the Pycco HTML page.
+HTML_RESOURCES = pycco_resources.html
 
 
 def generate_html(source, sections, preserve_paths=True, outdir=None):
@@ -276,33 +316,19 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
     for sect in sections:
         sect["code_html"] = re.sub(r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"])
 
-    rendered = pycco_template({
-        "title": title,
-        "stylesheet": csspath,
-        "sections": sections,
-        "source": source,
-        "path": path,
-        "destination": destination
-    })
+    rendered = pystache.render(
+        HTML_RESOURCES,
+        {
+            "title": title,
+            "stylesheet": csspath,
+            "sections": sections,
+            "source": source,
+            "path": path,
+            "destination": destination
+        })
 
     return re.sub(r"__DOUBLE_OPEN_STACHE__", "{{", rendered).encode("utf-8")
 
-# === Helpers & Setup ===
-
-# This module contains all of our static resources.
-import pycco_resources
-
-# Import our external dependencies.
-import optparse
-import os
-import pygments
-import pystache
-import re
-import sys
-import time
-from markdown import markdown
-from os import path
-from pygments import lexers, formatters
 
 # A list of the languages that Pycco supports, mapping the file extension to
 # the name of the Pygments lexer and the symbol that indicates a comment. To
@@ -412,18 +438,6 @@ def destination(filepath, preserve_paths=True, outdir=None):
     return dest
 
 
-def shift(list, default):
-    """
-    Shift items off the front of the `list` until it is empty, then return
-    `default`.
-    """
-
-    try:
-        return list.pop(0)
-    except IndexError:
-        return default
-
-
 def remove_control_chars(s):
     # Sanitization regexp copied from
     # http://stackoverflow.com/questions/92438/stripping-non-printable-characters-from-a-string-in-python
@@ -444,22 +458,6 @@ def ensure_directory(directory):
     return directory
 
 
-def template(source):
-    return lambda context: pystache.render(source, context)
-
-# Create the template that we will use to generate the Pycco HTML page.
-pycco_template = template(pycco_resources.html)
-
-# The CSS styles we'd like to apply to the documentation.
-pycco_styles = pycco_resources.css
-
-# The start of each Pygments highlight block.
-highlight_start = "<div class=\"highlight\"><pre>"
-
-# The end of each Pygments highlight block.
-highlight_end = "</pre></div>"
-
-
 def process(sources, preserve_paths=True, outdir=None, language=None, encoding="utf8"):
     """For each source file passed as argument, generate the documentation."""
 
@@ -474,7 +472,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None, encoding="
     if sources:
         outdir = ensure_directory(outdir)
         css = open(path.join(outdir, "pycco.css"), "wb")
-        css.write(pycco_styles.encode(encoding))
+        css.write(pycco_resources.css.encode(encoding))
         css.close()
 
         def next_file():
