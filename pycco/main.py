@@ -13,7 +13,7 @@ This page is the result of running Pycco against its own source file.
 
 If you install Pycco, you can run it from the command-line:
 
-    pycco src/*.py
+    `pycco src/*.py`
 
 This will generate linked HTML documentation for the named source files,
 saving it into a `docs` folder by default.
@@ -23,13 +23,15 @@ and released under the MIT license.
 
 To install Pycco, simply
 
-    pip install pycco
+    `pip install pycco`
 
 Or, to install the latest source
 
-    git clone git://github.com/fitzgen/pycco.git
-    cd pycco
-    python setup.py install
+    `git clone git://github.com/fitzgen/pycco.git`
+    
+    `cd pycco`
+    
+    `python setup.py install`
 """
 
 # === Main Documentation Generation Functions ===
