@@ -18,7 +18,7 @@ If you install Pycco, you can run it from the command-line:
 This will generate linked HTML documentation for the named source files,
 saving it into a `docs` folder by default.
 
-The [source for Pycco](https://github.com/fitzgen/pycco) is available on GitHub,
+The [source for Pycco](https://github.com/pycco-docs/pycco) is available on GitHub,
 and released under the MIT license.
 
 To install Pycco, simply
@@ -27,7 +27,7 @@ To install Pycco, simply
 
 Or, to install the latest source
 
-    git clone git://github.com/fitzgen/pycco.git
+    git clone git://github.com/pycco-docs/pycco.git
     cd pycco
     python setup.py install
 """
