@@ -235,3 +235,11 @@ html = """\
 </div>
 </body>
 """
+
+import pystache
+
+
+def template(source):
+    return lambda context: pystache.render(source, context)
+# Create the template that we will use to generate the Pycco HTML page.
+pycco_template = template(html)

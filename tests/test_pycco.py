@@ -2,11 +2,12 @@ import copy
 import os
 import tempfile
 import time
-
+import os.path
 import pytest
 from hypothesis import given, example, assume
 from hypothesis.strategies import lists, text, booleans, choices, none
 
+import pycco.generate_index as generate_index
 import pycco.main as p
 
 
@@ -146,7 +147,17 @@ def test_generate_documentation():
     p.generate_documentation(PYCCO_SOURCE, outdir=tempfile.gettempdir())
 
 
-@given(booleans(), choices())
-def test_process(preserve_paths, choice):
+@given(booleans(), booleans(), choices())
+def test_process(preserve_paths, index, choice):
     lang_name = choice([l["name"] for l in p.languages.values()])
-    p.process([PYCCO_SOURCE], preserve_paths=preserve_paths, outdir=tempfile.gettempdir(), language=lang_name)
+    p.process([PYCCO_SOURCE], preserve_paths=preserve_paths,
+              index=index,
+              outdir=tempfile.gettempdir(),
+              language=lang_name)
+
+
+@given(lists(lists(text(min_size=1), min_size=1), min_size=1), lists(text(min_size=1), min_size=1))
+def test_generate_index(path_lists, outdir_list):
+    file_paths = [os.path.join(*path_list) for path_list in path_lists]
+    outdir = os.path.join(*outdir_list)
+    generate_index.generate_index(file_paths, outdir=outdir)

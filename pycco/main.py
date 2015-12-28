@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+# This module contains all of our static resources.
+from pycco_resources import pycco_template, css as pycco_css
+
 """
 "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/):
 the original quick-and-dirty, hundred-line-long, literate-programming-style
@@ -284,25 +287,21 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
         "stylesheet": csspath,
         "sections": sections,
         "source": source,
-        "path": path,
-        "destination": destination
     })
 
     return re.sub(r"__DOUBLE_OPEN_STACHE__", "{{", rendered).encode("utf-8")
 
 # === Helpers & Setup ===
 
-# This module contains all of our static resources.
-import pycco_resources
-
 # Import our external dependencies.
 import optparse
 import os
 import pygments
-import pystache
 import re
 import sys
 import time
+import pycco.generate_index as generate_index
+
 from markdown import markdown
 from os import path
 from pygments import lexers, formatters
@@ -320,12 +319,16 @@ languages = {
 
     ".c":   {"name": "c", "symbol": "//",
              "multistart": "/*", "multiend": "*/"},
+    ".h":   {"name": "c", "symbol": "//",
+             "multistart": "/*", "multiend": "*/"},
 
     ".cpp": {"name": "cpp", "symbol": "//"},
 
+    ".cl":   {"name": "c", "symbol": "//",
+              "multistart": "/*", "multiend": "*/"},
+
     ".js": {"name": "javascript", "symbol": "//",
             "multistart": "/*", "multiend": "*/"},
-
     ".rb": {"name": "ruby", "symbol": "#",
             "multistart": "=begin", "multiend": "=end"},
 
@@ -447,15 +450,6 @@ def ensure_directory(directory):
     return directory
 
 
-def template(source):
-    return lambda context: pystache.render(source, context)
-
-# Create the template that we will use to generate the Pycco HTML page.
-pycco_template = template(pycco_resources.html)
-
-# The CSS styles we'd like to apply to the documentation.
-pycco_styles = pycco_resources.css
-
 # The start of each Pygments highlight block.
 highlight_start = "<div class=\"highlight\"><pre>"
 
@@ -463,11 +457,11 @@ highlight_start = "<div class=\"highlight\"><pre>"
 highlight_end = "</pre></div>"
 
 
-def process(sources, preserve_paths=True, outdir=None, language=None, encoding="utf8"):
+def process(sources, preserve_paths=True, outdir=None, language=None, encoding="utf8", index=False):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
-        raise TypeError("Missing the required 'outdir' keyword argument.")
+        raise TypeError("Missing the required 'directory' keyword argument.")
 
     # Make a copy of sources given on the command line. `main()` needs the
     # original list when monitoring for changed files.
@@ -477,8 +471,10 @@ def process(sources, preserve_paths=True, outdir=None, language=None, encoding="
     if sources:
         outdir = ensure_directory(outdir)
         css = open(path.join(outdir, "pycco.css"), "wb")
-        css.write(pycco_styles.encode(encoding))
+        css.write(pycco_css.encode(encoding))
         css.close()
+
+        generated_files = []
 
         def next_file():
             s = sources.pop(0)
@@ -495,11 +491,16 @@ def process(sources, preserve_paths=True, outdir=None, language=None, encoding="
                                                language=language,
                                                encoding=encoding))
 
-            print("pycco = {} -> {}".format(s, dest))
+            print("pycco: {} -> {}".format(s, dest))
+            generated_files.append(dest)
 
             if sources:
                 next_file()
         next_file()
+
+        if index:
+            with open(path.join(outdir, "index.html"), "wb") as f:
+                f.write(generate_index.generate_index(generated_files, outdir))
 
 __all__ = ("process", "generate_documentation")
 
@@ -566,10 +567,18 @@ def main():
     parser.add_option('-l', '--force-language', action='store', type='string',
                       dest='language', default=None,
                       help='Force the language for the given files')
-    opts, sources = parser.parse_args()
 
-    process(sources, outdir=opts.outdir, preserve_paths=opts.paths,
-            language=opts.language)
+    parser.add_option('-i', '--generate_index', action='store_true',
+                      help='Generate an index.html document with sitemap content')
+
+    opts, sources = parser.parse_args()
+    if opts.outdir == '':
+        outdir = '.'
+    else:
+        outdir = opts.outdir
+
+    process(sources, outdir=outdir, preserve_paths=opts.paths,
+            language=opts.language, index=opts.generate_index)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
