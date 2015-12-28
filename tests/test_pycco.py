@@ -130,15 +130,16 @@ def x():
 
 def test_indented_block():
 
-    code = '''"""
-To install Pycco, simply
+    code = '''"""To install Pycco, simply
 
     pip install pycco
 """
 '''
     parsed = p.parse(code, PYTHON)
     highlighted = p.highlight(parsed, PYTHON, outdir=tempfile.gettempdir())
-    print highlighted
+    pre_block = highlighted[0]['docs_html']
+    assert '<pre>' in pre_block
+    assert '</pre>' in pre_block
 
 
 def test_generate_documentation():
