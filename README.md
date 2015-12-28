@@ -16,7 +16,7 @@ Pycco is a Python port of Docco: the original quick-and-dirty, hundred-line-
 long, literate-programming-style documentation generator. For more information,
 see:
 
-http://fitzgen.github.com/pycco/
+https://pycco-docs.github.io/pycco/
 
 Others:
 
@@ -26,5 +26,5 @@ Ruby - http://rtomayko.github.com/rocco/
 
 Sh - http://rtomayko.github.com/shocco/
 
-[![Build Status](https://travis-ci.org/subsetpark/pycco.svg?branch=hypothesis)](https://travis-ci.org/subsetpark/pycco)
-[![Coverage Status](https://coveralls.io/repos/subsetpark/pycco/badge.svg?branch=hypothesis&service=github)](https://coveralls.io/github/subsetpark/pycco?branch=hypothesis)
+[![Build Status](https://travis-ci.org/pycco-docs/pycco.svg?branch=master)](https://travis-ci.org/pycco-docs/pycco)
+[![Coverage Status](https://coveralls.io/repos/pycco-docs/pycco/badge.svg?branch=master&service=github)](https://coveralls.io/github/pycco-docs/pycco?branch=master)
