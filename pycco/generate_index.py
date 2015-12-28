@@ -65,11 +65,10 @@ def generate_index(files, outdir):
     index of all files.
     """
     tree = build_tree(files, outdir)
-    css_path = path.join(outdir, "pycco.css")
 
     rendered = pycco_template({
         "title": 'Index',
-        "stylesheet": css_path,
+        "stylesheet": 'pycco.css',
         "sections": {'docs_html': generate_tree_html(tree)},
         "source": '',
     })
