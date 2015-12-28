@@ -64,6 +64,7 @@ def parse(code, language):
     Given a string of source code, parse out each comment and the code that
     follows it, and create an individual **section** for it.
     Sections take the form:
+
         { "docs_text": ...,
           "docs_html": ...,
           "code_text": ...,
@@ -251,6 +252,8 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
                                                    preserve_paths=preserve_paths,
                                                    outdir=outdir))
         section["num"] = i
+
+    return sections
 
 # === HTML Code generation ===
 

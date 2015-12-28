@@ -108,19 +108,6 @@ def test_ensure_directory(dir_name):
         p.ensure_directory(tempdir)
         assert os.path.isdir(safe_name)
 
-# The following functions get good test coverage, but effort should be put into
-# decomposing the functions they test and actually testing their output.
-
-
-def test_generate_documentation():
-    p.generate_documentation(PYCCO_SOURCE, outdir=tempfile.gettempdir())
-
-
-@given(booleans(), choices())
-def test_process(preserve_paths, choice):
-    lang_name = choice([l["name"] for l in p.languages.values()])
-    p.process([PYCCO_SOURCE], preserve_paths=preserve_paths, outdir=tempfile.gettempdir(), language=lang_name)
-
 
 def test_ensure_multiline_string_support():
     code = '''x = """
@@ -139,3 +126,26 @@ def x():
 
     assert docs_code_tuple_list[0]['docs_text'] == ''
     assert "#" not in docs_code_tuple_list[1]['docs_text']
+
+
+def test_indented_block():
+
+    code = '''"""
+To install Pycco, simply
+
+    pip install pycco
+"""
+'''
+    parsed = p.parse(code, PYTHON)
+    highlighted = p.highlight(parsed, PYTHON, outdir=tempfile.gettempdir())
+    print highlighted
+
+
+def test_generate_documentation():
+    p.generate_documentation(PYCCO_SOURCE, outdir=tempfile.gettempdir())
+
+
+@given(booleans(), choices())
+def test_process(preserve_paths, choice):
+    lang_name = choice([l["name"] for l in p.languages.values()])
+    p.process([PYCCO_SOURCE], preserve_paths=preserve_paths, outdir=tempfile.gettempdir(), language=lang_name)
