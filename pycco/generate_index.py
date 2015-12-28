@@ -50,9 +50,9 @@ def generate_tree_html(tree):
     items = []
     for node, subtree in sorted(compat_items(tree)):
         if 'entry' in subtree:
-            html = '<li><a href="{}">{}</a></li>'.format(subtree['entry']['relpath'], node)
+            html = u'<li><a href="{}">{}</a></li>'.format(subtree['entry']['relpath'], node)
         else:
-            html = '<dl><dt>{}</dt><dd><ul>{}</ul></dd></dl>'.format(node, generate_tree_html(subtree))
+            html = u'<dl><dt>{}</dt><dd><ul>{}</ul></dd></dl>'.format(node, generate_tree_html(subtree))
 
         items.append(html)
 
