@@ -317,8 +317,11 @@ languages = {
 
     ".sql": {"name": "sql", "symbol": "--"},
 
+    ".sh": { "name": "bash", "symbol": "#" },
+
     ".c":   {"name": "c", "symbol": "//",
              "multistart": "/*", "multiend": "*/"},
+
     ".h":   {"name": "c", "symbol": "//",
              "multistart": "/*", "multiend": "*/"},
 
@@ -329,6 +332,7 @@ languages = {
 
     ".js": {"name": "javascript", "symbol": "//",
             "multistart": "/*", "multiend": "*/"},
+
     ".rb": {"name": "ruby", "symbol": "#",
             "multistart": "=begin", "multiend": "=end"},
 
