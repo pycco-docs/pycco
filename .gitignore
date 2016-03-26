@@ -1,2 +1,13 @@
+.coverage
 *.pyc
 /Pycco.egg-info
+build/*
+dist/*
+docs/*
+/tags
+
+.cache
+.hypothesis
+.ropeproject
+
+.DS_Store

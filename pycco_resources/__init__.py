@@ -6,6 +6,7 @@ body {
   line-height: 24px;
   color: #252519;
   margin: 0; padding: 0;
+  background: #f5f5ff;
 }
 a {
   color: #261a3b;
@@ -19,18 +20,21 @@ p {
 h1, h2, h3, h4, h5, h6 {
   margin: 40px 0 15px 0;
 }
-  h3, h4, h5, h6 {
-    margin-top: 20px;
+h2, h3, h4, h5, h6 {
+    margin-top: 0;
   }
 #container {
+  background: white;
+ }
+#container, div.section {
   position: relative;
 }
 #background {
-  position: fixed;
+  position: absolute;
   top: 0; left: 580px; right: 0; bottom: 0;
   background: #f5f5ff;
   border-left: 1px solid #e5e5ee;
-  z-index: -1;
+  z-index: 0;
 }
 #jump_to, #jump_page {
   background: white;
@@ -68,56 +72,57 @@ h1, h2, h3, h4, h5, h6 {
         }
         #jump_page .source:first-child {
         }
-table td {
-  border: 0;
-  outline: 0;
+div.docs {
+  float: left;
+  max-width: 500px;
+  min-width: 500px;
+  min-height: 5px;
+  padding: 10px 25px 1px 50px;
+  vertical-align: top;
+  text-align: left;
 }
-  td.docs, th.docs {
-    max-width: 500px;
-    min-width: 500px;
-    min-height: 5px;
-    padding: 10px 25px 1px 50px;
-    vertical-align: top;
-    text-align: left;
+  .docs pre {
+    margin: 15px 0 15px;
+    padding-left: 15px;
   }
-    .docs pre {
-      margin: 15px 0 15px;
-      padding-left: 15px;
+  .docs p tt, .docs p code {
+    background: #f8f8ff;
+    border: 1px solid #dedede;
+    font-size: 12px;
+    padding: 0 0.2em;
+  }
+  .octowrap {
+    position: relative;
+  }
+    .octothorpe {
+      font: 12px Arial;
+      text-decoration: none;
+      color: #454545;
+      position: absolute;
+      top: 3px; left: -20px;
+      padding: 1px 2px;
+      opacity: 0;
+      -webkit-transition: opacity 0.2s linear;
     }
-    .docs p tt, .docs p code {
-      background: #f8f8ff;
-      border: 1px solid #dedede;
-      font-size: 12px;
-      padding: 0 0.2em;
-    }
-    .octowrap {
-      position: relative;
-    }
-      .octothorpe {
-        font: 12px Arial;
-        text-decoration: none;
-        color: #454545;
-        position: absolute;
-        top: 3px; left: -20px;
-        padding: 1px 2px;
-        opacity: 0;
-        -webkit-transition: opacity 0.2s linear;
+      div.docs:hover .octothorpe {
+        opacity: 1;
       }
-        td.docs:hover .octothorpe {
-          opacity: 1;
-        }
-  td.code, th.code {
-    padding: 14px 15px 16px 50px;
-    width: 100%;
-    vertical-align: top;
-    background: #f5f5ff;
-    border-left: 1px solid #e5e5ee;
+div.code {
+  margin-left: 580px;
+  padding: 14px 15px 16px 50px;
+  vertical-align: top;
+}
+  .code pre, .docs p code {
+    font-size: 12px;
   }
     pre, tt, code {
-      font-size: 12px; line-height: 18px;
+      line-height: 18px;
       font-family: Monaco, Consolas, "Lucida Console", monospace;
       margin: 0; padding: 0;
     }
+div.clearall {
+    clear: both;
+}
 
 
 /*---------------------- Syntax Highlighting -----------------------------*/
@@ -209,28 +214,32 @@ html = """\
     </div>
   </div>
   {{/sources?}}
-  <table cellspacing=0 cellpadding=0>
-  <thead>
-    <tr>
-      <th class=docs><h1>{{ title }}</h1></th>
-      <th class=code></th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#sections}}
-    <tr id='section-{{ num }}'>
-      <td class=docs>
-        <div class="octowrap">
-          <a class="octothorpe" href="#section-{{ num }}">#</a>
-        </div>
-        {{{ docs_html }}}
-      </td>
-      <td class=code>
-        <div class='highlight'><pre>{{{ code_html }}}</pre></div>
-      </td>
-    </tr>
-    {{/sections}}
-  </table>
+  <div class='section'>
+    <div class='docs'><h1>{{ title }}</h1></div>
+  </div>
+  <div class='clearall'>
+  {{#sections}}
+  <div class='section' id='section-{{ num }}'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-{{ num }}'>#</a>
+      </div>
+      {{{ docs_html }}}
+    </div>
+    <div class='code'>
+      {{{ code_html }}}
+    </div>
+  </div>
+  <div class='clearall'></div>
+  {{/sections}}
 </div>
 </body>
 """
+
+import pystache
+
+
+def template(source):
+    return lambda context: pystache.render(source, context)
+# Create the template that we will use to generate the Pycco HTML page.
+pycco_template = template(html)
