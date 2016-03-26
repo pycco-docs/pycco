@@ -456,6 +456,23 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
+def _flatten_sources(sources):
+    """
+    This function will iterate through the list of sources and if a directory
+    is encountered it will walk the tree for any files
+    """
+    _sources = []
+
+    for source in sources:
+        if os.path.isdir(source):
+            for dirpath, _, filenames in os.walk(source):
+                _sources.extend([os.path.join(dirpath,f) for f in filenames])
+        else:
+            _sources.append(source)
+
+    return _sources
+
+
 
 def process(sources, preserve_paths=True, outdir=None, language=None, encoding="utf8", index=False):
     """For each source file passed as argument, generate the documentation."""
@@ -465,7 +482,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None, encoding="
 
     # Make a copy of sources given on the command line. `main()` needs the
     # original list when monitoring for changed files.
-    sources = sorted(sources)
+    sources = sorted(_flatten_sources(sources))
 
     # Proceed to generating the documentation.
     if sources:
