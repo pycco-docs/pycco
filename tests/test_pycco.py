@@ -161,3 +161,25 @@ def test_generate_index(path_lists, outdir_list):
     file_paths = [os.path.join(*path_list) for path_list in path_lists]
     outdir = os.path.join(*outdir_list)
     generate_index.generate_index(file_paths, outdir=outdir)
+
+def test_flatten_sources(tmpdir):
+    sources = [str(tmpdir)]
+    expected_sources = []
+
+    # Setup the base dir
+    td = tmpdir.join("test.py")
+    td.write("#!/bin/env python")
+    expected_sources.append(str(td))
+
+    # Make some more directories, each with a file present
+    for d in ["foo", "bar", "buzz"]:
+        dd = tmpdir.mkdir(d)
+        dummy_file = dd.join("test.py")
+        dummy_file.write("#!/bin/env python")
+        expected_sources.append(str(dummy_file))
+
+    # Get the flattened version of the base directory
+    flattened = p._flatten_sources(sources)
+
+    # Make sure that the lists are the same
+    assert sorted(expected_sources) == sorted(flattened)
