@@ -33,7 +33,8 @@ def test_shift(fragments, default):
 @given(text(), booleans(), text(min_size=1))
 @example("/foo", True, "0")
 def test_destination(filepath, preserve_paths, outdir):
-    dest = p.destination(filepath, preserve_paths=preserve_paths, outdir=outdir)
+    dest = p.destination(
+        filepath, preserve_paths=preserve_paths, outdir=outdir)
     assert dest.startswith(outdir)
     assert dest.endswith(".html")
 
@@ -65,12 +66,14 @@ def test_comment_with_only_cross_ref():
     source = '''# ==Link Target==\n\ndef test_link():\n    """[[testing.py#link-target]]"""\n    pass'''
     sections = p.parse(source, PYTHON)
     p.highlight(sections, PYTHON, outdir=tempfile.gettempdir())
-    assert sections[1]['docs_html'] == '<p><a href="testing.html#link-target">testing.py</a></p>'
+    assert sections[1][
+        'docs_html'] == '<p><a href="testing.html#link-target">testing.py</a></p>'
 
 
 @given(text(), text())
 def test_get_language_specify_language(source, code):
-    assert p.get_language(source, code, language="python") == p.languages['.py']
+    assert p.get_language(
+        source, code, language="python") == p.languages['.py']
 
     with pytest.raises(ValueError):
         p.get_language(source, code, language="non-existent")
@@ -99,7 +102,8 @@ def test_get_language_bad_code(code):
 
 @given(text(max_size=64))
 def test_ensure_directory(dir_name):
-    tempdir = os.path.join(tempfile.gettempdir(), str(int(time.time())), dir_name)
+    tempdir = os.path.join(tempfile.gettempdir(),
+                           str(int(time.time())), dir_name)
 
     # Use sanitization from function, but only for housekeeping. We
     # pass in the unsanitized string to the function.
@@ -161,6 +165,7 @@ def test_generate_index(path_lists, outdir_list):
     file_paths = [os.path.join(*path_list) for path_list in path_lists]
     outdir = os.path.join(*outdir_list)
     generate_index.generate_index(file_paths, outdir=outdir)
+
 
 def test_flatten_sources(tmpdir):
     sources = [str(tmpdir)]
