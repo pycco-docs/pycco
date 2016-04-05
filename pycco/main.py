@@ -456,6 +456,7 @@ highlight_start = "<div class=\"highlight\"><pre>"
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
 
+
 def _flatten_sources(sources):
     """
     This function will iterate through the list of sources and if a directory
@@ -466,12 +467,11 @@ def _flatten_sources(sources):
     for source in sources:
         if os.path.isdir(source):
             for dirpath, _, filenames in os.walk(source):
-                _sources.extend([os.path.join(dirpath,f) for f in filenames])
+                _sources.extend([os.path.join(dirpath, f) for f in filenames])
         else:
             _sources.append(source)
 
     return _sources
-
 
 
 def process(sources, preserve_paths=True, outdir=None, language=None, encoding="utf8", index=False):

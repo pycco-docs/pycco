@@ -1,10 +1,10 @@
 import copy
-import os
+import os.path
 import tempfile
 import time
-import os.path
+
 import pytest
-from hypothesis import given, example, assume
+from hypothesis import given, example
 from hypothesis.strategies import lists, text, booleans, choices, none
 
 import pycco.generate_index as generate_index
@@ -161,6 +161,7 @@ def test_generate_index(path_lists, outdir_list):
     file_paths = [os.path.join(*path_list) for path_list in path_lists]
     outdir = os.path.join(*outdir_list)
     generate_index.generate_index(file_paths, outdir=outdir)
+
 
 def test_flatten_sources(tmpdir):
     sources = [str(tmpdir)]
