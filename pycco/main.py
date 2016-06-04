@@ -319,7 +319,7 @@ languages = {
 
     ".sql": {"name": "sql", "symbol": "--"},
 
-    ".sh": { "name": "bash", "symbol": "#" },
+    ".sh": {"name": "bash", "symbol": "#"},
 
     ".c":   {"name": "c", "symbol": "//",
              "multistart": "/*", "multiend": "*/"},
@@ -482,7 +482,8 @@ def _flatten_sources(sources):
     return _sources
 
 
-def process(sources, preserve_paths=True, outdir=None, language=None, encoding="utf8", index=False):
+def process(sources, preserve_paths=True, outdir=None, language=None,
+            encoding="utf8", index=False, skip=False):
     """For each source file passed as argument, generate the documentation."""
 
     if not outdir:
@@ -510,14 +511,20 @@ def process(sources, preserve_paths=True, outdir=None, language=None, encoding="
             except OSError:
                 pass
 
-            with open(dest, "wb") as f:
-                f.write(generate_documentation(s, preserve_paths=preserve_paths,
-                                               outdir=outdir,
-                                               language=language,
-                                               encoding=encoding))
+            try:
+                with open(dest, "wb") as f:
+                    f.write(generate_documentation(s, preserve_paths=preserve_paths,
+                                                   outdir=outdir,
+                                                   language=language,
+                                                   encoding=encoding))
 
-            print("pycco: {} -> {}".format(s, dest))
-            generated_files.append(dest)
+                print("pycco: {} -> {}".format(s, dest))
+                generated_files.append(dest)
+            except UnicodeDecodeError:
+                if skip:
+                    print("pycco [FAILURE]: {}".format(s))
+                else:
+                    raise
 
             if sources:
                 next_file()
@@ -596,6 +603,10 @@ def main():
     parser.add_option('-i', '--generate_index', action='store_true',
                       help='Generate an index.html document with sitemap content')
 
+    parser.add_option('-s', '--skip-bad-files', action='store_true',
+                      dest='skip_bad_files',
+                      help='Continue processing after hitting a bad file')
+
     opts, sources = parser.parse_args()
     if opts.outdir == '':
         outdir = '.'
@@ -603,7 +614,8 @@ def main():
         outdir = opts.outdir
 
     process(sources, outdir=outdir, preserve_paths=opts.paths,
-            language=opts.language, index=opts.generate_index)
+            language=opts.language, index=opts.generate_index,
+            skip=opts.skip_bad_files)
 
     # If the -w / --watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
