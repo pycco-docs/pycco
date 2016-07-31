@@ -1,3 +1,5 @@
+import pystache
+
 css = """\
 /*--------------------- Layout and Typography ----------------------------*/
 body {
@@ -235,8 +237,6 @@ html = """\
 </div>
 </body>
 """
-
-import pystache
 
 
 def template(source):
