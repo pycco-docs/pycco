@@ -11,3 +11,5 @@ docs/*
 .ropeproject
 
 .DS_Store
+
+.tox
