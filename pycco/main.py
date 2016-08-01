@@ -4,6 +4,19 @@ from __future__ import print_function
 # This module contains all of our static resources.
 from pycco_resources import pycco_template, css as pycco_css
 
+# Import our external dependencies.
+import optparse
+import os
+import pygments
+import re
+import sys
+import time
+import pycco.generate_index as generate_index
+
+from markdown import markdown
+from os import path
+from pygments import lexers, formatters
+
 """
 "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/):
 the original quick-and-dirty, hundred-line-long, literate-programming-style
@@ -293,20 +306,8 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     return re.sub(r"__DOUBLE_OPEN_STACHE__", "{{", rendered).encode("utf-8")
 
+
 # === Helpers & Setup ===
-
-# Import our external dependencies.
-import optparse
-import os
-import pygments
-import re
-import sys
-import time
-import pycco.generate_index as generate_index
-
-from markdown import markdown
-from os import path
-from pygments import lexers, formatters
 
 # A list of the languages that Pycco supports, mapping the file extension to
 # the name of the Pygments lexer and the symbol that indicates a comment. To
@@ -315,22 +316,22 @@ languages = {
     ".coffee": {"name": "coffee-script", "symbol": "#",
                 "multistart": '###', "multiend": '###'},
 
-    ".pl":  {"name": "perl", "symbol": "#"},
+    ".pl": {"name": "perl", "symbol": "#"},
 
     ".sql": {"name": "sql", "symbol": "--"},
 
     ".sh": {"name": "bash", "symbol": "#"},
 
-    ".c":   {"name": "c", "symbol": "//",
-             "multistart": "/*", "multiend": "*/"},
+    ".c": {"name": "c", "symbol": "//",
+           "multistart": "/*", "multiend": "*/"},
 
-    ".h":   {"name": "c", "symbol": "//",
-             "multistart": "/*", "multiend": "*/"},
+    ".h": {"name": "c", "symbol": "//",
+           "multistart": "/*", "multiend": "*/"},
 
     ".cpp": {"name": "cpp", "symbol": "//"},
 
-    ".cl":   {"name": "c", "symbol": "//",
-              "multistart": "/*", "multiend": "*/"},
+    ".cl": {"name": "c", "symbol": "//",
+            "multistart": "/*", "multiend": "*/"},
 
     ".js": {"name": "javascript", "symbol": "//",
             "multistart": "/*", "multiend": "*/"},
@@ -349,7 +350,7 @@ languages = {
 
     ".erl": {"name": "erlang", "symbol": "%%"},
 
-    ".tcl":  {"name": "tcl", "symbol": "#"},
+    ".tcl": {"name": "tcl", "symbol": "#"},
 
     ".hs": {"name": "haskell", "symbol": "--",
             "multistart": "{-", "multiend": "-}"},
