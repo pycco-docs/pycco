@@ -315,10 +315,12 @@ languages = {
 
     ".pl":  {"name": "perl", "symbol": "#"},
 
-    ".sql": {"name": "sql", "symbol": "--"},
+    ".sql": {"name": "sql", "symbol": "--",
+             "multistart": "/*", "multiend": "*/"},
 
     ".c":   {"name": "c", "symbol": "//",
              "multistart": "/*", "multiend": "*/"},
+
     ".h":   {"name": "c", "symbol": "//",
              "multistart": "/*", "multiend": "*/"},
 
@@ -329,6 +331,7 @@ languages = {
 
     ".js": {"name": "javascript", "symbol": "//",
             "multistart": "/*", "multiend": "*/"},
+
     ".rb": {"name": "ruby", "symbol": "#",
             "multistart": "=begin", "multiend": "=end"},
 
