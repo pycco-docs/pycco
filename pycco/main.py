@@ -350,6 +350,8 @@ languages = {
 
     ".hs": {"name": "haskell", "symbol": "--",
             "multistart": "{-", "multiend": "-}"},
+
+    ".r": {"name": "R", "symbol": "#"}
 }
 
 # Build out the appropriate matchers and delimiters for each language.
@@ -380,8 +382,8 @@ def get_language(source, code, language=None):
             raise ValueError("Unknown forced language: " + language)
 
     m = re.match(r'.*(\..+)', os.path.basename(source)) if source else None
-    if m and m.group(1) in languages:
-        return languages[m.group(1)]
+    if m and m.group(1).lower() in languages:
+        return languages[m.group(1).lower()]
     else:
         try:
             lang = lexers.guess_lexer(code).name.lower()
