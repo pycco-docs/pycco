@@ -7,11 +7,11 @@ matrix:
   include:
     - python: 2.7
       env: TOXENV=py27
-      install: tox
+      install: pip install tox
       script: tox
     - python: 3.6
       env: TOXENV=py36
-      install: tox
+      install: pip install tox
       script: tox
     - python: 3.5
       env: CODESTYLE=true
