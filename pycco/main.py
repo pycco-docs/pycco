@@ -535,6 +535,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
             with open(path.join(outdir, "index.html"), "wb") as f:
                 f.write(generate_index.generate_index(generated_files, outdir))
 
+
 __all__ = ("process", "generate_documentation")
 
 
@@ -629,6 +630,7 @@ def main():
             sys.exit('The -w/--watch option requires the watchdog package.')
 
         monitor(sources, opts)
+
 
 # Run the script.
 if __name__ == "__main__":

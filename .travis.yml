@@ -1,3 +1,4 @@
+sudo: false
 language: python
 python:
     - '2.7'
@@ -10,3 +11,15 @@ script:
     - 'python -m pycco.main pycco/main.py'
 after_success:
     - coveralls
+matrix:
+  include:
+    - python: 3.5
+      env: CODESTYLE=true
+    - python: 2.7
+      env: TOXENV=py27
+      install: pip install tox
+      script: tox
+    - python: 3.6
+      env: TOXENV=py36
+      install: pip install tox
+      script: tox
