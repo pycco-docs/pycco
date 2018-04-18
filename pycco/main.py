@@ -521,9 +521,9 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
 
                 print("pycco: {} -> {}".format(s, dest))
                 generated_files.append(dest)
-            except UnicodeDecodeError:
+            except (ValueError, UnicodeDecodeError) as e:
                 if skip:
-                    print("pycco [FAILURE]: {}".format(s))
+                    print("pycco [FAILURE]: {}, {}".format(s, e))
                 else:
                     raise
 
