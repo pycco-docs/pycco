@@ -609,7 +609,7 @@ def main():
             language=opts.language, index=opts.generate_index,
             skip=opts.skip_bad_files)
 
-    # If the -w / --watch option was present, monitor the source directories
+    # If the -w / \-\-watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
     # are modified.
     if opts.watch:
