@@ -407,7 +407,6 @@ def shift(list, default):
     Shift items off the front of the `list` until it is empty, then return
     `default`.
     """
-
     try:
         return list.pop(0)
     except IndexError:
@@ -461,7 +460,9 @@ def _flatten_sources(sources):
 
 def process(sources, preserve_paths=True, outdir=None, language=None,
             encoding="utf8", index=False, skip=False):
-    """For each source file passed as argument, generate the documentation."""
+    """
+    For each source file passed as argument, generate the documentation.
+    """
 
     if not outdir:
         raise TypeError("Missing the required 'directory' keyword argument.")
@@ -516,7 +517,9 @@ __all__ = ("process", "generate_documentation")
 
 
 def monitor(sources, opts):
-    """Monitor each source file and re-generate documentation on change."""
+    """
+    Monitor each source file and re-generate documentation on change.
+    """
 
     # The watchdog modules are imported in `main()` but we need to re-import
     # here to bring them into the local namespace.
@@ -529,11 +532,14 @@ def monitor(sources, opts):
                             for source in sources)
 
     class RegenerateHandler(watchdog.events.FileSystemEventHandler):
-
-        """A handler for recompiling files which triggered watchdog events"""
+        """
+        A handler for recompiling files which triggered watchdog events
+        """
 
         def on_modified(self, event):
-            """Regenerate documentation for a file which triggered an event"""
+            """
+            Regenerate documentation for a file which triggered an event
+            """
             # Re-generate documentation from a source file if it was listed on
             # the command line. Watchdog monitors whole directories, so other
             # files may cause notifications as well.
@@ -561,7 +567,9 @@ def monitor(sources, opts):
 
 
 def main():
-    """Hook spot for the console script."""
+    """
+    Hook spot for the console script.
+    """
 
     parser = optparse.OptionParser()
     parser.add_option('-p', '--paths', action='store_true',
