@@ -1,11 +1,15 @@
 from setuptools import setup, find_packages
 
+description = (
+    "A Python port of Docco: the original quick-and-dirty, "
+    "hundred-line-long, literate-programming-style documentation "
+    "generator."
+)
+
 setup(
     name="Pycco",
     version="0.5.1",
-    description="""A Python port of Docco: the original quick-and-dirty,
-        hundred-line-long, literate-programming-style documentation generator.
-        """,
+    description=description,
     author="Zach Smith",
     author_email="subsetpark@gmail.com",
     url="https://pycco-docs.github.io/pycco/",
