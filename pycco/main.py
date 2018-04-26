@@ -21,11 +21,24 @@ from pygments import formatters, lexers
 """
 "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/):
 the original quick-and-dirty, hundred-line-long, literate-programming-style
-documentation generator. It produces HTML that displays your comments
-alongside your code. Comments are passed through
-[Markdown](http://daringfireball.net/projects/markdown/syntax) and
-[SmartyPants](http://daringfireball.net/projects/smartypants), while code is
-passed through [Pygments](http://pygments.org/) for syntax highlighting.
+documentation generator. It produces HTML that displays your comments alongside
+your code. Comments are passed through [Markdown][markdown] and
+[SmartyPants][smartypants][^extensions], while code is passed through
+[Pygments](http://pygments.org/) for syntax highlighting.
+
+[markdown]: http://daringfireball.net/projects/markdown/syntax
+[smartypants]: https://python-markdown.github.io/extensions/footnotes/
+
+[^extensions]: Three extensions to Markdown are available:
+
+    1. [SmartyPants][smarty]
+    2. [Fenced code blocks][fences]
+    3. [Footnotes][footnotes]
+
+[smarty]: https://python-markdown.github.io/extensions/smarty/
+[fences]: https://python-markdown.github.io/extensions/fenced_code_blocks/
+[footnotes]: https://python-markdown.github.io/extensions/footnotes/
+
 This page is the result of running Pycco against its own source file.
 
 If you install Pycco, you can run it from the command-line:
@@ -284,7 +297,11 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
                 preserve_paths=preserve_paths,
                 outdir=outdir
             ),
-            extensions=['markdown.extensions.smarty']
+            extensions=[
+                'markdown.extensions.smarty',
+                'markdown.extensions.fenced_code',
+                'markdown.extensions.footnotes',
+            ]
         )
         section["num"] = i
 
