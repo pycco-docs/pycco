@@ -278,9 +278,14 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
             docs_text = unicode(section["docs_text"].decode('utf-8'))
         except NameError:
             docs_text = section['docs_text']
-        section["docs_html"] = markdown(preprocess(docs_text,
-                                                   preserve_paths=preserve_paths,
-                                                   outdir=outdir))
+        section["docs_html"] = markdown(
+            preprocess(
+                docs_text,
+                preserve_paths=preserve_paths,
+                outdir=outdir
+            ),
+            extensions=['markdown.extensions.smarty']
+        )
         section["num"] = i
 
     return sections
