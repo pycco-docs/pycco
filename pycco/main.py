@@ -257,19 +257,25 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
     )
     lexer = language["lexer"]
     html_formatter = formatters.get_formatter_by_name("html")
-    output = pygments.highlight(joined_text, lexer, html_formatter)
+    divider_html = language["divider_html"]
 
-    output = output.replace(highlight_start, "").replace(highlight_end, "")
-    fragments = re.split(language["divider_html"], output)
+    output = pygments.highlight(
+        joined_text, lexer, html_formatter
+    ).replace(
+        highlight_start, ""
+    ).replace(
+        highlight_end, ""
+    )
+    fragments = re.split(divider_html, output)
+
     for i, section in enumerate(sections):
         section["code_html"] = highlight_start + shift(fragments, "") + highlight_end
-        docs_text = section['docs_text']
         try:
             docs_text = unicode(section["docs_text"])
         except UnicodeError:
             docs_text = unicode(section["docs_text"].decode('utf-8'))
         except NameError:
-            pass
+            docs_text = section['docs_text']
         section["docs_html"] = markdown(preprocess(docs_text,
                                                    preserve_paths=preserve_paths,
                                                    outdir=outdir))

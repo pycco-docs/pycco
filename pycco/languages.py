@@ -11,6 +11,7 @@ SLASH_STAR = "/*"
 STAR_SLASH = "*/"
 SLASH_SLASH = "//"
 DASH_DASH = "--"
+TRIPLE_QUOTE = '"""'
 
 def lang(name, comment_symbol, multistart=None, multiend=None):
     result = {
@@ -46,7 +47,7 @@ supported_languages = {
 
     ".rb": lang("ruby", HASH, "=begin", "=end"),
 
-    ".py": lang("python", HASH, '"""', '""'),
+    ".py": lang("python", HASH, TRIPLE_QUOTE, TRIPLE_QUOTE),
 
     ".scm": lang("scheme", ";;", "#|", "|#"),
 
