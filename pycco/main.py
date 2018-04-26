@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-# This module contains all of our static resources.
-from pycco_resources import pycco_template, css as pycco_css
-
 # Import our external dependencies.
 import optparse
 import os
-import pygments
 import re
 import sys
 import time
-import pycco.generate_index as generate_index
-
-from markdown import markdown
 from os import path
-from pygments import lexers, formatters
+
+import pycco.generate_index as generate_index
+import pygments
+from markdown import markdown
+from pycco_resources import css as pycco_css
+# This module contains all of our static resources.
+from pycco_resources import pycco_template
+from pygments import formatters, lexers
 
 """
 "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/):
