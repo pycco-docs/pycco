@@ -23,8 +23,7 @@ def lang(name, comment_symbol, multistart=None, multiend=None):
         "comment_symbol": comment_symbol
     }
     if multistart is not None and multiend is not None:
-        result["multistart"] = multistart
-        result["multiend"] = multiend
+        result.update(multistart=multistart, multiend=multiend)
     return result
 
 
