@@ -49,6 +49,8 @@ supported_languages = {
 
     ".py": lang("python", HASH, TRIPLE_QUOTE, TRIPLE_QUOTE),
 
+    ".pyx": lang("cython", HASH, TRIPLE_QUOTE, TRIPLE_QUOTE),
+
     ".scm": lang("scheme", ";;", "#|", "|#"),
 
     ".lua": lang("lua", DASH_DASH, "--[[", "--]]"),
