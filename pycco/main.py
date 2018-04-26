@@ -146,7 +146,7 @@ def parse(code, language):
                 line = line.replace(multistart, '')
                 line = line.replace(multiend, '')
                 docs_text += line.strip() + '\n'
-                indent_level = re.match("\s*", line).group(0)
+                indent_level = re.match(r"\s*", line).group(0)
 
                 if has_code and docs_text.strip():
                     save(docs_text, code_text[:-1])
@@ -229,8 +229,8 @@ def preprocess(comment, preserve_paths=True, outdir=None):
             name=match.group(2)
         )
 
-    comment = re.sub('^([=]+)([^=]+)[=]*\s*$', replace_section_name, comment)
-    comment = re.sub('(?<!`)\[\[(.+?)\]\]', replace_crossref, comment)
+    comment = re.sub(r'^([=]+)([^=]+)[=]*\s*$', replace_section_name, comment)
+    comment = re.sub(r'(?<!`)\[\[(.+?)\]\]', replace_crossref, comment)
 
     return comment
 
@@ -250,21 +250,25 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
 
-    output = pygments.highlight(language["divider_text"].join(section["code_text"].rstrip() for section in sections),
-                                language["lexer"],
-                                formatters.get_formatter_by_name("html"))
+    divider_text = language["divider_text"]
+    joined_text = divider_text.join(
+        section["code_text"].rstrip() for section in sections
+    )
+    lexer = language["lexer"]
+    html_formatter = formatters.get_formatter_by_name("html")
+    output = pygments.highlight(joined_text, lexer, html_formatter)
 
     output = output.replace(highlight_start, "").replace(highlight_end, "")
     fragments = re.split(language["divider_html"], output)
     for i, section in enumerate(sections):
-        section["code_html"] = highlight_start + \
-            shift(fragments, "") + highlight_end
+        section["code_html"] = highlight_start + shift(fragments, "") + highlight_end
+        docs_text = section['docs_text']
         try:
             docs_text = unicode(section["docs_text"])
         except UnicodeError:
             docs_text = unicode(section["docs_text"].decode('utf-8'))
         except NameError:
-            docs_text = section['docs_text']
+            pass
         section["docs_html"] = markdown(preprocess(docs_text,
                                                    preserve_paths=preserve_paths,
                                                    outdir=outdir))
@@ -313,65 +317,69 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 # the name of the Pygments lexer and the symbol that indicates a comment. To
 # add another language to Pycco's repertoire, add it here.
 languages = {
-    ".coffee": {"name": "coffee-script", "symbol": "#",
+    ".coffee": {"name": "coffee-script", "comment_symbol": "#",
                 "multistart": '###', "multiend": '###'},
 
-    ".pl": {"name": "perl", "symbol": "#"},
+    ".pl": {"name": "perl", "comment_symbol": "#"},
 
-    ".sql": {"name": "sql", "symbol": "--"},
+    ".sql": {"name": "sql", "comment_symbol": "--"},
 
-    ".sh": {"name": "bash", "symbol": "#"},
+    ".sh": {"name": "bash", "comment_symbol": "#"},
 
-    ".c": {"name": "c", "symbol": "//",
+    ".c": {"name": "c", "comment_symbol": "//",
            "multistart": "/*", "multiend": "*/"},
 
-    ".h": {"name": "c", "symbol": "//",
+    ".h": {"name": "c", "comment_symbol": "//",
            "multistart": "/*", "multiend": "*/"},
 
-    ".cpp": {"name": "cpp", "symbol": "//"},
+    ".cpp": {"name": "cpp", "comment_symbol": "//"},
 
-    ".cl": {"name": "c", "symbol": "//",
+    ".cl": {"name": "c", "comment_symbol": "//",
             "multistart": "/*", "multiend": "*/"},
 
-    ".js": {"name": "javascript", "symbol": "//",
+    ".js": {"name": "javascript", "comment_symbol": "//",
             "multistart": "/*", "multiend": "*/"},
 
-    ".rb": {"name": "ruby", "symbol": "#",
+    ".rb": {"name": "ruby", "comment_symbol": "#",
             "multistart": "=begin", "multiend": "=end"},
 
-    ".py": {"name": "python", "symbol": "#",
+    ".py": {"name": "python", "comment_symbol": "#",
             "multistart": '"""', "multiend": '"""'},
 
-    ".scm": {"name": "scheme", "symbol": ";;",
+    ".scm": {"name": "scheme", "comment_symbol": ";;",
              "multistart": "#|", "multiend": "|#"},
 
-    ".lua": {"name": "lua", "symbol": "--",
+    ".lua": {"name": "lua", "comment_symbol": "--",
              "multistart": "--[[", "multiend": "--]]"},
 
-    ".erl": {"name": "erlang", "symbol": "%%"},
+    ".erl": {"name": "erlang", "comment_symbol": "%%"},
 
-    ".tcl": {"name": "tcl", "symbol": "#"},
+    ".tcl": {"name": "tcl", "comment_symbol": "#"},
 
-    ".hs": {"name": "haskell", "symbol": "--",
+    ".hs": {"name": "haskell", "comment_symbol": "--",
             "multistart": "{-", "multiend": "-}"},
 }
 
 # Build out the appropriate matchers and delimiters for each language.
 for ext, l in languages.items():
+    language_name = l["name"]
+    comment_symbol = l["comment_symbol"]
+
     # Does the line begin with a comment?
-    l["comment_matcher"] = re.compile(r"^\s*" + l["symbol"] + "\s?")
+    l["comment_matcher"] = re.compile(r"^\s*{}\s?".format(comment_symbol))
 
     # The dividing token we feed into Pygments, to delimit the boundaries between
     # sections.
-    l["divider_text"] = "\n" + l["symbol"] + "DIVIDER\n"
+    l["divider_text"] = "\n{}DIVIDER\n".format(comment_symbol)
 
     # The mirror of `divider_text` that we expect Pygments to return. We can split
     # on this to recover the original sections.
     l["divider_html"] = re.compile(
-        r'\n*<span class="c[1]?">' + l["symbol"] + 'DIVIDER</span>\n*')
+        r'\n*<span class="c[1]?">{}DIVIDER</span>\n*'.format(comment_symbol)
+    )
 
     # Get the Pygments Lexer for this language.
-    l["lexer"] = lexers.get_lexer_by_name(l["name"])
+    l["lexer"] = lexers.get_lexer_by_name(language_name)
 
 
 def get_language(source, code, language=None):
@@ -625,7 +633,7 @@ def main():
     if opts.watch:
         try:
             import watchdog.events
-            import watchdog.observers
+            import watchdog.observers  # noqa
         except ImportError:
             sys.exit('The -w/--watch option requires the watchdog package.')
 

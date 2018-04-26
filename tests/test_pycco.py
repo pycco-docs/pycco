@@ -4,7 +4,7 @@ import tempfile
 import time
 import os.path
 import pytest
-from hypothesis import given, example, assume
+from hypothesis import given, example
 from hypothesis.strategies import lists, text, booleans, choices, none
 
 import pycco.generate_index as generate_index
@@ -41,8 +41,8 @@ def test_destination(filepath, preserve_paths, outdir):
 
 @given(choices(), text())
 def test_parse(choice, source):
-    l = get_language(choice)
-    parsed = p.parse(source, l)
+    lang = get_language(choice)
+    parsed = p.parse(source, lang)
     for s in parsed:
         assert {"code_text", "docs_text"} == set(s.keys())
 
@@ -63,7 +63,9 @@ def test_multi_line_leading_spaces():
 
 
 def test_comment_with_only_cross_ref():
-    source = '''# ==Link Target==\n\ndef test_link():\n    """[[testing.py#link-target]]"""\n    pass'''
+    source = (
+        '''# ==Link Target==\n\ndef test_link():\n    """[[testing.py#link-target]]"""\n    pass'''
+    )
     sections = p.parse(source, PYTHON)
     p.highlight(sections, PYTHON, outdir=tempfile.gettempdir())
     assert sections[1][
@@ -160,7 +162,12 @@ def test_process(preserve_paths, index, choice):
               language=lang_name)
 
 
-@given(lists(lists(text(min_size=1), min_size=1, max_size=30), min_size=1), lists(text(min_size=1), min_size=1))
+one_or_more_chars = text(min_size=1)
+paths = lists(one_or_more_chars, min_size=1, max_size=30)
+@given(
+    lists(paths, min_size=1),
+    lists(one_or_more_chars, min_size=1)
+)
 def test_generate_index(path_lists, outdir_list):
     file_paths = [os.path.join(*path_list) for path_list in path_lists]
     outdir = os.path.join(*outdir_list)
