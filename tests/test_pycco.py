@@ -4,7 +4,10 @@ import tempfile
 import time
 import os.path
 import pytest
-from unittest.mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 from hypothesis import given, example, assume
 from hypothesis.strategies import lists, text, booleans, choices, none
 
