@@ -191,10 +191,11 @@ def preprocess(comment, preserve_paths=True, outdir=None):
     """
     Add cross-references before having the text processed by markdown.  It's
     possible to reference another file, like this : `[[main.py]]` which renders
-    [[main.py]]. You can also reference a specific section of another file, like
-    this: `[[main.py#highlighting-the-source-code]]` which renders as
+    [[main.py]]. You can also reference a specific section of another file,
+    like this: `[[main.py#highlighting-the-source-code]]` which renders as
     [[main.py#highlighting-the-source-code]]. Sections have to be manually
-    declared; they are written on a single line, and surrounded by equals signs:
+    declared; they are written on a single line, and surrounded by equals
+    signs:
     `=== like this ===`
     """
 
@@ -289,8 +290,8 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
 
 def generate_html(source, sections, preserve_paths=True, outdir=None):
     """
-    Once all of the code is finished highlighting, we can generate the HTML file
-    and write out the documentation. Pass the completed sections into the
+    Once all of the code is finished highlighting, we can generate the HTML
+    file and write out the documentation. Pass the completed sections into the
     template found in `resources/pycco.html`.
 
     Pystache will attempt to recursively render context variables, so we must
@@ -381,7 +382,7 @@ def get_language(source, code, language_name=None):
 def destination(filepath, preserve_paths=True, outdir=None):
     """
     Compute the destination HTML path for an input source file path. If the
-    source is `lib/example.py`, the HTML will be at `docs/example.html`
+    source is `lib/example.py`, the HTML will be at `docs/example.html`.
     """
 
     dirname, filename = path.split(filepath)
@@ -444,7 +445,7 @@ highlight_end = "</pre></div>"
 def _flatten_sources(sources):
     """
     This function will iterate through the list of sources and if a directory
-    is encountered it will walk the tree for any files
+    is encountered it will walk the tree for any files.
     """
     _sources = []
 
@@ -533,12 +534,12 @@ def monitor(sources, opts):
 
     class RegenerateHandler(watchdog.events.FileSystemEventHandler):
         """
-        A handler for recompiling files which triggered watchdog events
+        A handler for recompiling files which triggered watchdog events.
         """
 
         def on_modified(self, event):
             """
-            Regenerate documentation for a file which triggered an event
+            Regenerate documentation for a file which triggered an event.
             """
             # Re-generate documentation from a source file if it was listed on
             # the command line. Watchdog monitors whole directories, so other
