@@ -252,12 +252,13 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
         raise TypeError("Missing the required 'outdir' keyword argument.")
 
     divider_text = language["divider_text"]
+    lexer = language["lexer"]
+    divider_html = language["divider_html"]
+
     joined_text = divider_text.join(
         section["code_text"].rstrip() for section in sections
     )
-    lexer = language["lexer"]
     html_formatter = formatters.get_formatter_by_name("html")
-    divider_html = language["divider_html"]
 
     output = pygments.highlight(
         joined_text, lexer, html_formatter
