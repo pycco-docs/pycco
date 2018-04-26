@@ -164,11 +164,11 @@ def test_process(preserve_paths, index, choice):
               language=lang_name)
 
 
-one_or_more_chars = text(min_size=1)
+one_or_more_chars = text(min_size=1, max_size=255)
 paths = lists(one_or_more_chars, min_size=1, max_size=30)
 @given(
-    lists(paths, min_size=1),
-    lists(one_or_more_chars, min_size=1)
+    lists(paths, min_size=1, max_size=255),
+    lists(one_or_more_chars, min_size=1, max_size=255)
 )
 def test_generate_index(path_lists, outdir_list):
     file_paths = [os.path.join(*path_list) for path_list in path_lists]
