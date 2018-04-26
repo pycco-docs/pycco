@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-from __future__ import print_function, absolute_import
+from __future__ import absolute_import, print_function
 
 # Import our external dependencies.
-import optparse
+import argparse
 import os
 import re
 import sys
 import time
 from os import path
 
-from pycco.generate_index import generate_index
-from pycco.languages import supported_languages
 import pygments
 from markdown import markdown
+from pycco.generate_index import generate_index
+from pycco.languages import supported_languages
 from pycco_resources import css as pycco_css
 # This module contains all of our static resources.
 from pycco_resources import pycco_template
@@ -577,49 +577,51 @@ def main():
     Hook spot for the console script.
     """
 
-    parser = optparse.OptionParser()
-    parser.add_option('-p', '--paths', action='store_true',
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--paths', action='store_true',
                       help='Preserve path structure of original files')
 
-    parser.add_option('-d', '--directory', action='store', type='string',
+    parser.add_argument('-d', '--directory', action='store', type=str,
                       dest='outdir', default='docs',
                       help='The output directory that the rendered files should go to.')
 
-    parser.add_option('-w', '--watch', action='store_true',
+    parser.add_argument('-w', '--watch', action='store_true',
                       help='Watch original files and re-generate documentation on changes')
 
-    parser.add_option('-l', '--force-language', action='store', type='string',
+    parser.add_argument('-l', '--force-language', action='store', type=str,
                       dest='language', default=None,
                       help='Force the language for the given files')
 
-    parser.add_option('-i', '--generate_index', action='store_true',
+    parser.add_argument('-i', '--generate_index', action='store_true',
                       help='Generate an index.html document with sitemap content')
 
-    parser.add_option('-s', '--skip-bad-files', action='store_true',
+    parser.add_argument('-s', '--skip-bad-files', action='store_true',
                       dest='skip_bad_files',
                       help='Continue processing after hitting a bad file')
 
-    opts, sources = parser.parse_args()
-    if opts.outdir == '':
+    parser.add_argument('sources', nargs='*')
+
+    args = parser.parse_args()
+    if args.outdir == '':
         outdir = '.'
     else:
-        outdir = opts.outdir
+        outdir = args.outdir
 
-    process(sources, outdir=outdir, preserve_paths=opts.paths,
-            language=opts.language, index=opts.generate_index,
-            skip=opts.skip_bad_files)
+    process(args.sources, outdir=outdir, preserve_paths=args.paths,
+            language=args.language, index=args.generate_index,
+            skip=args.skip_bad_files)
 
     # If the -w / \-\-watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
     # are modified.
-    if opts.watch:
+    if args.watch:
         try:
             import watchdog.events
             import watchdog.observers  # noqa
         except ImportError:
             sys.exit('The -w/--watch option requires the watchdog package.')
 
-        monitor(sources, opts)
+        monitor(args.sources, args)
 
 
 # Run the script.
