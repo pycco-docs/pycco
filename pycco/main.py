@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 # Import our external dependencies.
 import optparse
@@ -9,7 +9,8 @@ import sys
 import time
 from os import path
 
-import pycco.generate_index as generate_index
+from pycco.generate_index import generate_index
+from pycco.languages import supported_languages
 import pygments
 from markdown import markdown
 from pycco_resources import css as pycco_css
@@ -69,7 +70,7 @@ def _generate_documentation(file_path, code, outdir, preserve_paths, language):
     """
     Helper function to allow documentation generation without file handling.
     """
-    language = get_language(file_path, code, language=language)
+    language = get_language(file_path, code, language_name=language)
     sections = parse(code, language)
     highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
@@ -313,55 +314,10 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
 # === Helpers & Setup ===
 
-# A list of the languages that Pycco supports, mapping the file extension to
-# the name of the Pygments lexer and the symbol that indicates a comment. To
-# add another language to Pycco's repertoire, add it here.
-languages = {
-    ".coffee": {"name": "coffee-script", "comment_symbol": "#",
-                "multistart": '###', "multiend": '###'},
-
-    ".pl": {"name": "perl", "comment_symbol": "#"},
-
-    ".sql": {"name": "sql", "comment_symbol": "--"},
-
-    ".sh": {"name": "bash", "comment_symbol": "#"},
-
-    ".c": {"name": "c", "comment_symbol": "//",
-           "multistart": "/*", "multiend": "*/"},
-
-    ".h": {"name": "c", "comment_symbol": "//",
-           "multistart": "/*", "multiend": "*/"},
-
-    ".cpp": {"name": "cpp", "comment_symbol": "//"},
-
-    ".cl": {"name": "c", "comment_symbol": "//",
-            "multistart": "/*", "multiend": "*/"},
-
-    ".js": {"name": "javascript", "comment_symbol": "//",
-            "multistart": "/*", "multiend": "*/"},
-
-    ".rb": {"name": "ruby", "comment_symbol": "#",
-            "multistart": "=begin", "multiend": "=end"},
-
-    ".py": {"name": "python", "comment_symbol": "#",
-            "multistart": '"""', "multiend": '"""'},
-
-    ".scm": {"name": "scheme", "comment_symbol": ";;",
-             "multistart": "#|", "multiend": "|#"},
-
-    ".lua": {"name": "lua", "comment_symbol": "--",
-             "multistart": "--[[", "multiend": "--]]"},
-
-    ".erl": {"name": "erlang", "comment_symbol": "%%"},
-
-    ".tcl": {"name": "tcl", "comment_symbol": "#"},
-
-    ".hs": {"name": "haskell", "comment_symbol": "--",
-            "multistart": "{-", "multiend": "-}"},
-}
-
-# Build out the appropriate matchers and delimiters for each language.
-for ext, l in languages.items():
+def compile_language(l):
+    """
+    Build out the appropriate matchers and delimiters for each language.
+    """
     language_name = l["name"]
     comment_symbol = l["comment_symbol"]
 
@@ -382,32 +338,37 @@ for ext, l in languages.items():
     l["lexer"] = lexers.get_lexer_by_name(language_name)
 
 
-def get_language(source, code, language=None):
-    """Get the current language we're documenting, based on the extension."""
+for entry in supported_languages.values():
+    compile_language(entry)
 
-    if language is not None:
-        for l in languages.values():
-            if l["name"] == language:
-                return l
+def get_language(source, code, language_name=None):
+    """
+    Get the current language we're documenting, based on the extension.
+    """
+    if language_name is not None:
+        for entry in supported_languages.values():
+            if entry["name"] == language_name:
+                return entry
         else:
-            raise ValueError("Unknown forced language: " + language)
+            raise ValueError("Unknown forced language: {}".format(language_name))
 
-    m = re.match(r'.*(\..+)', os.path.basename(source)) if source else None
-    if m and m.group(1) in languages:
-        return languages[m.group(1)]
-    else:
-        try:
-            lang = lexers.guess_lexer(code).name.lower()
-            for l in languages.values():
-                if l["name"] == lang:
-                    return l
-            else:
-                raise ValueError()
-        except ValueError:
-            # If pygments can't find any lexers, it will raise its own
-            # subclass of ValueError. We will catch it and raise ours
-            # for consistency.
-            raise ValueError("Can't figure out the language!")
+    if source:
+        m = re.match(r'.*(\..+)', os.path.basename(source))
+        if m and m.group(1) in supported_languages:
+            return supported_languages[m.group(1)]
+
+    try:
+        language_name = lexers.guess_lexer(code).name.lower()
+        for entry in supported_languages.values():
+            if entry["name"] == language_name:
+                return entry
+        else:
+            raise ValueError()
+    except ValueError:
+        # If pygments can't find any lexers, it will raise its own
+        # subclass of ValueError. We will catch it and raise ours
+        # for consistency.
+        raise ValueError("Can't figure out the language!")
 
 
 def destination(filepath, preserve_paths=True, outdir=None):
@@ -541,7 +502,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
 
         if index:
             with open(path.join(outdir, "index.html"), "wb") as f:
-                f.write(generate_index.generate_index(generated_files, outdir))
+                f.write(generate_index(generated_files, outdir))
 
 
 __all__ = ("process", "generate_documentation")

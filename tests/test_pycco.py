@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import copy
 import os
 import tempfile
@@ -8,16 +9,17 @@ from hypothesis import given, example
 from hypothesis.strategies import lists, text, booleans, choices, none
 
 import pycco.generate_index as generate_index
+from pycco.languages import supported_languages
 import pycco.main as p
 
 
-PYTHON = p.languages['.py']
+PYTHON = supported_languages['.py']
 PYCCO_SOURCE = 'pycco/main.py'
 FOO_FUNCTION = """def foo():\n    return True"""
 
 
 def get_language(choice):
-    return choice(list(p.languages.values()))
+    return choice(list(supported_languages.values()))
 
 
 @given(lists(text()), text())
@@ -75,10 +77,10 @@ def test_comment_with_only_cross_ref():
 @given(text(), text())
 def test_get_language_specify_language(source, code):
     assert p.get_language(
-        source, code, language="python") == p.languages['.py']
+        source, code, language_name="python") == supported_languages['.py']
 
     with pytest.raises(ValueError):
-        p.get_language(source, code, language="non-existent")
+        p.get_language(source, code, language_name="non-existent")
 
 
 @given(text() | none())
@@ -155,7 +157,7 @@ def test_generate_documentation():
 
 @given(booleans(), booleans(), choices())
 def test_process(preserve_paths, index, choice):
-    lang_name = choice([l["name"] for l in p.languages.values()])
+    lang_name = choice([l["name"] for l in supported_languages.values()])
     p.process([PYCCO_SOURCE], preserve_paths=preserve_paths,
               index=index,
               outdir=tempfile.gettempdir(),
