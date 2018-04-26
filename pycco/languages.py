@@ -14,6 +14,10 @@ DASH_DASH = "--"
 TRIPLE_QUOTE = '"""'
 
 def lang(name, comment_symbol, multistart=None, multiend=None):
+    """
+    Generate a language entry dictionary, given a name and comment symbol and
+    optional start/end strings for multiline comments.
+    """
     result = {
         "name": name,
         "comment_symbol": comment_symbol
