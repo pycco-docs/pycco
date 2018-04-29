@@ -605,7 +605,9 @@ def main():
     parser.add_option('-i', '--generate_index', action='store_true',
                       help='Generate an index.html document with sitemap content')
 
-    parser.add_option('-s', '--skip-bad-files', action='store_true',
+    parser.add_option('-s', '--skip-bad-files',
+                      '-e', '--ignore-errors',
+                      action='store_true',
                       dest='skip_bad_files',
                       help='Continue processing after hitting a bad file')
 
