@@ -4,6 +4,10 @@ import tempfile
 import time
 import os.path
 import pytest
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 from hypothesis import given, example, assume
 from hypothesis.strategies import lists, text, booleans, choices, none
 
@@ -158,6 +162,18 @@ def test_process(preserve_paths, index, choice):
               index=index,
               outdir=tempfile.gettempdir(),
               language=lang_name)
+
+
+@patch('pygments.lexers.guess_lexer')
+def test_process_skips_unknown_languages(mock_guess_lexer):
+    class Name:
+        name = 'this language does not exist'
+    mock_guess_lexer.return_value = Name()
+
+    with pytest.raises(ValueError):
+        p.process(['LICENSE'], outdir=tempfile.gettempdir(), skip=False)
+
+    p.process(['LICENSE'], outdir=tempfile.gettempdir(), skip=True)
 
 
 @given(lists(lists(text(min_size=1), min_size=1, max_size=30), min_size=1), lists(text(min_size=1), min_size=1))
