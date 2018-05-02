@@ -1,16 +1,24 @@
 from __future__ import absolute_import
+
 import copy
 import os
+import os.path
 import tempfile
 import time
-import os.path
+
 import pytest
-from hypothesis import given, example
-from hypothesis.strategies import lists, text, booleans, choices, none
 
 import pycco.generate_index as generate_index
-from pycco.languages import supported_languages
 import pycco.main as p
+from hypothesis import assume, example, given
+from hypothesis.strategies import booleans, choices, lists, none, text
+from pycco.languages import supported_languages
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
+
 
 
 PYTHON = supported_languages['.py']
@@ -162,6 +170,18 @@ def test_process(preserve_paths, index, choice):
               index=index,
               outdir=tempfile.gettempdir(),
               language=lang_name)
+
+
+@patch('pygments.lexers.guess_lexer')
+def test_process_skips_unknown_languages(mock_guess_lexer):
+    class Name:
+        name = 'this language does not exist'
+    mock_guess_lexer.return_value = Name()
+
+    with pytest.raises(ValueError):
+        p.process(['LICENSE'], outdir=tempfile.gettempdir(), skip=False)
+
+    p.process(['LICENSE'], outdir=tempfile.gettempdir(), skip=True)
 
 
 one_or_more_chars = text(min_size=1, max_size=255)

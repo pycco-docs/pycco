@@ -521,9 +521,9 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
 
                 print("pycco: {} -> {}".format(s, dest))
                 generated_files.append(dest)
-            except UnicodeDecodeError:
+            except (ValueError, UnicodeDecodeError) as e:
                 if skip:
-                    print("pycco [FAILURE]: {}".format(s))
+                    print("pycco [FAILURE]: {}, {}".format(s, e))
                 else:
                     raise
 
@@ -612,7 +612,8 @@ def main():
     parser.add_argument('-i', '--generate_index', action='store_true',
                       help='Generate an index.html document with sitemap content')
 
-    parser.add_argument('-s', '--skip-bad-files', action='store_true',
+    parser.add_argument('-s', '--skip-bad-files', '-e', '--ignore-errors',
+                      action='store_true',
                       dest='skip_bad_files',
                       help='Continue processing after hitting a bad file')
 
