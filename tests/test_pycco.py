@@ -1,27 +1,33 @@
+from __future__ import absolute_import
+
 import copy
 import os
+import os.path
 import tempfile
 import time
-import os.path
+
 import pytest
+
+import pycco.generate_index as generate_index
+import pycco.main as p
+from hypothesis import assume, example, given
+from hypothesis.strategies import booleans, choices, lists, none, text
+from pycco.languages import supported_languages
+
 try:
     from unittest.mock import patch
 except ImportError:
     from mock import patch
-from hypothesis import given, example, assume
-from hypothesis.strategies import lists, text, booleans, choices, none
-
-import pycco.generate_index as generate_index
-import pycco.main as p
 
 
-PYTHON = p.languages['.py']
+
+PYTHON = supported_languages['.py']
 PYCCO_SOURCE = 'pycco/main.py'
 FOO_FUNCTION = """def foo():\n    return True"""
 
 
 def get_language(choice):
-    return choice(list(p.languages.values()))
+    return choice(list(supported_languages.values()))
 
 
 @given(lists(text()), text())
@@ -45,8 +51,8 @@ def test_destination(filepath, preserve_paths, outdir):
 
 @given(choices(), text())
 def test_parse(choice, source):
-    l = get_language(choice)
-    parsed = p.parse(source, l)
+    lang = get_language(choice)
+    parsed = p.parse(source, lang)
     for s in parsed:
         assert {"code_text", "docs_text"} == set(s.keys())
 
@@ -67,7 +73,9 @@ def test_multi_line_leading_spaces():
 
 
 def test_comment_with_only_cross_ref():
-    source = '''# ==Link Target==\n\ndef test_link():\n    """[[testing.py#link-target]]"""\n    pass'''
+    source = (
+        '''# ==Link Target==\n\ndef test_link():\n    """[[testing.py#link-target]]"""\n    pass'''
+    )
     sections = p.parse(source, PYTHON)
     p.highlight(sections, PYTHON, outdir=tempfile.gettempdir())
     assert sections[1][
@@ -77,10 +85,10 @@ def test_comment_with_only_cross_ref():
 @given(text(), text())
 def test_get_language_specify_language(source, code):
     assert p.get_language(
-        source, code, language="python") == p.languages['.py']
+        source, code, language_name="python") == supported_languages['.py']
 
     with pytest.raises(ValueError):
-        p.get_language(source, code, language="non-existent")
+        p.get_language(source, code, language_name="non-existent")
 
 
 @given(text() | none())
@@ -157,7 +165,7 @@ def test_generate_documentation():
 
 @given(booleans(), booleans(), choices())
 def test_process(preserve_paths, index, choice):
-    lang_name = choice([l["name"] for l in p.languages.values()])
+    lang_name = choice([l["name"] for l in supported_languages.values()])
     p.process([PYCCO_SOURCE], preserve_paths=preserve_paths,
               index=index,
               outdir=tempfile.gettempdir(),
@@ -176,7 +184,12 @@ def test_process_skips_unknown_languages(mock_guess_lexer):
     p.process(['LICENSE'], outdir=tempfile.gettempdir(), skip=True)
 
 
-@given(lists(lists(text(min_size=1), min_size=1, max_size=30), min_size=1), lists(text(min_size=1), min_size=1))
+one_or_more_chars = text(min_size=1, max_size=255)
+paths = lists(one_or_more_chars, min_size=1, max_size=30)
+@given(
+    lists(paths, min_size=1, max_size=255),
+    lists(one_or_more_chars, min_size=1, max_size=255)
+)
 def test_generate_index(path_lists, outdir_list):
     file_paths = [os.path.join(*path_list) for path_list in path_lists]
     outdir = os.path.join(*outdir_list)

@@ -1,3 +1,3 @@
-from .main import *
+from .main import *  # noqa
 
 __all__ = ("process",)

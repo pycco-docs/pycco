@@ -1,30 +1,44 @@
 #!/usr/bin/env python
-from __future__ import print_function
-
-# This module contains all of our static resources.
-from pycco_resources import pycco_template, css as pycco_css
+from __future__ import absolute_import, print_function
 
 # Import our external dependencies.
-import optparse
+import argparse
 import os
-import pygments
 import re
 import sys
 import time
-import pycco.generate_index as generate_index
-
-from markdown import markdown
 from os import path
-from pygments import lexers, formatters
+
+import pygments
+from markdown import markdown
+from pycco.generate_index import generate_index
+from pycco.languages import supported_languages
+from pycco_resources import css as pycco_css
+# This module contains all of our static resources.
+from pycco_resources import pycco_template
+from pygments import formatters, lexers
 
 """
 "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/):
 the original quick-and-dirty, hundred-line-long, literate-programming-style
-documentation generator. It produces HTML that displays your comments
-alongside your code. Comments are passed through
-[Markdown](http://daringfireball.net/projects/markdown/syntax) and
-[SmartyPants](http://daringfireball.net/projects/smartypants), while code is
-passed through [Pygments](http://pygments.org/) for syntax highlighting.
+documentation generator. It produces HTML that displays your comments alongside
+your code. Comments are passed through [Markdown][markdown] and
+[SmartyPants][smartypants][^extensions], while code is passed through
+[Pygments](http://pygments.org/) for syntax highlighting.
+
+[markdown]: http://daringfireball.net/projects/markdown/syntax
+[smartypants]: https://python-markdown.github.io/extensions/footnotes/
+
+[^extensions]: Three extensions to Markdown are available:
+
+    1. [SmartyPants][smarty]
+    2. [Fenced code blocks][fences]
+    3. [Footnotes][footnotes]
+
+[smarty]: https://python-markdown.github.io/extensions/smarty/
+[fences]: https://python-markdown.github.io/extensions/fenced_code_blocks/
+[footnotes]: https://python-markdown.github.io/extensions/footnotes/
+
 This page is the result of running Pycco against its own source file.
 
 If you install Pycco, you can run it from the command-line:
@@ -69,7 +83,7 @@ def _generate_documentation(file_path, code, outdir, preserve_paths, language):
     """
     Helper function to allow documentation generation without file handling.
     """
-    language = get_language(file_path, code, language=language)
+    language = get_language(file_path, code, language_name=language)
     sections = parse(code, language)
     highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
@@ -146,7 +160,7 @@ def parse(code, language):
                 line = line.replace(multistart, '')
                 line = line.replace(multiend, '')
                 docs_text += line.strip() + '\n'
-                indent_level = re.match("\s*", line).group(0)
+                indent_level = re.match(r"\s*", line).group(0)
 
                 if has_code and docs_text.strip():
                     save(docs_text, code_text[:-1])
@@ -190,10 +204,11 @@ def preprocess(comment, preserve_paths=True, outdir=None):
     """
     Add cross-references before having the text processed by markdown.  It's
     possible to reference another file, like this : `[[main.py]]` which renders
-    [[main.py]]. You can also reference a specific section of another file, like
-    this: `[[main.py#highlighting-the-source-code]]` which renders as
+    [[main.py]]. You can also reference a specific section of another file,
+    like this: `[[main.py#highlighting-the-source-code]]` which renders as
     [[main.py#highlighting-the-source-code]]. Sections have to be manually
-    declared; they are written on a single line, and surrounded by equals signs:
+    declared; they are written on a single line, and surrounded by equals
+    signs:
     `=== like this ===`
     """
 
@@ -229,8 +244,8 @@ def preprocess(comment, preserve_paths=True, outdir=None):
             name=match.group(2)
         )
 
-    comment = re.sub('^([=]+)([^=]+)[=]*\s*$', replace_section_name, comment)
-    comment = re.sub('(?<!`)\[\[(.+?)\]\]', replace_crossref, comment)
+    comment = re.sub(r'^([=]+)([^=]+)[=]*\s*$', replace_section_name, comment)
+    comment = re.sub(r'(?<!`)\[\[(.+?)\]\]', replace_crossref, comment)
 
     return comment
 
@@ -250,24 +265,44 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
 
-    output = pygments.highlight(language["divider_text"].join(section["code_text"].rstrip() for section in sections),
-                                language["lexer"],
-                                formatters.get_formatter_by_name("html"))
+    divider_text = language["divider_text"]
+    lexer = language["lexer"]
+    divider_html = language["divider_html"]
 
-    output = output.replace(highlight_start, "").replace(highlight_end, "")
-    fragments = re.split(language["divider_html"], output)
+    joined_text = divider_text.join(
+        section["code_text"].rstrip() for section in sections
+    )
+    html_formatter = formatters.get_formatter_by_name("html")
+
+    output = pygments.highlight(
+        joined_text, lexer, html_formatter
+    ).replace(
+        highlight_start, ""
+    ).replace(
+        highlight_end, ""
+    )
+    fragments = re.split(divider_html, output)
+
     for i, section in enumerate(sections):
-        section["code_html"] = highlight_start + \
-            shift(fragments, "") + highlight_end
+        section["code_html"] = highlight_start + shift(fragments, "") + highlight_end
         try:
             docs_text = unicode(section["docs_text"])
         except UnicodeError:
             docs_text = unicode(section["docs_text"].decode('utf-8'))
         except NameError:
             docs_text = section['docs_text']
-        section["docs_html"] = markdown(preprocess(docs_text,
-                                                   preserve_paths=preserve_paths,
-                                                   outdir=outdir))
+        section["docs_html"] = markdown(
+            preprocess(
+                docs_text,
+                preserve_paths=preserve_paths,
+                outdir=outdir
+            ),
+            extensions=[
+                'markdown.extensions.smarty',
+                'markdown.extensions.fenced_code',
+                'markdown.extensions.footnotes',
+            ]
+        )
         section["num"] = i
 
     return sections
@@ -277,8 +312,8 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
 
 def generate_html(source, sections, preserve_paths=True, outdir=None):
     """
-    Once all of the code is finished highlighting, we can generate the HTML file
-    and write out the documentation. Pass the completed sections into the
+    Once all of the code is finished highlighting, we can generate the HTML
+    file and write out the documentation. Pass the completed sections into the
     template found in `resources/pycco.html`.
 
     Pystache will attempt to recursively render context variables, so we must
@@ -309,103 +344,67 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
 # === Helpers & Setup ===
 
-# A list of the languages that Pycco supports, mapping the file extension to
-# the name of the Pygments lexer and the symbol that indicates a comment. To
-# add another language to Pycco's repertoire, add it here.
-languages = {
-    ".coffee": {"name": "coffee-script", "symbol": "#",
-                "multistart": '###', "multiend": '###'},
+def compile_language(l):
+    """
+    Build out the appropriate matchers and delimiters for each language.
+    """
+    language_name = l["name"]
+    comment_symbol = l["comment_symbol"]
 
-    ".pl": {"name": "perl", "symbol": "#"},
-
-    ".sql": {"name": "sql", "symbol": "--"},
-
-    ".sh": {"name": "bash", "symbol": "#"},
-
-    ".c": {"name": "c", "symbol": "//",
-           "multistart": "/*", "multiend": "*/"},
-
-    ".h": {"name": "c", "symbol": "//",
-           "multistart": "/*", "multiend": "*/"},
-
-    ".cpp": {"name": "cpp", "symbol": "//"},
-
-    ".cl": {"name": "c", "symbol": "//",
-            "multistart": "/*", "multiend": "*/"},
-
-    ".js": {"name": "javascript", "symbol": "//",
-            "multistart": "/*", "multiend": "*/"},
-
-    ".rb": {"name": "ruby", "symbol": "#",
-            "multistart": "=begin", "multiend": "=end"},
-
-    ".py": {"name": "python", "symbol": "#",
-            "multistart": '"""', "multiend": '"""'},
-
-    ".scm": {"name": "scheme", "symbol": ";;",
-             "multistart": "#|", "multiend": "|#"},
-
-    ".lua": {"name": "lua", "symbol": "--",
-             "multistart": "--[[", "multiend": "--]]"},
-
-    ".erl": {"name": "erlang", "symbol": "%%"},
-
-    ".tcl": {"name": "tcl", "symbol": "#"},
-
-    ".hs": {"name": "haskell", "symbol": "--",
-            "multistart": "{-", "multiend": "-}"},
-}
-
-# Build out the appropriate matchers and delimiters for each language.
-for ext, l in languages.items():
     # Does the line begin with a comment?
-    l["comment_matcher"] = re.compile(r"^\s*" + l["symbol"] + "\s?")
+    l["comment_matcher"] = re.compile(r"^\s*{}\s?".format(comment_symbol))
 
     # The dividing token we feed into Pygments, to delimit the boundaries between
     # sections.
-    l["divider_text"] = "\n" + l["symbol"] + "DIVIDER\n"
+    l["divider_text"] = "\n{}DIVIDER\n".format(comment_symbol)
 
     # The mirror of `divider_text` that we expect Pygments to return. We can split
     # on this to recover the original sections.
     l["divider_html"] = re.compile(
-        r'\n*<span class="c[1]?">' + l["symbol"] + 'DIVIDER</span>\n*')
+        r'\n*<span class="c[1]?">{}DIVIDER</span>\n*'.format(comment_symbol)
+    )
 
     # Get the Pygments Lexer for this language.
-    l["lexer"] = lexers.get_lexer_by_name(l["name"])
+    l["lexer"] = lexers.get_lexer_by_name(language_name)
 
 
-def get_language(source, code, language=None):
-    """Get the current language we're documenting, based on the extension."""
+for entry in supported_languages.values():
+    compile_language(entry)
 
-    if language is not None:
-        for l in languages.values():
-            if l["name"] == language:
-                return l
+def get_language(source, code, language_name=None):
+    """
+    Get the current language we're documenting, based on the extension.
+    """
+    if language_name is not None:
+        for entry in supported_languages.values():
+            if entry["name"] == language_name:
+                return entry
         else:
-            raise ValueError("Unknown forced language: " + language)
+            raise ValueError("Unknown forced language: {}".format(language_name))
 
-    m = re.match(r'.*(\..+)', os.path.basename(source)) if source else None
-    if m and m.group(1) in languages:
-        return languages[m.group(1)]
-    else:
-        try:
-            lang = lexers.guess_lexer(code).name.lower()
-            for l in languages.values():
-                if l["name"] == lang:
-                    return l
-            else:
-                raise ValueError()
-        except ValueError:
-            # If pygments can't find any lexers, it will raise its own
-            # subclass of ValueError. We will catch it and raise ours
-            # for consistency.
-            raise ValueError("Can't figure out the language!")
+    if source:
+        m = re.match(r'.*(\..+)', os.path.basename(source))
+        if m and m.group(1) in supported_languages:
+            return supported_languages[m.group(1)]
+
+    try:
+        language_name = lexers.guess_lexer(code).name.lower()
+        for entry in supported_languages.values():
+            if entry["name"] == language_name:
+                return entry
+        else:
+            raise ValueError()
+    except ValueError:
+        # If pygments can't find any lexers, it will raise its own
+        # subclass of ValueError. We will catch it and raise ours
+        # for consistency.
+        raise ValueError("Can't figure out the language!")
 
 
 def destination(filepath, preserve_paths=True, outdir=None):
     """
     Compute the destination HTML path for an input source file path. If the
-    source is `lib/example.py`, the HTML will be at `docs/example.html`
+    source is `lib/example.py`, the HTML will be at `docs/example.html`.
     """
 
     dirname, filename = path.split(filepath)
@@ -431,7 +430,6 @@ def shift(list, default):
     Shift items off the front of the `list` until it is empty, then return
     `default`.
     """
-
     try:
         return list.pop(0)
     except IndexError:
@@ -469,7 +467,7 @@ highlight_end = "</pre></div>"
 def _flatten_sources(sources):
     """
     This function will iterate through the list of sources and if a directory
-    is encountered it will walk the tree for any files
+    is encountered it will walk the tree for any files.
     """
     _sources = []
 
@@ -485,7 +483,9 @@ def _flatten_sources(sources):
 
 def process(sources, preserve_paths=True, outdir=None, language=None,
             encoding="utf8", index=False, skip=False):
-    """For each source file passed as argument, generate the documentation."""
+    """
+    For each source file passed as argument, generate the documentation.
+    """
 
     if not outdir:
         raise TypeError("Missing the required 'directory' keyword argument.")
@@ -533,14 +533,16 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
 
         if index:
             with open(path.join(outdir, "index.html"), "wb") as f:
-                f.write(generate_index.generate_index(generated_files, outdir))
+                f.write(generate_index(generated_files, outdir))
 
 
 __all__ = ("process", "generate_documentation")
 
 
 def monitor(sources, opts):
-    """Monitor each source file and re-generate documentation on change."""
+    """
+    Monitor each source file and re-generate documentation on change.
+    """
 
     # The watchdog modules are imported in `main()` but we need to re-import
     # here to bring them into the local namespace.
@@ -553,11 +555,14 @@ def monitor(sources, opts):
                             for source in sources)
 
     class RegenerateHandler(watchdog.events.FileSystemEventHandler):
-
-        """A handler for recompiling files which triggered watchdog events"""
+        """
+        A handler for recompiling files which triggered watchdog events.
+        """
 
         def on_modified(self, event):
-            """Regenerate documentation for a file which triggered an event"""
+            """
+            Regenerate documentation for a file which triggered an event.
+            """
             # Re-generate documentation from a source file if it was listed on
             # the command line. Watchdog monitors whole directories, so other
             # files may cause notifications as well.
@@ -585,53 +590,56 @@ def monitor(sources, opts):
 
 
 def main():
-    """Hook spot for the console script."""
+    """
+    Hook spot for the console script.
+    """
 
-    parser = optparse.OptionParser()
-    parser.add_option('-p', '--paths', action='store_true',
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--paths', action='store_true',
                       help='Preserve path structure of original files')
 
-    parser.add_option('-d', '--directory', action='store', type='string',
+    parser.add_argument('-d', '--directory', action='store', type=str,
                       dest='outdir', default='docs',
                       help='The output directory that the rendered files should go to.')
 
-    parser.add_option('-w', '--watch', action='store_true',
+    parser.add_argument('-w', '--watch', action='store_true',
                       help='Watch original files and re-generate documentation on changes')
 
-    parser.add_option('-l', '--force-language', action='store', type='string',
+    parser.add_argument('-l', '--force-language', action='store', type=str,
                       dest='language', default=None,
                       help='Force the language for the given files')
 
-    parser.add_option('-i', '--generate_index', action='store_true',
+    parser.add_argument('-i', '--generate_index', action='store_true',
                       help='Generate an index.html document with sitemap content')
 
-    parser.add_option('-s', '--skip-bad-files',
-                      '-e', '--ignore-errors',
+    parser.add_argument('-s', '--skip-bad-files', '-e', '--ignore-errors',
                       action='store_true',
                       dest='skip_bad_files',
                       help='Continue processing after hitting a bad file')
 
-    opts, sources = parser.parse_args()
-    if opts.outdir == '':
+    parser.add_argument('sources', nargs='*')
+
+    args = parser.parse_args()
+    if args.outdir == '':
         outdir = '.'
     else:
-        outdir = opts.outdir
+        outdir = args.outdir
 
-    process(sources, outdir=outdir, preserve_paths=opts.paths,
-            language=opts.language, index=opts.generate_index,
-            skip=opts.skip_bad_files)
+    process(args.sources, outdir=outdir, preserve_paths=args.paths,
+            language=args.language, index=args.generate_index,
+            skip=args.skip_bad_files)
 
-    # If the -w / --watch option was present, monitor the source directories
+    # If the -w / \-\-watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
     # are modified.
-    if opts.watch:
+    if args.watch:
         try:
             import watchdog.events
-            import watchdog.observers
+            import watchdog.observers  # noqa
         except ImportError:
             sys.exit('The -w/--watch option requires the watchdog package.')
 
-        monitor(sources, opts)
+        monitor(args.sources, args)
 
 
 # Run the script.
