@@ -1,23 +1,4 @@
 #!/usr/bin/env python
-from __future__ import absolute_import, print_function
-
-# Import our external dependencies.
-import argparse
-import os
-import re
-import sys
-import time
-from os import path
-
-import pygments
-from markdown import markdown
-from pycco.generate_index import generate_index
-from pycco.languages import supported_languages
-from pycco_resources import css as pycco_css
-# This module contains all of our static resources.
-from pycco_resources import pycco_template
-from pygments import formatters, lexers
-
 """
 "**Pycco**" is a Python port of [Docco](http://jashkenas.github.com/docco/):
 the original quick-and-dirty, hundred-line-long, literate-programming-style
@@ -61,6 +42,26 @@ Or, to install the latest source
     cd pycco
     python setup.py install
 """
+
+from __future__ import absolute_import, print_function
+
+# Import our external dependencies.
+import argparse
+import os
+import re
+import sys
+import time
+from os import path
+
+import pygments
+from pygments import formatters, lexers
+
+from markdown import markdown
+from pycco.generate_index import generate_index
+from pycco.languages import supported_languages
+from pycco_resources import css as pycco_css
+# This module contains all of our static resources.
+from pycco_resources import pycco_template
 
 # === Main Documentation Generation Functions ===
 
