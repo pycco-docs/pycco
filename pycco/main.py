@@ -66,7 +66,7 @@ from pycco_resources import pycco_template
 # === Main Documentation Generation Functions ===
 
 
-def generate_documentation(source, outdir=None, preserve_paths=True,
+def generate_documentation(source, outdir=None, preserve_paths=True, md=False,
                            language=None, encoding="utf8"):
     """
     Generate the documentation for a source file by reading it in, splitting it
@@ -77,15 +77,19 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     code = open(source, "rb").read().decode(encoding)
-    return _generate_documentation(source, code, outdir, preserve_paths, language)
+    return _generate_documentation(source, code, outdir, preserve_paths, md,
+                                   language)
 
 
-def _generate_documentation(file_path, code, outdir, preserve_paths, language):
+def _generate_documentation(file_path, code, outdir, preserve_paths, md,
+                            language):
     """
     Helper function to allow documentation generation without file handling.
     """
     language = get_language(file_path, code, language_name=language)
     sections = parse(code, language)
+    if md:
+        return generate_md(sections, language=language["name"])
     highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
     return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
 
@@ -342,6 +346,27 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     return re.sub(r"__DOUBLE_OPEN_STACHE__", "{{", rendered).encode("utf-8")
 
+# === Markdown Code generation ===
+
+
+def generate_md(sections, language=None):
+    """
+    Generate Markdown output file
+    """
+
+    language_marker = language if language is not None else ""
+
+    text = ""
+    for sect in sections:
+        if sect.get("docs_text"):
+            text += sect["docs_text"]
+        if sect.get("code_text"):
+            text += "\n```{}\n".format(language_marker)
+            text += sect["code_text"]
+            text += "\n```\n"
+
+    return text.encode("utf-8")
+
 
 # === Helpers & Setup ===
 
@@ -402,7 +427,7 @@ def get_language(source, code, language_name=None):
         raise ValueError("Can't figure out the language!")
 
 
-def destination(filepath, preserve_paths=True, outdir=None):
+def destination(filepath, preserve_paths=True, outdir=None, md=False):
     """
     Compute the destination HTML path for an input source file path. If the
     source is `lib/example.py`, the HTML will be at `docs/example.html`.
@@ -417,7 +442,8 @@ def destination(filepath, preserve_paths=True, outdir=None):
         name = filename
     if preserve_paths:
         name = path.join(dirname, name)
-    dest = path.join(outdir, u"{}.html".format(name))
+    ext = 'md' if md else 'html'
+    dest = path.join(outdir, u"{}.{}".format(name, ext))
     # If `join` is passed an absolute path, it will ignore any earlier path
     # elements. We will force outdir to the beginning of the path to avoid
     # writing outside our destination.
@@ -482,7 +508,7 @@ def _flatten_sources(sources):
     return _sources
 
 
-def process(sources, preserve_paths=True, outdir=None, language=None,
+def process(sources, preserve_paths=True, outdir=None, md=False, language=None,
             encoding="utf8", index=False, skip=False):
     """
     For each source file passed as argument, generate the documentation.
@@ -498,15 +524,17 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
     # Proceed to generating the documentation.
     if sources:
         outdir = ensure_directory(outdir)
-        css = open(path.join(outdir, "pycco.css"), "wb")
-        css.write(pycco_css.encode(encoding))
-        css.close()
+        if not md:
+            css = open(path.join(outdir, "pycco.css"), "wb")
+            css.write(pycco_css.encode(encoding))
+            css.close()
 
         generated_files = []
 
         def next_file():
             s = sources.pop(0)
-            dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
+            dest = destination(s, preserve_paths=preserve_paths, outdir=outdir,
+                               md=md)
 
             try:
                 os.makedirs(path.split(dest)[0])
@@ -515,7 +543,8 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
 
             try:
                 with open(dest, "wb") as f:
-                    f.write(generate_documentation(s, preserve_paths=preserve_paths,
+                    f.write(generate_documentation(s, md=md,
+                                                   preserve_paths=preserve_paths,
                                                    outdir=outdir,
                                                    language=language,
                                                    encoding=encoding))
@@ -603,6 +632,9 @@ def main():
                       dest='outdir', default='docs',
                       help='The output directory that the rendered files should go to.')
 
+    parser.add_argument('-m', '--markdown', action='store_true',
+                      help='Output Markdown instead of HTML')
+
     parser.add_argument('-w', '--watch', action='store_true',
                       help='Watch original files and re-generate documentation on changes')
 
@@ -627,8 +659,8 @@ def main():
         outdir = args.outdir
 
     process(args.sources, outdir=outdir, preserve_paths=args.paths,
-            language=args.language, index=args.generate_index,
-            skip=args.skip_bad_files)
+            md=args.markdown, language=args.language,
+            index=args.generate_index, skip=args.skip_bad_files)
 
     # If the -w / \-\-watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
