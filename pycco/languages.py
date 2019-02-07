@@ -65,6 +65,7 @@ supported_languages = {
     ".hs": lang("haskell", DASH_DASH, "{-", "-}"),
 
     ".r": lang("r", HASH),
+    ".R": lang("r", HASH),
 
     ".jl": lang("julia", HASH, "#=", "=#"),
 
