@@ -86,6 +86,7 @@ div.docs {
   .docs pre {
     margin: 15px 0 15px;
     padding-left: 15px;
+    overflow-y: scroll;
   }
   .docs p tt, .docs p code {
     background: #f8f8ff;
