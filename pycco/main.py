@@ -318,7 +318,7 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
     template found in `resources/pycco.html`.
 
     Pystache will attempt to recursively render context variables, so we must
-    replace any occurences of `{{`, which is valid in some languages, with a
+    replace any occurrences of `{{`, which is valid in some languages, with a
     "unique enough" identifier before rendering, and then post-process the
     rendered template and change the identifier back to `{{`.
     """
