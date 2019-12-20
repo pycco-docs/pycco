@@ -63,4 +63,14 @@ supported_languages = {
     ".tcl": lang("tcl", HASH),
 
     ".hs": lang("haskell", DASH_DASH, "{-", "-}"),
+
+    ".r": lang("r", HASH),
+    ".R": lang("r", HASH),
+
+    ".jl": lang("julia", HASH, "#=", "=#"),
+
+    ".m": lang("matlab", "%", "%{", "%}"),
+
+    ".do": lang("stata", SLASH_SLASH, SLASH_STAR, STAR_SLASH)
+
 }
