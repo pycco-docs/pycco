@@ -11,7 +11,7 @@ import pytest
 import pycco.generate_index as generate_index
 import pycco.main as p
 from hypothesis import assume, example, given
-from hypothesis.strategies import booleans, choices, lists, none, text
+from hypothesis.strategies import booleans, lists, none, text, sampled_from, data
 from pycco.languages import supported_languages
 
 try:
@@ -26,8 +26,8 @@ PYCCO_SOURCE = 'pycco/main.py'
 FOO_FUNCTION = """def foo():\n    return True"""
 
 
-def get_language(choice):
-    return choice(list(supported_languages.values()))
+def get_language(data):
+    return data.draw(sampled_from(list(supported_languages.values())))
 
 
 @given(lists(text()), text())
@@ -49,9 +49,9 @@ def test_destination(filepath, preserve_paths, outdir):
     assert dest.endswith(".html")
 
 
-@given(choices(), text())
-def test_parse(choice, source):
-    lang = get_language(choice)
+@given(data(), text())
+def test_parse(data, source):
+    lang = get_language(data)
     parsed = p.parse(source, lang)
     for s in parsed:
         assert {"code_text", "docs_text"} == set(s.keys())
@@ -163,9 +163,9 @@ def test_generate_documentation():
     p.generate_documentation(PYCCO_SOURCE, outdir=tempfile.gettempdir())
 
 
-@given(booleans(), booleans(), choices())
-def test_process(preserve_paths, index, choice):
-    lang_name = choice([l["name"] for l in supported_languages.values()])
+@given(booleans(), booleans(), data())
+def test_process(preserve_paths, index, data):
+    lang_name = data.draw(sampled_from([l["name"] for l in supported_languages.values()]))
     p.process([PYCCO_SOURCE], preserve_paths=preserve_paths,
               index=index,
               outdir=tempfile.gettempdir(),

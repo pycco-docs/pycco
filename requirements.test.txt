@@ -1,4 +1,4 @@
-coveralls==1.3.0
-hypothesis==3.56.5
+coveralls==1.9.2
+hypothesis==4.56.1
 mock~=2.0
-pytest-cov~=2.0
+pytest-cov~=2.8.1
