@@ -422,7 +422,11 @@ def destination(filepath: Path, preserve_paths=True, outdir=None):
     Compute the destination HTML path for an input source file path. If the
     source is `lib/example.py`, the HTML will be at `docs/example.html`.
     """
+    if isinstance(filepath, str) and filepath == "":
+        raise ValueError("Filepath cannot be empty.")
     filepath = Path(filepath)
+    if filepath.name == "":
+        raise ValueError("Filepath cannot have an empty name.")
     dirname, stem = filepath.parent, filepath.stem
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
