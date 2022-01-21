@@ -43,15 +43,14 @@ Or, to install the latest source
     python setup.py install
 """
 
-from __future__ import absolute_import, print_function
-
 # Import our external dependencies.
 import argparse
 import os
 import re
 import sys
 import time
-from os import path
+
+from pathlib import Path
 
 import pygments
 from pygments import formatters, lexers
@@ -76,7 +75,7 @@ def generate_documentation(
     language, and merging them into an HTML template.
     """
 
-    if not outdir:
+    if outdir is None:
         raise TypeError("Missing the required 'outdir' keyword argument.")
     code = open(source, "rb").read().decode(encoding)
     return _generate_documentation(source, code, outdir, preserve_paths, language)
@@ -238,20 +237,16 @@ def preprocess(comment, preserve_paths=True, outdir=None):
             name, anchor = match.group(1).split("#")
             return " [{}]({}#{})".format(
                 name,
-                path.basename(
-                    destination(name, preserve_paths=preserve_paths, outdir=outdir)
-                ),
+                destination(name, preserve_paths=preserve_paths, outdir=outdir).stem,
                 anchor,
             )
 
         else:
             return " [{}]({})".format(
                 match.group(1),
-                path.basename(
-                    destination(
-                        match.group(1), preserve_paths=preserve_paths, outdir=outdir
-                    )
-                ),
+                destination(
+                    match.group(1), preserve_paths=preserve_paths, outdir=outdir
+                ).stem,
             )
 
     def replace_section_name(match):
@@ -340,9 +335,9 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument")
-    title = path.basename(source)
+    title = Path(source).stem
     dest = destination(source, preserve_paths=preserve_paths, outdir=outdir)
-    csspath = path.relpath(path.join(outdir, "pycco.css"), path.split(dest)[0])
+    csspath = Path(dest.parent).relative_to(outdir) / "pycco.css"
 
     for sect in sections:
         sect["code_html"] = re.sub(
@@ -422,27 +417,24 @@ def get_language(source, code, language_name=None):
         raise ValueError("Can't figure out the language!")
 
 
-def destination(filepath, preserve_paths=True, outdir=None):
+def destination(filepath: Path, preserve_paths=True, outdir=None):
     """
     Compute the destination HTML path for an input source file path. If the
     source is `lib/example.py`, the HTML will be at `docs/example.html`.
     """
-
-    dirname, filename = path.split(filepath)
+    filepath = Path(filepath)
+    dirname, stem = filepath.parent, filepath.stem
     if not outdir:
         raise TypeError("Missing the required 'outdir' keyword argument.")
-    try:
-        name = re.sub(r"\.[^.]*$", "", filename)
-    except ValueError:
-        name = filename
+    outdir = Path(outdir)
     if preserve_paths:
-        name = path.join(dirname, name)
-    dest = path.join(outdir, u"{}.html".format(name))
+        stem = dirname / stem
+    dest = (outdir / stem).with_suffix(".html")
     # If `join` is passed an absolute path, it will ignore any earlier path
     # elements. We will force outdir to the beginning of the path to avoid
     # writing outside our destination.
-    if not dest.startswith(outdir):
-        dest = outdir + os.sep + dest
+    # if not dest.startswith(outdir):
+    #     dest = outdir + os.sep + dest
     return dest
 
 
@@ -473,10 +465,8 @@ def ensure_directory(directory):
     """
     Sanitize directory string and ensure that the destination directory exists.
     """
-    directory = remove_control_chars(directory)
-    if not os.path.isdir(directory):
-        os.makedirs(directory)
-
+    directory = Path(remove_control_chars(str(directory)))
+    directory.mkdir(exist_ok=True, parents=True)
     return directory
 
 
@@ -527,20 +517,15 @@ def process(
     # Proceed to generating the documentation.
     if sources:
         outdir = ensure_directory(outdir)
-        css = open(path.join(outdir, "pycco.css"), "wb")
-        css.write(pycco_css.encode(encoding))
-        css.close()
+        with open(outdir / "pycco.css", "wb") as css:
+            css.write(pycco_css.encode(encoding))
 
         generated_files = []
 
         def next_file():
             s = sources.pop(0)
             dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
-
-            try:
-                os.makedirs(path.split(dest)[0])
-            except OSError:
-                pass
+            dest.parent.mkdir(exist_ok=True, parents=True)
 
             try:
                 with open(dest, "wb") as f:
@@ -568,7 +553,7 @@ def process(
         next_file()
 
         if index:
-            with open(path.join(outdir, "index.html"), "wb") as f:
+            with open(outdir / "index.html", "wb") as f:
                 f.write(generate_index(generated_files, outdir))
 
 
@@ -587,7 +572,7 @@ def monitor(sources, opts):
 
     # Watchdog operates on absolute paths, so map those to original paths
     # as specified on the command line.
-    absolute_sources = dict((os.path.abspath(source), source) for source in sources)
+    absolute_sources = dict((source.resolve(), source) for source in sources)
 
     class RegenerateHandler(watchdog.events.FileSystemEventHandler):
         """
@@ -601,9 +586,10 @@ def monitor(sources, opts):
             # Re-generate documentation from a source file if it was listed on
             # the command line. Watchdog monitors whole directories, so other
             # files may cause notifications as well.
-            if event.src_path in absolute_sources:
+            modified_pth = Path(event.src_path).resolve()
+            if modified_pth in absolute_sources:
                 process(
-                    [absolute_sources[event.src_path]],
+                    [absolute_sources[modified_pth]],
                     outdir=opts.outdir,
                     preserve_paths=opts.paths,
                 )
@@ -612,7 +598,7 @@ def monitor(sources, opts):
     # the command line and notifies the handler defined above.
     event_handler = RegenerateHandler()
     observer = watchdog.observers.Observer()
-    directories = set(os.path.split(source)[0] for source in sources)
+    directories = set(source.parent for source in absolute_sources)
     for directory in directories:
         observer.schedule(event_handler, path=directory)
 
@@ -643,9 +629,9 @@ def main():
         "-d",
         "--directory",
         action="store",
-        type=str,
+        type=Path,
         dest="outdir",
-        default="docs",
+        default=(Path.cwd() / "docs"),
         help="The output directory that the rendered files should go to.",
     )
 
@@ -683,17 +669,13 @@ def main():
         help="Continue processing after hitting a bad file",
     )
 
-    parser.add_argument("sources", nargs="*")
+    parser.add_argument("sources", nargs="*", type=Path)
 
     args = parser.parse_args()
-    if args.outdir == "":
-        outdir = "."
-    else:
-        outdir = args.outdir
 
     process(
         args.sources,
-        outdir=outdir,
+        outdir=args.outdir,
         preserve_paths=args.paths,
         language=args.language,
         index=args.generate_index,
