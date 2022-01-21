@@ -60,14 +60,16 @@ from markdown import markdown
 from pycco.generate_index import generate_index
 from pycco.languages import supported_languages
 from pycco_resources import css as pycco_css
+
 # This module contains all of our static resources.
 from pycco_resources import pycco_template
 
 # === Main Documentation Generation Functions ===
 
 
-def generate_documentation(source, outdir=None, preserve_paths=True,
-                           language=None, encoding="utf8"):
+def generate_documentation(
+    source, outdir=None, preserve_paths=True, language=None, encoding="utf8"
+):
     """
     Generate the documentation for a source file by reading it in, splitting it
     up into comment/code sections, highlighting them for the appropriate
@@ -87,7 +89,9 @@ def _generate_documentation(file_path, code, outdir, preserve_paths, language):
     language = get_language(file_path, code, language_name=language)
     sections = parse(code, language)
     highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
-    return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
+    return generate_html(
+        file_path, sections, preserve_paths=preserve_paths, outdir=outdir
+    )
 
 
 def parse(code, language):
@@ -113,39 +117,46 @@ def parse(code, language):
 
     if language["name"] == "python":
         for linenum, line in enumerate(lines[:2]):
-            if re.search(r'coding[:=]\s*([-\w.]+)', lines[linenum]):
+            if re.search(r"coding[:=]\s*([-\w.]+)", lines[linenum]):
                 lines.pop(linenum)
                 break
 
     def save(docs, code):
         if docs or code:
-            sections.append({
-                "docs_text": docs,
-                "code_text": code
-            })
+            sections.append({"docs_text": docs, "code_text": code})
 
     # Setup the variables to get ready to check for multiline comments
     multi_line = False
     multi_string = False
     multistart, multiend = language.get("multistart"), language.get("multiend")
-    comment_matcher = language['comment_matcher']
+    comment_matcher = language["comment_matcher"]
 
     for line in lines:
         process_as_code = False
         # Only go into multiline comments section when one of the delimiters is
         # found to be at the start of a line
-        if multistart and multiend \
-           and any(line.lstrip().startswith(delim) or line.rstrip().endswith(delim)
-                   for delim in (multistart, multiend)):
+        if (
+            multistart
+            and multiend
+            and any(
+                line.lstrip().startswith(delim) or line.rstrip().endswith(delim)
+                for delim in (multistart, multiend)
+            )
+        ):
             multi_line = not multi_line
 
-            if multi_line \
-               and line.strip().endswith(multiend) \
-               and len(line.strip()) > len(multiend):
+            if (
+                multi_line
+                and line.strip().endswith(multiend)
+                and len(line.strip()) > len(multiend)
+            ):
                 multi_line = False
 
-            if not line.strip().startswith(multistart) and not multi_line \
-               or multi_string:
+            if (
+                not line.strip().startswith(multistart)
+                and not multi_line
+                or multi_string
+            ):
 
                 process_as_code = True
 
@@ -158,45 +169,47 @@ def parse(code, language):
             else:
                 # Get rid of the delimiters so that they aren't in the final
                 # docs
-                line = line.replace(multistart, '')
-                line = line.replace(multiend, '')
-                docs_text += line.strip() + '\n'
+                line = line.replace(multistart, "")
+                line = line.replace(multiend, "")
+                docs_text += line.strip() + "\n"
                 indent_level = re.match(r"\s*", line).group(0)
 
                 if has_code and docs_text.strip():
                     save(docs_text, code_text[:-1])
-                    code_text = code_text.split('\n')[-1]
-                    has_code = docs_text = ''
+                    code_text = code_text.split("\n")[-1]
+                    has_code = docs_text = ""
 
         elif multi_line:
             # Remove leading spaces
-            if re.match(r' {{{:d}}}'.format(len(indent_level)), line):
-                docs_text += line[len(indent_level):] + '\n'
+            if re.match(r" {{{:d}}}".format(len(indent_level)), line):
+                docs_text += line[len(indent_level) :] + "\n"
             else:
-                docs_text += line + '\n'
+                docs_text += line + "\n"
 
         elif re.match(comment_matcher, line):
             if has_code:
                 save(docs_text, code_text)
-                has_code = docs_text = code_text = ''
+                has_code = docs_text = code_text = ""
             docs_text += re.sub(comment_matcher, "", line) + "\n"
 
         else:
             process_as_code = True
 
         if process_as_code:
-            if code_text and any(line.lstrip().startswith(x)
-                                 for x in ['class ', 'def ', '@']):
+            if code_text and any(
+                line.lstrip().startswith(x) for x in ["class ", "def ", "@"]
+            ):
                 if not code_text.lstrip().startswith("@"):
                     save(docs_text, code_text)
-                    code_text = has_code = docs_text = ''
+                    code_text = has_code = docs_text = ""
 
             has_code = True
-            code_text += line + '\n'
+            code_text += line + "\n"
 
     save(docs_text, code_text)
 
     return sections
+
 
 # === Preprocessing the comments ===
 
@@ -221,34 +234,41 @@ def preprocess(comment, preserve_paths=True, outdir=None):
 
     def replace_crossref(match):
         # Check if the match contains an anchor
-        if '#' in match.group(1):
-            name, anchor = match.group(1).split('#')
-            return " [{}]({}#{})".format(name,
-                                         path.basename(destination(name,
-                                                                   preserve_paths=preserve_paths,
-                                                                   outdir=outdir)),
-                                         anchor)
+        if "#" in match.group(1):
+            name, anchor = match.group(1).split("#")
+            return " [{}]({}#{})".format(
+                name,
+                path.basename(
+                    destination(name, preserve_paths=preserve_paths, outdir=outdir)
+                ),
+                anchor,
+            )
 
         else:
-            return " [{}]({})".format(match.group(1),
-                                      path.basename(destination(match.group(1),
-                                                                preserve_paths=preserve_paths,
-                                                                outdir=outdir)))
+            return " [{}]({})".format(
+                match.group(1),
+                path.basename(
+                    destination(
+                        match.group(1), preserve_paths=preserve_paths, outdir=outdir
+                    )
+                ),
+            )
 
     def replace_section_name(match):
         """
         Replace equals-sign-formatted section names with anchor links.
         """
         return '{lvl} <span id="{id}" href="{id}">{name}</span>'.format(
-            lvl=re.sub('=', '#', match.group(1)),
+            lvl=re.sub("=", "#", match.group(1)),
             id=sanitize_section_name(match.group(2)),
-            name=match.group(2)
+            name=match.group(2),
         )
 
-    comment = re.sub(r'^([=]+)([^=]+)[=]*\s*$', replace_section_name, comment)
-    comment = re.sub(r'(?<!`)\[\[(.+?)\]\]', replace_crossref, comment)
+    comment = re.sub(r"^([=]+)([^=]+)[=]*\s*$", replace_section_name, comment)
+    comment = re.sub(r"(?<!`)\[\[(.+?)\]\]", replace_crossref, comment)
 
     return comment
+
 
 # === Highlighting the source code ===
 
@@ -275,12 +295,10 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
     )
     html_formatter = formatters.get_formatter_by_name("html")
 
-    output = pygments.highlight(
-        joined_text, lexer, html_formatter
-    ).replace(
-        highlight_start, ""
-    ).replace(
-        highlight_end, ""
+    output = (
+        pygments.highlight(joined_text, lexer, html_formatter)
+        .replace(highlight_start, "")
+        .replace(highlight_end, "")
     )
     fragments = re.split(divider_html, output)
 
@@ -289,24 +307,21 @@ def highlight(sections, language, preserve_paths=True, outdir=None):
         try:
             docs_text = unicode(section["docs_text"])
         except UnicodeError:
-            docs_text = unicode(section["docs_text"].decode('utf-8'))
+            docs_text = unicode(section["docs_text"].decode("utf-8"))
         except NameError:
-            docs_text = section['docs_text']
+            docs_text = section["docs_text"]
         section["docs_html"] = markdown(
-            preprocess(
-                docs_text,
-                preserve_paths=preserve_paths,
-                outdir=outdir
-            ),
+            preprocess(docs_text, preserve_paths=preserve_paths, outdir=outdir),
             extensions=[
-                'markdown.extensions.smarty',
-                'markdown.extensions.fenced_code',
-                'markdown.extensions.footnotes',
-            ]
+                "markdown.extensions.smarty",
+                "markdown.extensions.fenced_code",
+                "markdown.extensions.footnotes",
+            ],
         )
         section["num"] = i
 
     return sections
+
 
 # === HTML Code generation ===
 
@@ -331,19 +346,23 @@ def generate_html(source, sections, preserve_paths=True, outdir=None):
 
     for sect in sections:
         sect["code_html"] = re.sub(
-            r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"])
+            r"\{\{", r"__DOUBLE_OPEN_STACHE__", sect["code_html"]
+        )
 
-    rendered = pycco_template({
-        "title": title,
-        "stylesheet": csspath,
-        "sections": sections,
-        "source": source,
-    })
+    rendered = pycco_template(
+        {
+            "title": title,
+            "stylesheet": csspath,
+            "sections": sections,
+            "source": source,
+        }
+    )
 
     return re.sub(r"__DOUBLE_OPEN_STACHE__", "{{", rendered).encode("utf-8")
 
 
 # === Helpers & Setup ===
+
 
 def compile_language(l):
     """
@@ -372,6 +391,7 @@ def compile_language(l):
 for entry in supported_languages.values():
     compile_language(entry)
 
+
 def get_language(source, code, language_name=None):
     """
     Get the current language we're documenting, based on the extension.
@@ -384,7 +404,7 @@ def get_language(source, code, language_name=None):
             raise ValueError("Unknown forced language: {}".format(language_name))
 
     if source:
-        m = re.match(r'.*(\..+)', os.path.basename(source))
+        m = re.match(r".*(\..+)", os.path.basename(source))
         if m and m.group(1) in supported_languages:
             return supported_languages[m.group(1)]
 
@@ -441,10 +461,12 @@ def remove_control_chars(s):
     # Sanitization regexp copied from
     # http://stackoverflow.com/questions/92438/stripping-non-printable-characters-from-a-string-in-python
     from pycco.compat import pycco_unichr
-    control_chars = ''.join(
-        map(pycco_unichr, list(range(0, 32)) + list(range(127, 160))))
-    control_char_re = re.compile(u'[{}]'.format(re.escape(control_chars)))
-    return control_char_re.sub('', s)
+
+    control_chars = "".join(
+        map(pycco_unichr, list(range(0, 32)) + list(range(127, 160)))
+    )
+    control_char_re = re.compile(u"[{}]".format(re.escape(control_chars)))
+    return control_char_re.sub("", s)
 
 
 def ensure_directory(directory):
@@ -459,7 +481,7 @@ def ensure_directory(directory):
 
 
 # The start of each Pygments highlight block.
-highlight_start = "<div class=\"highlight\"><pre>"
+highlight_start = '<div class="highlight"><pre>'
 
 # The end of each Pygments highlight block.
 highlight_end = "</pre></div>"
@@ -482,8 +504,15 @@ def _flatten_sources(sources):
     return _sources
 
 
-def process(sources, preserve_paths=True, outdir=None, language=None,
-            encoding="utf8", index=False, skip=False):
+def process(
+    sources,
+    preserve_paths=True,
+    outdir=None,
+    language=None,
+    encoding="utf8",
+    index=False,
+    skip=False,
+):
     """
     For each source file passed as argument, generate the documentation.
     """
@@ -515,10 +544,15 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
 
             try:
                 with open(dest, "wb") as f:
-                    f.write(generate_documentation(s, preserve_paths=preserve_paths,
-                                                   outdir=outdir,
-                                                   language=language,
-                                                   encoding=encoding))
+                    f.write(
+                        generate_documentation(
+                            s,
+                            preserve_paths=preserve_paths,
+                            outdir=outdir,
+                            language=language,
+                            encoding=encoding,
+                        )
+                    )
 
                 print("pycco: {} -> {}".format(s, dest))
                 generated_files.append(dest)
@@ -530,6 +564,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
 
             if sources:
                 next_file()
+
         next_file()
 
         if index:
@@ -552,8 +587,7 @@ def monitor(sources, opts):
 
     # Watchdog operates on absolute paths, so map those to original paths
     # as specified on the command line.
-    absolute_sources = dict((os.path.abspath(source), source)
-                            for source in sources)
+    absolute_sources = dict((os.path.abspath(source), source) for source in sources)
 
     class RegenerateHandler(watchdog.events.FileSystemEventHandler):
         """
@@ -568,9 +602,11 @@ def monitor(sources, opts):
             # the command line. Watchdog monitors whole directories, so other
             # files may cause notifications as well.
             if event.src_path in absolute_sources:
-                process([absolute_sources[event.src_path]],
-                        outdir=opts.outdir,
-                        preserve_paths=opts.paths)
+                process(
+                    [absolute_sources[event.src_path]],
+                    outdir=opts.outdir,
+                    preserve_paths=opts.paths,
+                )
 
     # Set up an observer which monitors all directories for files given on
     # the command line and notifies the handler defined above.
@@ -596,39 +632,73 @@ def main():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--paths', action='store_true',
-                      help='Preserve path structure of original files')
+    parser.add_argument(
+        "-p",
+        "--paths",
+        action="store_true",
+        help="Preserve path structure of original files",
+    )
 
-    parser.add_argument('-d', '--directory', action='store', type=str,
-                      dest='outdir', default='docs',
-                      help='The output directory that the rendered files should go to.')
+    parser.add_argument(
+        "-d",
+        "--directory",
+        action="store",
+        type=str,
+        dest="outdir",
+        default="docs",
+        help="The output directory that the rendered files should go to.",
+    )
 
-    parser.add_argument('-w', '--watch', action='store_true',
-                      help='Watch original files and re-generate documentation on changes')
+    parser.add_argument(
+        "-w",
+        "--watch",
+        action="store_true",
+        help="Watch original files and re-generate documentation on changes",
+    )
 
-    parser.add_argument('-l', '--force-language', action='store', type=str,
-                      dest='language', default=None,
-                      help='Force the language for the given files')
+    parser.add_argument(
+        "-l",
+        "--force-language",
+        action="store",
+        type=str,
+        dest="language",
+        default=None,
+        help="Force the language for the given files",
+    )
 
-    parser.add_argument('-i', '--generate_index', action='store_true',
-                      help='Generate an index.html document with sitemap content')
+    parser.add_argument(
+        "-i",
+        "--generate_index",
+        action="store_true",
+        help="Generate an index.html document with sitemap content",
+    )
 
-    parser.add_argument('-s', '--skip-bad-files', '-e', '--ignore-errors',
-                      action='store_true',
-                      dest='skip_bad_files',
-                      help='Continue processing after hitting a bad file')
+    parser.add_argument(
+        "-s",
+        "--skip-bad-files",
+        "-e",
+        "--ignore-errors",
+        action="store_true",
+        dest="skip_bad_files",
+        help="Continue processing after hitting a bad file",
+    )
 
-    parser.add_argument('sources', nargs='*')
+    parser.add_argument("sources", nargs="*")
 
     args = parser.parse_args()
-    if args.outdir == '':
-        outdir = '.'
+    if args.outdir == "":
+        outdir = "."
     else:
         outdir = args.outdir
 
-    process(args.sources, outdir=outdir, preserve_paths=args.paths,
-            language=args.language, index=args.generate_index,
-            skip=args.skip_bad_files)
+    process(
+        args.sources,
+        outdir=outdir,
+        preserve_paths=args.paths,
+        language=args.language,
+        index=args.generate_index,
+        skip=args.skip_bad_files,
+    )
 
     # If the -w / \-\-watch option was present, monitor the source directories
     # for changes and re-generate documentation for source files whenever they
@@ -638,7 +708,7 @@ def main():
             import watchdog.events
             import watchdog.observers  # noqa
         except ImportError:
-            sys.exit('The -w/--watch option requires the watchdog package.')
+            sys.exit("The -w/--watch option requires the watchdog package.")
 
         monitor(args.sources, args)
 
