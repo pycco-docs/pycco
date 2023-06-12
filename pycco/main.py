@@ -504,8 +504,7 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
 
         generated_files = []
 
-        def next_file():
-            s = sources.pop(0)
+        for s in sources:
             dest = destination(s, preserve_paths=preserve_paths, outdir=outdir)
 
             try:
@@ -527,10 +526,6 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
                     print("pycco [FAILURE]: {}, {}".format(s, e))
                 else:
                     raise
-
-            if sources:
-                next_file()
-        next_file()
 
         if index:
             with open(path.join(outdir, "index.html"), "wb") as f:
